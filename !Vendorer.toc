@@ -1,0 +1,20 @@
+## Interface: 60200
+## Title: Vendorer
+## Notes: Miscellaneous vendor stuff
+## Author: Sonaza
+## Version: 1.2.0
+## OptionalDeps: Ace3
+## SavedVariables: VendorerDB
+
+#@no-lib-strip@
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+libs\AceAddon-3.0\AceAddon-3.0.xml
+libs\AceDB-3.0\AceDB-3.0.xml
+libs\AceEvent-3.0\AceEvent-3.0.xml
+#@end-no-lib-strip@
+
+core.lua
+vendorfilter.lua
+autorepair.lua
+Frame.xml
