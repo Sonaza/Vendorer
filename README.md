@@ -23,3 +23,7 @@ This addon can and **is very likely to conflict** with other addons that do modi
 
 ## Dependencies
 Vendorer uses Ace3 which is included in the /libs directory.
+
+### Note for Releases
+
+To guarantee addon loads first the addon folder should be **!Vendorer** (as in prefixed with exclamation mark) since the game loads addons with exclamation marks before ones without.
