@@ -6,7 +6,7 @@ Sometimes vendors sell so many items it's impossible to find the items you requi
 
 Addon also makes it easier to sell junk items and unusable soulbound loot. Upon closing vendor frame the addon shows money difference if money was gained or lost.
 
-**New!** Automatic smart repair feature will make it easy to repair your gear when visiting a vendor that can do repairs. Smart repair will try to spend the maximal guild repair allowance if possible. However, the automatic spending of guild funds can be optionally disabled.
+Automatic smart repair feature will make it easy to repair your gear when visiting a vendor that can do repairs. Smart repair will try to spend the maximal guild repair allowance if possible. However, the automatic spending of guild funds can be optionally disabled.
 
 ### Filters
 
