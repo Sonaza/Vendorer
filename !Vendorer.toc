@@ -1,8 +1,8 @@
-## Interface: 60200
+## Interface: 70000
 ## Title: Vendorer
 ## Notes: Miscellaneous vendor stuff
 ## Author: Sonaza
-## Version: 1.2.0
+## Version: 2.0.0
 ## OptionalDeps: Ace3
 ## SavedVariables: VendorerDB
 
