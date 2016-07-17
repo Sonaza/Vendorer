@@ -347,18 +347,10 @@ function Addon:IsValidClassArmorType(armortype)
 	return Addon:GetClassArmorType() == armortype;
 end
 
--- Function to determine if armor type is usable right now or will be later
--- Will return false for old armor type if user has already graduated to the next armor type (e.g. hunter above lvl 40)
-function Addon:IsValidArmorTypeNowOrLater(armortype)
-	local usableLater = Addon:IsValidClassArmorType(armortype, 40);
-	return usableLater or Addon:IsValidClassArmorType(armortype, UnitLevel("player"));
-end
-
 function Addon:GetItemTooltipInfo(item)
 	if(not item) then return end
 	
 	local bindType, isUsable, isClassArmorType, notUsableReason;
-	local willBeUsableArmorType = false;
 	
 	local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
 		itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(item);
@@ -367,9 +359,7 @@ function Addon:GetItemTooltipInfo(item)
 	VendorerTooltip:SetHyperlink(itemLink);
 	
 	if(IsEquippableItem(itemLink) and Addon:IsArmorItemSlot(itemEquipLoc)) then
-		willBeUsableArmorType = Addon:IsValidClassArmorType(itemSubType, 40);
-		
-		if(itemSubType == "Cosmetic" or itemSubType == "Miscellaneous" or Addon:IsValidArmorTypeNowOrLater(itemSubType)) then
+		if(itemSubType == "Cosmetic" or itemSubType == "Miscellaneous" or Addon:IsValidClassArmorType(itemSubType)) then
 			isClassArmorType = true;
 		else
 			isClassArmorType = false;
@@ -399,7 +389,7 @@ function Addon:GetItemTooltipInfo(item)
 			bindType = Addon:ScanBindType(left:GetText());
 		end
 		
-		if(IsEquippableItem(itemLink) and not willBeUsableArmorType) then
+		if(IsEquippableItem(itemLink)) then
 			if(left:GetText() == itemType and Addon:IsRedText(left)) then
 				if(isUsable and not notUsableReason) then notUsableReason = NOT_USABLE_TYPE end
 				isUsable = false;
@@ -963,7 +953,7 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 				local _, _, _, _, reqLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(link);
 				
 				if(isUsable and itemType == "Armor" and Addon:IsArmorItemSlot(itemEquipLoc)) then
-					if(itemSubType ~="Cosmetic" and not Addon:IsValidArmorTypeNowOrLater(itemSubType)) then
+					if(itemSubType ~="Cosmetic" and not Addon:IsValidClassArmorType(itemSubType)) then
 						SetItemButtonNameFrameVertexColor(merchantButton, 0.5, 0, 0);
 						SetItemButtonSlotVertexColor(merchantButton, 0.5, 0, 0);
 						SetItemButtonTextureVertexColor(itemButton, 0.5, 0, 0);
