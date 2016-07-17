@@ -10,17 +10,18 @@ _G["Vendorer"] = Addon;
 SHARED[1] = Addon;
 
 local CLASS_ARMOR_TYPES = {
-	WARRIOR 	= { "Mail",	"Plate", },
-	PALADIN 	= { "Mail",	"Plate", },
-	DEATHKNIGHT = { "Plate", },
-	HUNTER 		= { "Leather", "Mail", },
-	SHAMAN 		= { "Leather", "Mail", },
-	MONK 		= { "Leather", },
-	DRUID 		= { "Leather", },
-	ROGUE 		= { "Leather", },
-	MAGE 		= { "Cloth", },
-	WARLOCK 	= { "Cloth", },
-	PRIEST 		= { "Cloth", },
+	WARRIOR     = "Plate",
+	PALADIN     = "Plate",
+	DEATHKNIGHT = "Plate",
+	HUNTER      = "Mail",
+	SHAMAN      = "Mail",
+	MONK        = "Leather",
+	DRUID       = "Leather",
+	ROGUE       = "Leather",
+	DEMONHUNTER = "Leather",
+	MAGE        = "Cloth",
+	WARLOCK     = "Cloth",
+	PRIEST      = "Cloth",
 };
 
 local ARMOR_TYPE_LEVEL = {
@@ -338,23 +339,12 @@ local NOT_USABLE_RACE 		= 4;
 local ITEM_CLASSES_PATTERN = gsub(ITEM_CLASSES_ALLOWED, "%%s", "(.+)")
 local ITEM_RACES_PATTERN = gsub(ITEM_RACES_ALLOWED, "%%s", "(.+)")
 
-function Addon:GetClassArmorType(level)
-	local level = level or UnitLevel("player");
-	if(level == 0) then level = UnitLevel("player") end
-	
-	if(level >= 40 and CLASS_ARMOR_TYPES[PLAYER_CLASS][2]) then
-		return CLASS_ARMOR_TYPES[PLAYER_CLASS][2];
-	end
-	
-	return CLASS_ARMOR_TYPES[PLAYER_CLASS][1];
+function Addon:GetClassArmorType()
+	return CLASS_ARMOR_TYPES[PLAYER_CLASS];
 end
 
-function Addon:IsValidClassArmorType(armortype, level)
-	if(not level) then
-		return CLASS_ARMOR_TYPES[PLAYER_CLASS][1] == armortype or CLASS_ARMOR_TYPES[PLAYER_CLASS][2] == armortype;
-	end
-	
-	return Addon:GetClassArmorType(level) == armortype;
+function Addon:IsValidClassArmorType(armortype)
+	return Addon:GetClassArmorType() == armortype;
 end
 
 -- Function to determine if armor type is usable right now or will be later
@@ -514,7 +504,7 @@ function VendorerIgnoreItemsButton_OnEnter(self)
 	local numIgnoredItems = #ignored;
 	if(numIgnoredItems > 0) then
 		GameTooltip:AddLine(" ");
-		GameTooltip:AddLine("|cffffcc00Right-Click |cffffffffWipe the ignore list");
+		GameTooltip:AddLine("|cffffcc00Shift Right-Click |cffffffffWipe the ignore list");
 		GameTooltip:AddLine(" ");
 		GameTooltip:AddLine(string.format("%d Ignored Items", numIgnoredItems));
 		
@@ -552,7 +542,7 @@ end
 function VendorerIgnoreItemsButton_OnClick(self, button)
 	if(button == "LeftButton") then
 		VendorerIgnoreItemsButton_IgnoreItem(self);
-	elseif(button == "RightButton") then
+	elseif(button == "RightButton" and IsShiftKeyDown()) then
 		if(not GetCursorInfo()) then
 			for link, _ in pairs(Addon.db.global.ItemIgnoreList) do
 				StaticPopup_Show("VENDORER_CONFIRM_CLEAR_IGNORE_LIST");
@@ -608,7 +598,7 @@ function VendorerAddItemsButton_OnEnter(self)
 	local numIgnoredItems = #items;
 	if(numIgnoredItems > 0) then
 		GameTooltip:AddLine(" ");
-		GameTooltip:AddLine("|cffffcc00Right-Click |cffffffffWipe the junk sell list");
+		GameTooltip:AddLine("|cffffcc00Shift Right-Click |cffffffffWipe the junk sell list");
 		GameTooltip:AddLine(" ");
 		GameTooltip:AddLine(string.format("%d Junk Items", numIgnoredItems));
 		
@@ -646,7 +636,7 @@ end
 function VendorerAddItemsButton_OnClick(self, button)
 	if(button == "LeftButton") then
 		VendorerAddItemsButton_AddItem(self);
-	elseif(button == "RightButton") then
+	elseif(button == "RightButton" and IsShiftKeyDown()) then
 		if(not GetCursorInfo()) then
 			for link, _ in pairs(Addon.db.global.ItemJunkList) do
 				StaticPopup_Show("VENDORER_CONFIRM_CLEAR_JUNKSELL_LIST");
