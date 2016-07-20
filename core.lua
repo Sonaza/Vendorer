@@ -946,11 +946,37 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 		local itemButton = _G["MerchantItem"..i.."ItemButton"];
 		local merchantButton = _G["MerchantItem"..i];
 		
+		local rarityBorder = _G["VendorerMerchantItem"..i.."Rarity"];
+		if(rarityBorder) then
+			rarityBorder:Hide();
+		end
+		
+		if(not itemButton.rarityBorder) then
+			itemButton.rarityBorder = rarityBorder;
+			
+			itemButton:HookScript("OnEnter", function(self)
+				self.rarityBorder.highlight:Show();
+			end)
+			
+			itemButton:HookScript("OnLeave", function(self)
+				self.rarityBorder.highlight:Hide();
+			end);
+		end
+		
 		if(index <= numMerchantItems) then
 			local link = GetMerchantItemLink(index);
 			if(link) then
 				local _, _, _, _, _, isUsable = GetMerchantItemInfo(index);
-				local _, _, _, _, reqLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(link);
+				local _, _, rarity, _, reqLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(link);
+				
+				if(rarity and rarity >= 1) then
+					local r, g, b = GetItemQualityColor(rarity);
+					local a = 0.9;
+					if(rarity == 1) then a = 0.75 end
+					rarityBorder.border:SetVertexColor(r, g, b, a);
+					rarityBorder.highlight:SetVertexColor(r, g, b);
+					rarityBorder:Show();
+				end
 				
 				if(isUsable and itemType == "Armor" and Addon:IsArmorItemSlot(itemEquipLoc)) then
 					if(itemSubType ~="Cosmetic" and not Addon:IsValidClassArmorType(itemSubType)) then
@@ -963,7 +989,46 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 			end
 		end
 	end
-end)
+end);
+
+hooksecurefunc("MerchantFrame_UpdateBuybackInfo", function()
+	local numBuybackItems = GetNumBuybackItems();
+	local itemButton, buybackButton;
+	local buybackName, buybackTexture, buybackPrice, buybackQuantity, buybackNumAvailable, buybackIsUsable;
+	for i=1, BUYBACK_ITEMS_PER_PAGE do
+		local itemButton = _G["MerchantItem"..i.."ItemButton"];
+		
+		local rarityBorder = _G["VendorerMerchantItem"..i.."Rarity"];
+		if(rarityBorder) then
+			rarityBorder:Hide();
+		end
+		
+		if(not itemButton.rarityBorder) then
+			itemButton.rarityBorder = rarityBorder;
+			
+			itemButton:HookScript("OnEnter", function(self)
+				self.rarityBorder.highlight:Show();
+			end)
+			
+			itemButton:HookScript("OnLeave", function(self)
+				self.rarityBorder.highlight:Hide();
+			end);
+		end
+		
+		local link = GetBuybackItemInfo(i);
+		if(link) then
+			local _, _, rarity = GetItemInfo(link);
+			if(rarity and rarity >= 1) then
+				local r, g, b = GetItemQualityColor(rarity);
+				local a = 0.9;
+				if(rarity == 1) then a = 0.75 end
+				rarityBorder.border:SetVertexColor(r, g, b, a);
+				rarityBorder.highlight:SetVertexColor(r, g, b);
+				rarityBorder:Show();
+			end
+		end
+	end
+end);
 
 function Addon:Announce(str)
 	Addon:AddMessage(str);

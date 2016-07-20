@@ -400,8 +400,6 @@ function VendorerFilterEditBox_OnLeave(self)
 	self.hovering = false;
 end
 
-CreateFrame("GameTooltip", "VendorerHintTooltip", UIParent, "GameTooltipTemplate");
-
 function VendorerFilterTipsButton_OnEnter()
 	VendorerHintTooltip:ClearLines();
 	
@@ -415,7 +413,7 @@ function VendorerFilterTipsButton_OnEnter()
 	VendorerHintTooltip:AddLine("In addition to that you can search by other criteria.");
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("|cffffffffBy Item ID|r");
-	VendorerHintTooltip:AddLine("Prefix a number with letters |cffffffffid|r. For example |cffffffffid|cfff361946948|r.");
+	VendorerHintTooltip:AddLine("Prefix a number with letters |cffffffffid|r. For example |cffffffffid|cfff361946948|r."); 
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("|cffffffffBy Required Level|r");
 	VendorerHintTooltip:AddLine("Prefix a number with the letter |cffffffffr|r. For example |cffffffffr|cfff3619492|r.");
@@ -436,22 +434,10 @@ function VendorerFilterTipsButton_OnEnter()
 	VendorerHintTooltip:AddLine("Another example |cffffffff>=|cfff36194250g|r |cffffffff<=|cfff36194500g|r will find all");
 	VendorerHintTooltip:AddLine("items that cost between 250 and 500 gold.");
 	
-	VendorerHintTooltip:SetBackdrop({
-		bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-		edgeFile = "Interface/AddOns/!Vendorer/FrameBorder",
-		tile = true, tileSize = 16, edgeSize = 16,
-		insets = { left = 4, right = 4, top = 4, bottom = 4 }
-	});
-	VendorerHintTooltip:SetBackdropColor(0, 0, 0, 0.9);
-	VendorerHintTooltip:SetBackdropBorderColor(0, 0, 0, 1);
-	
-	VendorerHintTooltip:SetScale(0.9);
 	VendorerHintTooltip:SetWidth(240);
 	VendorerHintTooltip:Show();
 end
 
 function VendorerFilterTipsButton_OnLeave()
-	-- if(not VendorerFilterEditBox:HasFocus()) then
 	VendorerHintTooltip:Hide();
-	-- end
 end

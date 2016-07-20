@@ -1,7 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
 
-	<Font name="VendorerButtonFontHighlight" font="Interface/AddOns/!Vendorer/DORISPP.TTF" outline="NORMAL" virtual="true">
+	<Font name="VendorerButtonFontHighlight" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
 		<Shadow>
 			<Offset>
 				<AbsDimension x="0" y="-1"/>
@@ -13,7 +13,8 @@
 		</FontHeight>
 		<Color r="1" g="0.8" b="0.3"/>
 	</Font>
-	<Font name="VendorerButtonFont" font="Interface/AddOns/!Vendorer/DORISPP.TTF" outline="NORMAL" virtual="true">
+	
+	<Font name="VendorerButtonFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
 		<Shadow>
 			<Offset>
 				<AbsDimension x="0" y="-1"/>
@@ -25,6 +26,54 @@
 		</FontHeight>
 		<Color r="1" g="1" b="1"/>
 	</Font>
+	
+	<Frame name="VendorerMerchantItemRarityBorderTemplate" virtual="true" enableMouse="false">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="$parent" x="-1" y="1"/>
+			<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" relativeTo="$parent" x="1" y="-1"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentInset" file="Interface\AddOns\!Vendorer\media\Border">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="$parent" x="1" y="-1"/>
+						<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" relativeTo="$parent" x="-1" y="1"/>
+					</Anchors>
+					<Color r="0" g="0" b="0" a="0.5"/>
+				</Texture>
+				<Texture name="$parentShadow" file="Interface\AddOns\!Vendorer\media\Border">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="$parent" x="-2" y="2"/>
+						<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" relativeTo="$parent" x="2" y="-2"/>
+					</Anchors>
+					<Color r="0" g="0" b="0" a="0.9"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture name="$parentBorder" parentKey="border" file="Interface\AddOns\!Vendorer\media\Border" setAllPoints="true">
+					<Color r="1" g="1" b="1"/>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<Texture name="$parentBorderHighlight" parentKey="highlight" file="Interface\AddOns\!Vendorer\media\Border" setAllPoints="true" alphaMode="ADD" hidden="true">
+					<Color r="1" g="1" b="1" a="0.85"/>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Frame>
+	
+	<Frame name="VendorerMerchantItem1Rarity" parent="MerchantItem1ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem2Rarity" parent="MerchantItem2ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem3Rarity" parent="MerchantItem3ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem4Rarity" parent="MerchantItem4ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem5Rarity" parent="MerchantItem5ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem6Rarity" parent="MerchantItem6ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem7Rarity" parent="MerchantItem7ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem8Rarity" parent="MerchantItem8ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem9Rarity" parent="MerchantItem9ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem10Rarity" parent="MerchantItem10ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem11Rarity" parent="MerchantItem11ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem12Rarity" parent="MerchantItem12ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 
 	<Button name="VendorerToggleExtensionFrameButton" parent="MerchantFrame">
 		<Size x="32" y="32"/>
@@ -52,11 +101,30 @@
 		<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
 	</Button>
 	
+	<GameTooltip name="VendorerHintTooltip" parent="UIParent" inherits="GameTooltipTemplate" hidden="true">
+		<Anchor>
+			<Anchor point="CENTER"/>
+		</Anchor>
+		<Scripts>
+			<OnShow>
+				self:SetBackdrop{
+					bgFile = [[Interface\Tooltips\UI-Tooltip-Background]],
+					edgeFile = [[Interface\AddOns\!Vendorer\media\TooltipBorder]],
+					edgeSize = 16,
+					tile = true, tileSize = 16,
+					insets = {left = 4, right = 4, top = 4, bottom = 4}
+				}
+				self:SetBackdropColor(0, 0, 0, 0.9);
+				self:SetBackdropBorderColor(0, 0, 0, 1);
+			</OnShow>
+		</Scripts>
+	</GameTooltip>
+	
 	<GameTooltip name="VendorerTooltip" inherits="GameTooltipTemplate" hidden="true">
 		<Anchor>
 			<Anchor point="CENTER"/>
 		</Anchor>
-		<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\AddOns\!Vendorer\FrameBorder" tile="true">
+		<!-- <Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\AddOns\!Vendorer\media\TooltipBorder" tile="true">
 			<EdgeSize>
 				<AbsValue val="16"/>
 			</EdgeSize>
@@ -66,7 +134,7 @@
 			<BackgroundInsets>
 				<AbsInset left="4" right="4" top="4" bottom="4"/>
 			</BackgroundInsets>
-		</Backdrop>
+		</Backdrop> -->
 		<Scripts>
 			<OnShow>
 				self:SetBackdropColor(0, 0, 0, 0.95);
@@ -83,7 +151,7 @@
 		</Anchors>
 		<Layers>
 			<Layer level="BACKGROUND">
-				<Texture file="Interface/AddOns/!Vendorer/MerchantFrameExtension">
+				<Texture file="Interface/AddOns/!Vendorer/media/MerchantFrameExtension">
 					<!-- <Size x="210" y="441"/> -->
 					<TexCoords left="0" right="0.8203125" top="0" bottom="0.861328125"/>
 				</Texture>
@@ -353,41 +421,6 @@
 		<Scripts>
 			<OnShow>
 				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+3);
-			</OnShow>
-		</Scripts>
-	</Frame>
-	
-	<Frame name="VendorerFilterInfoFrame" parent="MerchantFrame" hidden="true">
-		<Size x="160" y="42"/>
-		<Anchors>
-			<Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT" relativeTo="$parent" x="-10" y="12" />
-		</Anchors>
-		<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\AddOns\!Vendorer\FrameBorder" tile="true">
-			<EdgeSize>
-				<AbsValue val="16"/>
-			</EdgeSize>
-			<TileSize>
-				<AbsValue val="16"/>
-			</TileSize>
-			<BackgroundInsets>
-				<AbsInset left="4" right="4" top="4" bottom="4"/>
-			</BackgroundInsets>
-		</Backdrop>
-		<Layers>
-			<Layer level="OVERLAY">
-				<FontString name="$parentText" inherits="GameFontNormal" justifyH="CENTER" justifyV="BOTTOM" text="Page 1/3  Filtering 3/15">
-					<Size x="160" y="15"/>
-					<Anchors>
-						<Anchor point="BOTTOM" x="0" y="10"/>
-					</Anchors>
-				</FontString>
-			</Layer>
-		</Layers>
-		<Scripts>
-			<OnShow>
-				self:SetFrameLevel(self:GetParent():GetFrameLevel()-2);
-				self:SetBackdropColor(0, 0, 0, 0.95);
-				self:SetBackdropBorderColor(0, 0, 0, 1);
 			</OnShow>
 		</Scripts>
 	</Frame>
