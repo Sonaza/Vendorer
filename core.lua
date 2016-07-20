@@ -989,6 +989,40 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 			end
 		end
 	end
+	
+	-------------------------------
+	
+	local buyBackItemButton = _G["MerchantBuyBackItemItemButton"];
+	local buyBackRarityBorder = _G["VendorerMerchantBuyBackItemRarity"];
+	if(buyBackRarityBorder) then
+		buyBackRarityBorder:Hide();
+		
+		if(not buyBackItemButton.rarityBorder) then
+			buyBackItemButton.rarityBorder = buyBackRarityBorder;
+			
+			buyBackItemButton:HookScript("OnEnter", function(self)
+				self.rarityBorder.highlight:Show();
+			end)
+			
+			buyBackItemButton:HookScript("OnLeave", function(self)
+				self.rarityBorder.highlight:Hide();
+			end);
+		end
+		
+		local buybackitem = GetBuybackItemLink(GetNumBuybackItems());
+		if(buybackitem) then
+			local _, _, rarity, _, reqLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(buybackitem);
+			
+			if(rarity and rarity >= 1) then
+				local r, g, b = GetItemQualityColor(rarity);
+				local a = 0.9;
+				if(rarity == 1) then a = 0.75 end
+				buyBackRarityBorder.border:SetVertexColor(r, g, b, a);
+				buyBackRarityBorder.highlight:SetVertexColor(r, g, b);
+				buyBackRarityBorder:Show();
+			end
+		end
+	end
 end);
 
 hooksecurefunc("MerchantFrame_UpdateBuybackInfo", function()

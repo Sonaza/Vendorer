@@ -74,6 +74,8 @@
 	<Frame name="VendorerMerchantItem10Rarity" parent="MerchantItem10ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 	<Frame name="VendorerMerchantItem11Rarity" parent="MerchantItem11ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 	<Frame name="VendorerMerchantItem12Rarity" parent="MerchantItem12ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	
+	<Frame name="VendorerMerchantBuyBackItemRarity" parent="MerchantBuyBackItemItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 
 	<Button name="VendorerToggleExtensionFrameButton" parent="MerchantFrame">
 		<Size x="32" y="32"/>
