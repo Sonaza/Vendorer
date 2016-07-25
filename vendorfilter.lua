@@ -313,43 +313,21 @@ end
 
 function Addon:ResetAllFilters()
 	Addon.FilterText = "";
-	-- VendorerFilterEditBox:SetText("");
-	-- SearchBoxTemplate_OnTextChanged(VendorerFilterEditBox);
-	
 	FilteredMerchantItems = nil;
 end
 
--- Addon.FilterUpdateTimer = nil;
 function Addon:RefreshFilter()
 	Addon.FilterText = string.trim(string.lower(VendorerFilterEditBox:GetText()));
 	MerchantFrame.page = 1;
 	Addon:UpdateMerchantItems();
-	
-	-- Addon.FilterUpdateTimer = nil;
 end
 
 Addon.NoResultsLength = -1;
 function Vendorer_OnSearchTextChanged(self)
 	SearchBoxTemplate_OnTextChanged(self);
-	-- if(Addon.FilterUpdateTimer) then
-	-- 	Addon.FilterUpdateTimer:Cancel();
-	-- end
 	
 	local filterLength = strlen(VendorerFilterEditBox:GetText());
-	-- if(Addon.NoResultsLength == -1 or filterLength < Addon.NoResultsLength) then
-		-- if(filterLength > 0) then
-		-- 	Addon.FilterUpdateTimer = C_Timer.NewTimer(0.05, Addon.RefreshFilter);
-		-- else
-		Addon:RefreshFilter();
-		-- end
-	-- end
-	
-	-- local numItems = GetMerchantNumItems();
-	-- if(numItems == 0 and Addon.NoResultsLength == -1) then
-	-- 	Addon.NoResultsLength = filterLength
-	-- elseif(numItems > 0 and Addon.NoResultsLength > 0) then
-	-- 	Addon.NoResultsLength = -1;
-	-- end
+	Addon:RefreshFilter();
 end
 
 hooksecurefunc("MerchantFrame_SetFilter", function()
@@ -359,16 +337,14 @@ end);
 hooksecurefunc("MerchantFrame_Update", function()
 	if(MerchantFrame.selectedTab == 1) then
 		MerchantFrame_UpdateMerchantInfo();
-		if(Addon.db.global.MerchantFrameExtended) then
-			Addon:ShowExtensionPanel();
-		end
-		MerchantFrameLootFilter:SetPoint("TOPRIGHT", MerchantFrame, "TOPRIGHT", -10, -28);
-		VendorerToggleExtensionFrameButton:Show();
+		Addon:UpdateExtensionPanel();
+		MerchantFrameLootFilter:SetPoint("TOPRIGHT", MerchantFrame, "TOPRIGHT", -35, -28);
+		VendorerToggleExtensionFrameButtons:Show();
 	else
 		MerchantFrame_UpdateBuybackInfo();
 		Addon:HideExtensionPanel();
 		MerchantFrameLootFilter:SetPoint("TOPRIGHT", MerchantFrame, "TOPRIGHT", 0, -28);
-		VendorerToggleExtensionFrameButton:Hide();
+		VendorerToggleExtensionFrameButtons:Hide();
 	end
 end);
 

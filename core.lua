@@ -123,10 +123,14 @@ local PLAYER_CLASS_READABLE, PLAYER_CLASS = UnitClass("player");
 PLAYER_CLASS_READABLE = string.format("|c%s%s|r", RAID_CLASS_COLORS[PLAYER_CLASS].colorStr, PLAYER_CLASS_READABLE);
 local PLAYER_RACE_READABLE = UnitRace("player");
 
+VENDORER_EXTENSION_NONE     = 1;
+VENDORER_EXTENSION_NARROW   = 2;
+VENDORER_EXTENSION_WIDE     = 3;
+
 function Addon:OnInitialize()
 	local defaults = {
 		global = {
-			MerchantFrameExtended = true,
+			MerchantFrameExtension = VENDORER_EXTENSION_WIDE,
 			AutoSellJunk = false,
 			PaintArmorTypes = true,
 			
@@ -140,6 +144,14 @@ function Addon:OnInitialize()
 	
 	self.db = AceDB:New("VendorerDB", defaults);
 	
+	if(type(self.db.global.MerchantFrameExtended) == "boolean") then
+		if(self.db.global.MerchantFrameExtended) then
+			self.db.global.MerchantFrameExtension = VENDORER_EXTENSION_WIDE;
+		else
+			self.db.global.MerchantFrameExtension = VENDORER_EXTENSION_NONE;
+		end
+		self.db.global.MerchantFrameExtended = nil;
+	end
 end
 
 function Addon:RestoreSavedSettings()
@@ -202,28 +214,54 @@ function Addon:EnhanceMerchantFrame()
 end
 
 function Addon:UpdateExtensionToggleButton()
-	if(Addon.db.global.MerchantFrameExtended) then
-		VendorerToggleExtensionFrameButton:SetNormalTexture("Interface\\Buttons\\UI-SpellbookIcon-PrevPage-Up")
-		VendorerToggleExtensionFrameButton:SetPushedTexture("Interface\\Buttons\\UI-SpellbookIcon-PrevPage-Down")
+	if(Addon.db.global.MerchantFrameExtension == VENDORER_EXTENSION_NONE) then
+		VendorerToggleExtensionFrameButtonContract:Disable();
+	else
+		VendorerToggleExtensionFrameButtonContract:Enable();
+	end
+	
+	if(Addon.db.global.MerchantFrameExtension == VENDORER_EXTENSION_WIDE) then
+		VendorerToggleExtensionFrameButtonExpand:Disable();
+	else
+		VendorerToggleExtensionFrameButtonExpand:Enable();
+	end
+	
+	Addon:UpdateExtensionPanel();
+end
+
+function Addon:UpdateExtensionPanel()
+	if(Addon.db.global.MerchantFrameExtension ~= VENDORER_EXTENSION_NONE) then
 		Addon:ShowExtensionPanel();
 	else
-		VendorerToggleExtensionFrameButton:SetNormalTexture("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up")
-		VendorerToggleExtensionFrameButton:SetPushedTexture("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Down")
 		Addon:HideExtensionPanel();
 	end
 end
 
 function Addon:ShowExtensionPanel()
-	MerchantFrame:SetWidth(834);
-	MERCHANT_ITEMS_PER_PAGE = 20;
+	if(Addon.db.global.MerchantFrameExtension == VENDORER_EXTENSION_WIDE) then
+		MerchantFrame:SetWidth(834);
+		MERCHANT_ITEMS_PER_PAGE = 20;
+		
+		VendorerExtraMerchantItems:Show();
+		
+		VendorerMerchantFrameExtension:Show();
+		VendorerMerchantFrameExtensionNarrow:Hide();
+		VendorerMerchantFrameExtensionWide:Show();
+	else
+		MerchantFrame:SetWidth(500);
+		MERCHANT_ITEMS_PER_PAGE = 10;
+	
+		VendorerExtraMerchantItems:Hide();
+		
+		VendorerMerchantFrameExtension:Show();
+		VendorerMerchantFrameExtensionNarrow:Show();
+		VendorerMerchantFrameExtensionWide:Hide();
+	end
 	
 	if(MerchantFrame.selectedTab == 1) then
 		MerchantFrame_UpdateMerchantInfo();
 	end
 	
-	VendorerExtraMerchantItems:Show();
-	
-	VendorerMerchantFrameExtension:Show();
 	VendorerExtensionFrameItems:Show();
 end
 
@@ -231,18 +269,28 @@ function Addon:HideExtensionPanel()
 	MerchantFrame:SetWidth(336);
 	MERCHANT_ITEMS_PER_PAGE = 10;
 	
+	VendorerExtraMerchantItems:Hide();
+	
 	if(MerchantFrame.selectedTab == 1) then
 		MerchantFrame_UpdateMerchantInfo();
 	end
 	
-	VendorerExtraMerchantItems:Hide();
-	
 	VendorerMerchantFrameExtension:Hide();
+	
 	VendorerExtensionFrameItems:Hide();
 end
 
 function VendorerToggleExtensionFrameButton_OnClick(self, button)
-	Addon.db.global.MerchantFrameExtended = not Addon.db.global.MerchantFrameExtended;
+	local id = self:GetID();
+	if(id == 1) then
+		Addon.db.global.MerchantFrameExtension = Addon.db.global.MerchantFrameExtension - 1;
+	elseif(id == 2) then
+		Addon.db.global.MerchantFrameExtension = Addon.db.global.MerchantFrameExtension + 1;
+	end
+	
+	if(Addon.db.global.MerchantFrameExtension < 1) then Addon.db.global.MerchantFrameExtension = 1; end
+	if(Addon.db.global.MerchantFrameExtension > 3) then Addon.db.global.MerchantFrameExtension = 3; end
+	
 	Addon:UpdateExtensionToggleButton();
 end
 
@@ -961,12 +1009,16 @@ function Addon:MERCHANT_CLOSED()
 end
 
 hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
-	
-	if(Addon.db.global.MerchantFrameExtended) then
+	if(Addon.db.global.MerchantFrameExtension == VENDORER_EXTENSION_WIDE) then
 		MerchantItem11:ClearAllPoints();
 		MerchantItem11:SetPoint("TOPLEFT", MerchantItem2, "TOPRIGHT", 12, 0);
 		MerchantItem11:Show();
 		MerchantItem12:Show();
+	else
+		MerchantItem11:ClearAllPoints();
+		MerchantItem11:SetPoint("TOPLEFT", MerchantItem9, "BOTTOMLEFT", 0, -15);
+		MerchantItem11:Hide();
+		MerchantItem12:Hide();
 	end
 	
 	local numMerchantItems = GetMerchantNumItems();
