@@ -1,3 +1,7 @@
+## 2.1.1
+* Added item rarity coloring to merchant buyback item on the main tab.
+* Fix to item rarity color not appearing if class armor type wasn't toggled on.
+
 ## 2.1.0
 * Added item rarity coloring to merchant frame items.
 

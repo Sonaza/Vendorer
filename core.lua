@@ -937,8 +937,6 @@ function Addon:MERCHANT_CLOSED()
 end
 
 hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
-	if(not Addon.db.global.PaintArmorTypes) then return end
-	
 	local numMerchantItems = GetMerchantNumItems();
 	
 	for i=1, MERCHANT_ITEMS_PER_PAGE, 1 do
