@@ -2,7 +2,7 @@
 Vendorer the NPC merchant improvement addon for World of Warcraft.
 
 ## Description
-Sometimes vendors sell so many items it's impossible to find the items you require. Introducing Vendorer which expands the merchant frame to display 20 items at once and offers several different types of filters to help you quickly browse for what you need.
+Sometimes vendors sell so many items it's impossible to find the items you require. Introducing Vendorer which expands the merchant frame to display up to 20 items at once and offers several different types of filters to help you quickly browse for what you need.
 
 Addon also makes it easier to sell junk items and unusable soulbound loot. Upon closing vendor frame the addon shows money difference if money was gained or lost.
 
@@ -19,7 +19,9 @@ Automatic smart repair feature will make it easy to repair your gear when visiti
 
 ### Note
 
-This addon can and **is very likely to conflict** with other addons that do modifications to merchant frames. Due to this reason, the addon must load first before all the other such addons so that it can do the modifications before the other addons. This will still not guarantee compatibility with other addons.
+This addon can and **is likely to conflict** with other addons that do modifications to merchant frames. Due to this reason, the addon must load first before all the other such addons so that it can do the modifications before the other addons. This will still not guarantee compatibility with other addons.
+
+Still if you do not use any other such addons or the modifications by other addons are minor the risk of conflict is non-existent or small.
 
 ## Dependencies
 Vendorer uses Ace3 which is included in the /libs directory.

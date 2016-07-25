@@ -1,3 +1,6 @@
+## 2.2.1
+* Restored the old "narrow" 10 items per page width. You can now choose between WoW default, extended narrow and extended wide using the arrows in the top right corner.
+
 ## 2.2.0
 * Expanded the merchant frame size to 20 items per page. Look at all of this space.
 * Added item rarity coloring to merchant buyback item on the main tab.

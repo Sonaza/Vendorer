@@ -140,12 +140,9 @@
 	<Frame name="VendorerMerchantItem20Rarity" parent="MerchantItem20ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 	
 	<Frame name="VendorerMerchantBuyBackItemRarity" parent="MerchantBuyBackItemItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
-
-	<Button name="VendorerToggleExtensionFrameButton" parent="MerchantFrame">
+	
+	<Button name="VendorerToggleExtensionFrameButtonTemplate" virtual="true">
 		<Size x="32" y="32"/>
-		<Anchors>
-			<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="MerchantFrameLootFilterButton" x="2" y="-1"/>
-		</Anchors>
 		<Layers>
 			<Layer level="BACKGROUND">
 				<Texture file="Interface\Buttons\UI-PageButton-Background">
@@ -162,10 +159,35 @@
 				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+2);
 			</OnShow>
 		</Scripts>
-		<NormalTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Up"/>
-		<PushedTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Down"/>
-		<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
 	</Button>
+	
+	<Frame name="VendorerToggleExtensionFrameButtons" parent="MerchantFrame">
+		<Size x="60" y="32"/>
+		<Anchors>
+			<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="MerchantFrameLootFilterButton" x="2" y="-1"/>
+		</Anchors>
+		<Frames>
+			<Button name="VendorerToggleExtensionFrameButtonContract" id="1" inherits="VendorerToggleExtensionFrameButtonTemplate">
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parent" x="0" y="0"/>
+				</Anchors>
+				<NormalTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Up"/>
+				<PushedTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Down"/>
+				<DisabledTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Disabled"/>
+				<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
+			</Button>
+			
+			<Button name="VendorerToggleExtensionFrameButtonExpand" id="2" inherits="VendorerToggleExtensionFrameButtonTemplate">
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="VendorerToggleExtensionFrameButtonContract" x="-6" y="0"/>
+				</Anchors>
+				<NormalTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Up"/>
+				<PushedTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Down"/>
+				<DisabledTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Disabled"/>
+				<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
+			</Button>
+		</Frames>
+	</Frame>
 	
 	<GameTooltip name="VendorerHintTooltip" parent="UIParent" inherits="GameTooltipTemplate" hidden="true">
 		<Anchor>
@@ -199,21 +221,40 @@
 		</Scripts>
 	</GameTooltip>
 	
-	<Frame name="VendorerMerchantFrameExtension" parent="MerchantFrame">
+	<Frame name="VendorerMerchantFrameExtension" parent="MerchantFrame" enableMouse="false">
 		<Size x="638" y="441"/>
 		<Anchors>
-			<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="-10" y="-79"/>
+			<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" relativeTo="$parent" x="-10" y="-79"/>
 		</Anchors>
-		<Layers>
-			<Layer level="BACKGROUND">
-				<Texture file="Interface/AddOns/!Vendorer/media/MerchantFrameExtension">
-					<TexCoords left="0" right="0.6162109375" top="0" bottom="0.861328125"/>
-				</Texture>
-			</Layer>
-		</Layers>
+		<Frames>
+			<Frame name="$parentNarrow">
+				<Size x="210" y="441"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" relativeTo="$parent" x="0" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture file="Interface/AddOns/!Vendorer/media/MerchantFrameExtensionNarrow">
+							<TexCoords left="0" right="0.8203125" top="0" bottom="0.861328125"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
+			<Frame name="$parentWide">
+				<Size x="638" y="441"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" relativeTo="$parent" x="0" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture file="Interface/AddOns/!Vendorer/media/MerchantFrameExtensionWide">
+							<TexCoords left="0" right="0.6162109375" top="0" bottom="0.861328125"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
 		<Scripts>
-			<OnLoad>
-			</OnLoad>
 			<OnShow>
 				self:SetScale(0.8);
 				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+2);
