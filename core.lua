@@ -127,10 +127,12 @@ VENDORER_EXTENSION_NONE     = 1;
 VENDORER_EXTENSION_NARROW   = 2;
 VENDORER_EXTENSION_WIDE     = 3;
 
+VENDORER_EXPANSION_TUTORIAL_TEXT = "You can now switch between default, narrow and wide frame.";
+
 function Addon:OnInitialize()
 	local defaults = {
 		global = {
-			MerchantFrameExtension = VENDORER_EXTENSION_WIDE,
+			MerchantFrameExtension = VENDORER_EXTENSION_NARROW,
 			AutoSellJunk = false,
 			PaintArmorTypes = true,
 			
@@ -139,6 +141,8 @@ function Addon:OnInitialize()
 			
 			ItemIgnoreList = {},
 			ItemJunkList = {},
+			
+			ExpandTutorialShown = false,
 		},
 	};
 	
@@ -146,7 +150,7 @@ function Addon:OnInitialize()
 	
 	if(type(self.db.global.MerchantFrameExtended) == "boolean") then
 		if(self.db.global.MerchantFrameExtended) then
-			self.db.global.MerchantFrameExtension = VENDORER_EXTENSION_WIDE;
+			self.db.global.MerchantFrameExtension = VENDORER_EXTENSION_NARROW;
 		else
 			self.db.global.MerchantFrameExtension = VENDORER_EXTENSION_NONE;
 		end
@@ -180,6 +184,14 @@ function Addon:OnEnable()
 		VendorerIgnoreItemsButtonHighlight:Show();
 		VendorerAddItemsButtonHighlight:Show();
 	end);
+	
+	VendorerExtensionTutorialFrame:HookScript("OnHide", function()
+		Addon.db.global.ExpandTutorialShown = true;
+	end);
+	
+	if(not Addon.db.global.ExpandTutorialShown) then
+		VendorerExtensionTutorialFrame:Show();
+	end
 end
 
 function Addon:MERCHANT_UPDATE()

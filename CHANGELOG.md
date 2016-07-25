@@ -1,3 +1,7 @@
+## 2.2.2
+* Made narrow frame the default again.
+* Added notification about ability to switch frame width.
+
 ## 2.2.1
 * Restored the old "narrow" 10 items per page width. You can now choose between WoW default, extended narrow and extended wide using the arrows in the top right corner.
 
