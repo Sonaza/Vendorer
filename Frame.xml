@@ -27,6 +27,12 @@
 		<Color r="1" g="1" b="1"/>
 	</Font>
 	
+	<Font name="VendorerCheckButtonFont" virtual="true" inherits="VendorerButtonFont">
+		<FontHeight>
+			<AbsValue val="9"/>
+		</FontHeight>
+	</Font>
+	
 	<Frame name="VendorerMerchantItemRarityBorderTemplate" virtual="true" enableMouse="false">
 		<Anchors>
 			<Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="$parent" x="-1" y="1"/>
@@ -62,6 +68,55 @@
 		</Layers>
 	</Frame>
 	
+	<Frame name="VendorerExtraMerchantItems" parent="MerchantFrame">
+		<Size x="320" y="240"/>
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MerchantItem11" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+		</Anchors>
+		<Frames>
+			<Frame name="MerchantItem13" inherits="MerchantItemTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="0" y="0"/>
+				</Anchors>
+			</Frame>
+			<Frame name="MerchantItem14" inherits="MerchantItemTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="MerchantItem13" relativePoint="TOPRIGHT" x="12" y="0"/>
+				</Anchors>
+			</Frame>
+			<Frame name="MerchantItem15" inherits="MerchantItemTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="MerchantItem13" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+				</Anchors>
+			</Frame>
+			<Frame name="MerchantItem16" inherits="MerchantItemTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="MerchantItem15" relativePoint="TOPRIGHT" x="12" y="0"/>
+				</Anchors>
+			</Frame>
+			<Frame name="MerchantItem17" inherits="MerchantItemTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="MerchantItem15" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+				</Anchors>
+			</Frame>
+			<Frame name="MerchantItem18" inherits="MerchantItemTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="MerchantItem17" relativePoint="TOPRIGHT" x="12" y="0"/>
+				</Anchors>
+			</Frame>
+			<Frame name="MerchantItem19" inherits="MerchantItemTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="MerchantItem17" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+				</Anchors>
+			</Frame>
+			<Frame name="MerchantItem20" inherits="MerchantItemTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="MerchantItem19" relativePoint="TOPRIGHT" x="12" y="0"/>
+				</Anchors>
+			</Frame>
+		</Frames>
+	</Frame>
+		
 	<Frame name="VendorerMerchantItem1Rarity" parent="MerchantItem1ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 	<Frame name="VendorerMerchantItem2Rarity" parent="MerchantItem2ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 	<Frame name="VendorerMerchantItem3Rarity" parent="MerchantItem3ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
@@ -74,6 +129,15 @@
 	<Frame name="VendorerMerchantItem10Rarity" parent="MerchantItem10ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 	<Frame name="VendorerMerchantItem11Rarity" parent="MerchantItem11ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 	<Frame name="VendorerMerchantItem12Rarity" parent="MerchantItem12ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+		
+	<Frame name="VendorerMerchantItem13Rarity" parent="MerchantItem13ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem14Rarity" parent="MerchantItem14ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem15Rarity" parent="MerchantItem15ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem16Rarity" parent="MerchantItem16ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem17Rarity" parent="MerchantItem17ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem18Rarity" parent="MerchantItem18ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem19Rarity" parent="MerchantItem19ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
+	<Frame name="VendorerMerchantItem20Rarity" parent="MerchantItem20ItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 	
 	<Frame name="VendorerMerchantBuyBackItemRarity" parent="MerchantBuyBackItemItemButton" inherits="VendorerMerchantItemRarityBorderTemplate"/>
 
@@ -126,17 +190,6 @@
 		<Anchor>
 			<Anchor point="CENTER"/>
 		</Anchor>
-		<!-- <Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\AddOns\!Vendorer\media\TooltipBorder" tile="true">
-			<EdgeSize>
-				<AbsValue val="16"/>
-			</EdgeSize>
-			<TileSize>
-				<AbsValue val="16"/>
-			</TileSize>
-			<BackgroundInsets>
-				<AbsInset left="4" right="4" top="4" bottom="4"/>
-			</BackgroundInsets>
-		</Backdrop> -->
 		<Scripts>
 			<OnShow>
 				self:SetBackdropColor(0, 0, 0, 0.95);
@@ -147,15 +200,14 @@
 	</GameTooltip>
 	
 	<Frame name="VendorerMerchantFrameExtension" parent="MerchantFrame">
-		<Size x="210" y="441"/>
+		<Size x="638" y="441"/>
 		<Anchors>
 			<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="-10" y="-79"/>
 		</Anchors>
 		<Layers>
 			<Layer level="BACKGROUND">
 				<Texture file="Interface/AddOns/!Vendorer/media/MerchantFrameExtension">
-					<!-- <Size x="210" y="441"/> -->
-					<TexCoords left="0" right="0.8203125" top="0" bottom="0.861328125"/>
+					<TexCoords left="0" right="0.6162109375" top="0" bottom="0.861328125"/>
 				</Texture>
 			</Layer>
 		</Layers>
@@ -163,7 +215,6 @@
 			<OnLoad>
 			</OnLoad>
 			<OnShow>
-				-- self:SetScale(self:GetParent():GetEffectiveScale());
 				self:SetScale(0.8);
 				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+2);
 			</OnShow>
@@ -189,13 +240,6 @@
 		<Anchors>
 			<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" relativeTo="VendorerMerchantFrameExtension" x="0" y="0"/>
 		</Anchors>
-		<!-- <Layers>
-			<Layer level="BACKGROUND">
-				<Texture setAllPoints="true">
-					<Color r="1" g="0" b="1" a="0.5"/>
-				</Texture>
-			</Layer>
-		</Layers> -->
 		<Frames>
 			<EditBox name="VendorerFilterEditBox" inherits="SearchBoxTemplate" letters="60">
 				<Size x="140" y="20"/>
@@ -293,14 +337,17 @@
 				</Scripts>
 			</CheckButton>
 			
-			<CheckButton name="VendorerArmorPaintRedButton" inherits="VendorerCheckButtonTemplate" text="Class Armor Type">
+			<CheckButton name="VendorerArmorPaintRedButton" inherits="VendorerCheckButtonTemplate" text="Highlight Armor">
 				<Anchors>
 					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="$parent" x="6" y="85"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
 						VendorerCheckButtonTemplate_OnLoad(self);
-						self.tooltip = {"Highlight Class Armor Types", "|cffffffffPaints armor types not used by your class red."};
+						self.tooltip = {
+							"Highlight Class Armor Types",
+							"|cffffffffPaints armor types not used by your current class red."
+						};
 					</OnLoad>
 					<OnClick function="VendorerArmorPaintRedButton_OnClick"/>
 				</Scripts>
