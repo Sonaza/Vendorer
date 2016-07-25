@@ -2,7 +2,7 @@
 Vendorer the NPC merchant improvement addon for World of Warcraft.
 
 ## Description
-Sometimes vendors sell so many items it's impossible to find the items you require. Introducing Vendorer which offers several different types of filters to help you quickly browse for what you need.
+Sometimes vendors sell so many items it's impossible to find the items you require. Introducing Vendorer which expands the merchant frame to display 20 items at once and offers several different types of filters to help you quickly browse for what you need.
 
 Addon also makes it easier to sell junk items and unusable soulbound loot. Upon closing vendor frame the addon shows money difference if money was gained or lost.
 
