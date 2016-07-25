@@ -214,7 +214,6 @@ function Addon:UpdateExtensionToggleButton()
 end
 
 function Addon:ShowExtensionPanel()
-	-- MerchantFrame:SetWidth(500);
 	MerchantFrame:SetWidth(834);
 	MERCHANT_ITEMS_PER_PAGE = 20;
 	
