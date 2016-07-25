@@ -5,7 +5,6 @@ local _G = getfenv(0);
 local LibStub = LibStub;
 local Addon = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0");
 local AceDB = LibStub("AceDB-3.0");
-_G[ADDON_NAME] = Addon;
 _G["Vendorer"] = Addon;
 SHARED[1] = Addon;
 
@@ -155,6 +154,7 @@ end
 function Addon:OnEnable()
 	Addon:RegisterEvent("MERCHANT_SHOW");
 	Addon:RegisterEvent("MERCHANT_CLOSED");
+	Addon:RegisterEvent("MERCHANT_UPDATE");
 	Addon:RegisterEvent("CURSOR_UPDATE");
 	Addon:RegisterEvent("UPDATE_INVENTORY_DURABILITY");
 	
@@ -168,6 +168,12 @@ function Addon:OnEnable()
 		VendorerIgnoreItemsButtonHighlight:Show();
 		VendorerAddItemsButtonHighlight:Show();
 	end);
+end
+
+function Addon:MERCHANT_UPDATE()
+	if(MerchantFrame.selectedTab == 1) then
+		Addon:UpdateMerchantItems();
+	end
 end
 
 function Addon:CURSOR_UPDATE()
@@ -208,13 +214,30 @@ function Addon:UpdateExtensionToggleButton()
 end
 
 function Addon:ShowExtensionPanel()
-	MerchantFrame:SetWidth(500);
+	-- MerchantFrame:SetWidth(500);
+	MerchantFrame:SetWidth(834);
+	MERCHANT_ITEMS_PER_PAGE = 20;
+	
+	if(MerchantFrame.selectedTab == 1) then
+		MerchantFrame_UpdateMerchantInfo();
+	end
+	
+	VendorerExtraMerchantItems:Show();
+	
 	VendorerMerchantFrameExtension:Show();
 	VendorerExtensionFrameItems:Show();
 end
 
 function Addon:HideExtensionPanel()
 	MerchantFrame:SetWidth(336);
+	MERCHANT_ITEMS_PER_PAGE = 10;
+	
+	if(MerchantFrame.selectedTab == 1) then
+		MerchantFrame_UpdateMerchantInfo();
+	end
+	
+	VendorerExtraMerchantItems:Hide();
+	
 	VendorerMerchantFrameExtension:Hide();
 	VendorerExtensionFrameItems:Hide();
 end
@@ -228,7 +251,12 @@ function VendorerCheckButtonTemplate_OnLoad(self)
 	local text = _G[self:GetName() .. "Text"];
 	if(text) then
 		text:SetText(self:GetText());
-		text:SetFontObject("VendorerButtonFont");
+		
+		if(self == VendorerArmorPaintRedButton) then
+			text:SetText("Highlight " .. Addon:GetClassArmorType());
+		end
+		
+		text:SetFontObject("VendorerCheckButtonFont");
 	end
 end
 
@@ -602,7 +630,7 @@ function VendorerAddItemsButton_OnEnter(self)
 		end
 	end
 	
-	self.text:SetFontObject("VendorerButtonFontHighlight");
+	self.text:SetFontObject("VendorerButtonFont");
 	
 	GameTooltip:Show();
 	
@@ -821,9 +849,6 @@ end
 
 function VendorerAutoRepairButton_OnClick(self)
 	Addon.db.global.AutoRepair = self:GetChecked();
-	-- if(Addon.db.global.AutoRepair) then
-	-- 	Addon:DoAutoRepair();
-	-- end
 end
 
 function VendorerAutoSmartRepairButton_OnClick(self)
@@ -937,6 +962,14 @@ function Addon:MERCHANT_CLOSED()
 end
 
 hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
+	
+	if(Addon.db.global.MerchantFrameExtended) then
+		MerchantItem11:ClearAllPoints();
+		MerchantItem11:SetPoint("TOPLEFT", MerchantItem2, "TOPRIGHT", 12, 0);
+		MerchantItem11:Show();
+		MerchantItem12:Show();
+	end
+	
 	local numMerchantItems = GetMerchantNumItems();
 	
 	for i=1, MERCHANT_ITEMS_PER_PAGE, 1 do
@@ -967,7 +1000,7 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 				local _, _, _, _, _, isUsable = GetMerchantItemInfo(index);
 				local _, _, rarity, _, reqLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(link);
 				
-				if(rarity and rarity >= 1) then
+				if(rarityBorder and rarity and rarity >= 1) then
 					local r, g, b = GetItemQualityColor(rarity);
 					local a = 0.9;
 					if(rarity == 1) then a = 0.75 end
@@ -1024,6 +1057,9 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 end);
 
 hooksecurefunc("MerchantFrame_UpdateBuybackInfo", function()
+	MerchantItem11:ClearAllPoints();
+	MerchantItem11:SetPoint("TOPLEFT", MerchantItem9, "BOTTOMLEFT", 0, -15);
+	
 	local numBuybackItems = GetNumBuybackItems();
 	local itemButton, buybackButton;
 	local buybackName, buybackTexture, buybackPrice, buybackQuantity, buybackNumAvailable, buybackIsUsable;

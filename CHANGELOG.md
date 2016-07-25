@@ -1,6 +1,8 @@
-## 2.1.1
+## 2.2.0
+* Expanded the merchant frame size to 20 items per page. Look at all of this space.
 * Added item rarity coloring to merchant buyback item on the main tab.
-* Fix to item rarity color not appearing if class armor type wasn't toggled on.
+* Fixed item rarity color not appearing if class armor type wasn't toggled on.
+* Fixed attempting guild repair on characters that aren't in a guild.
 
 ## 2.1.0
 * Added item rarity coloring to merchant frame items.

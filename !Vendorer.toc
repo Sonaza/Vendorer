@@ -2,7 +2,7 @@
 ## Title: Vendorer
 ## Notes: Miscellaneous vendor stuff
 ## Author: Sonaza
-## Version: 2.1.0
+## Version: 2.2.0
 ## OptionalDeps: Ace3
 ## SavedVariables: VendorerDB
 

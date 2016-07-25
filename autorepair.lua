@@ -7,6 +7,8 @@ function Addon:GetGuildAllowance(triggeredByUser)
 		return 0;
 	end
 	
+	if(not GetGuildInfo()) then return 0 end
+	
 	local amount = GetGuildBankWithdrawMoney();
 	-- local guildBankMoney = GetGuildBankMoney();
 	-- if(amount == -1) then
