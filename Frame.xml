@@ -176,7 +176,6 @@
 				<DisabledTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Disabled"/>
 				<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
 			</Button>
-			
 			<Button name="VendorerToggleExtensionFrameButtonExpand" id="2" inherits="VendorerToggleExtensionFrameButtonTemplate">
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="VendorerToggleExtensionFrameButtonContract" x="-6" y="0"/>
@@ -187,6 +186,15 @@
 				<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
 			</Button>
 		</Frames>
+	</Frame>
+	
+	<Frame name="VendorerExtensionTutorialFrame" inherits="MicroButtonAlertTemplate" parent="VendorerToggleExtensionFrameButtons">
+		<KeyValues>
+			<KeyValue key="label" value="VENDORER_EXPANSION_TUTORIAL_TEXT" type="global"/>
+		</KeyValues>
+		<Anchors>
+			<Anchor point="BOTTOM" relativeKey="$parent" relativePoint="TOP" x="0" y="8"/>
+		</Anchors>
 	</Frame>
 	
 	<GameTooltip name="VendorerHintTooltip" parent="UIParent" inherits="GameTooltipTemplate" hidden="true">
