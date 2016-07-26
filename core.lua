@@ -1,33 +1,44 @@
-local ADDON_NAME, SHARED = ...;
+------------------------------------------------------------
+-- Vendorer by Sonaza
+-- All rights reserved
+-- http://sonaza.com
+------------------------------------------------------------
 
-local _G = getfenv(0);
-
-local LibStub = LibStub;
-local Addon = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0");
-local AceDB = LibStub("AceDB-3.0");
+local ADDON_NAME = ...;
+local Addon = LibStub("AceAddon-3.0"):NewAddon(select(2, ...), ADDON_NAME, "AceEvent-3.0");
 _G["Vendorer"] = Addon;
-SHARED[1] = Addon;
+
+local AceDB = LibStub("AceDB-3.0");
+local _;
+
+local LOCALIZED_CLOTH   = GetItemSubClassInfo(4, 1);
+local LOCALIZED_LEATHER = GetItemSubClassInfo(4, 2);
+local LOCALIZED_MAIL    = GetItemSubClassInfo(4, 3);
+local LOCALIZED_PLATE   = GetItemSubClassInfo(4, 4);
+
+local LOCALIZED_ARMOR    = GetItemClassInfo(4);
+local LOCALIZED_COSMETIC = GetItemSubClassInfo(4, 5);
 
 local CLASS_ARMOR_TYPES = {
-	WARRIOR     = "Plate",
-	PALADIN     = "Plate",
-	DEATHKNIGHT = "Plate",
-	HUNTER      = "Mail",
-	SHAMAN      = "Mail",
-	MONK        = "Leather",
-	DRUID       = "Leather",
-	ROGUE       = "Leather",
-	DEMONHUNTER = "Leather",
-	MAGE        = "Cloth",
-	WARLOCK     = "Cloth",
-	PRIEST      = "Cloth",
+	WARRIOR     = LOCALIZED_PLATE,
+	PALADIN     = LOCALIZED_PLATE,
+	DEATHKNIGHT = LOCALIZED_PLATE,
+	HUNTER      = LOCALIZED_MAIL,
+	SHAMAN      = LOCALIZED_MAIL,
+	MONK        = LOCALIZED_LEATHER,
+	DRUID       = LOCALIZED_LEATHER,
+	ROGUE       = LOCALIZED_LEATHER,
+	DEMONHUNTER = LOCALIZED_LEATHER,
+	MAGE        = LOCALIZED_PLATE,
+	WARLOCK     = LOCALIZED_PLATE,
+	PRIEST      = LOCALIZED_PLATE,
 };
 
 local ARMOR_TYPE_LEVEL = {
-	["Cloth"]	= 1,
-	["Leather"]	= 2,
-	["Mail"]	= 3,
-	["Plate"]	= 4,
+	[LOCALIZED_CLOTH]   = 1,
+	[LOCALIZED_LEATHER] = 2,
+	[LOCALIZED_MAIL]    = 3,
+	[LOCALIZED_PLATE]   = 4,
 };
 
 local ARMOR_SLOTS = {
@@ -68,6 +79,22 @@ local STAT_SLOTS = {
 	["INVTYPE_WRIST"]			= true,
 };
 
+local DEFAULT_IGNORE_LIST_ITEMS = {
+	[33820]     = true, -- Weather-Beaten Fishing Hat
+	[2901]      = true, -- Mining Pick
+	[44731]     = true, -- Bouquet of Ebon Roses
+	[19970]     = true, -- Arcanite Fishing Pole
+	[116913]    = true, -- Peon's Mining Pick
+	[116916]    = true, -- Gorepetal's Gentle Grasp
+	[84661]     = true, -- Dragon Fishing Pole
+	[103678]    = true, -- Time-Lost Artifact
+	[86566]     = true, -- Forager's Gloves
+	[63207]     = true, -- Wrap of Unity
+	[63353]     = true, -- Shroud of Cooperation
+	[63206]     = true, -- Wrap of Unity
+	[65274]     = true, -- Cloak of Coordination
+};
+
 StaticPopupDialogs["VENDORER_CONFIRM_SELL_UNUSABLES"] = {
 	text = "Are you sure you want to sell unusable items? You can still buyback them after.",
 	button1 = YES,
@@ -85,8 +112,8 @@ StaticPopupDialogs["VENDORER_CONFIRM_CLEAR_IGNORE_LIST"] = {
 	button1 = YES,
 	button2 = NO,
 	OnAccept = function(self)
-		Addon.db.global.ItemIgnoreList = {};
-		Addon:AddMessage("Ignore list wiped.");
+		Addon.db.global.ItemIgnoreList = DEFAULT_IGNORE_LIST_ITEMS;
+		Addon:AddMessage("Ignore list wiped (restored to defaults).");
 	end,
 	timeout = 0,
 	whileDead = 1,
@@ -139,7 +166,7 @@ function Addon:OnInitialize()
 			AutoRepair = false,
 			SmartAutoRepair = true,
 			
-			ItemIgnoreList = {},
+			ItemIgnoreList = DEFAULT_IGNORE_LIST_ITEMS,
 			ItemJunkList = {},
 			
 			ExpandTutorialShown = false,
@@ -249,8 +276,21 @@ function Addon:UpdateExtensionPanel()
 	end
 end
 
+function Addon:GetCurrentExtension()
+	local extension = Addon.db.global.MerchantFrameExtension;
+	local numItems = Addon:GetUnfilteredMerchantNumItems();
+	
+	if(numItems <= 10 and extension == VENDORER_EXTENSION_WIDE) then
+		extension = VENDORER_EXTENSION_NARROW;
+	end
+	
+	return extension;
+end
+
 function Addon:ShowExtensionPanel()
-	if(Addon.db.global.MerchantFrameExtension == VENDORER_EXTENSION_WIDE) then
+	local extension = Addon:GetCurrentExtension();
+	
+	if(extension == VENDORER_EXTENSION_WIDE) then
 		MerchantFrame:SetWidth(834);
 		MERCHANT_ITEMS_PER_PAGE = 20;
 		
@@ -259,7 +299,7 @@ function Addon:ShowExtensionPanel()
 		VendorerMerchantFrameExtension:Show();
 		VendorerMerchantFrameExtensionNarrow:Hide();
 		VendorerMerchantFrameExtensionWide:Show();
-	else
+	elseif(extension == VENDORER_EXTENSION_NARROW) then
 		MerchantFrame:SetWidth(500);
 		MERCHANT_ITEMS_PER_PAGE = 10;
 	
@@ -1021,7 +1061,8 @@ function Addon:MERCHANT_CLOSED()
 end
 
 hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
-	if(Addon.db.global.MerchantFrameExtension == VENDORER_EXTENSION_WIDE) then
+	local extension = Addon:GetCurrentExtension();
+	if(extension == VENDORER_EXTENSION_WIDE) then
 		MerchantItem11:ClearAllPoints();
 		MerchantItem11:SetPoint("TOPLEFT", MerchantItem2, "TOPRIGHT", 12, 0);
 		MerchantItem11:Show();
@@ -1072,12 +1113,14 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 					rarityBorder:Show();
 				end
 				
-				if(isUsable and itemType == "Armor" and Addon:IsArmorItemSlot(itemEquipLoc)) then
-					if(itemSubType ~="Cosmetic" and not Addon:IsValidClassArmorType(itemSubType)) then
-						SetItemButtonNameFrameVertexColor(merchantButton, 0.5, 0, 0);
-						SetItemButtonSlotVertexColor(merchantButton, 0.5, 0, 0);
-						SetItemButtonTextureVertexColor(itemButton, 0.5, 0, 0);
-						SetItemButtonNormalTextureVertexColor(itemButton, 0.5, 0, 0);
+				if(Addon.db.global.PaintArmorTypes) then
+					if(isUsable and itemType == LOCALIZED_ARMOR and Addon:IsArmorItemSlot(itemEquipLoc)) then
+						if(itemSubType ~= LOCALIZED_COSMETIC and not Addon:IsValidClassArmorType(itemSubType)) then
+							SetItemButtonNameFrameVertexColor(merchantButton, 0.5, 0, 0);
+							SetItemButtonSlotVertexColor(merchantButton, 0.5, 0, 0);
+							SetItemButtonTextureVertexColor(itemButton, 0.5, 0, 0);
+							SetItemButtonNormalTextureVertexColor(itemButton, 0.5, 0, 0);
+						end
 					end
 				end
 			end

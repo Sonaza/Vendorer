@@ -1,3 +1,9 @@
+## 2.2.3
+* Added some items with passive or otherwise useful bonuses to the default ignore list.
+* If using the wide frame the merchant window will now automatically temporarily collapse to the narrow width if a vendor has only one page's worth of goods. 
+* Improved compability with other localization languages than English.
+* Fixed error causing class armor highlight to be permanently enabled.
+
 ## 2.2.2
 * Made narrow frame the default again.
 * Added notification about ability to switch frame width.
