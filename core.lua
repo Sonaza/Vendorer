@@ -139,7 +139,21 @@ function Addon:OnInitialize()
 			AutoRepair = false,
 			SmartAutoRepair = true,
 			
-			ItemIgnoreList = {},
+			ItemIgnoreList = {
+				[33820]     = true, -- Weather-Beaten Fishing Hat
+				[2901]      = true, -- Mining Pick
+				[44731]     = true, -- Bouquet of Ebon Roses
+				[19970]     = true, -- Arcanite Fishing Pole
+				[116913]    = true, -- Peon's Mining Pick
+				[116916]    = true, -- Gorepetal's Gentle Grasp
+				[84661]     = true, -- Dragon Fishing Pole
+				[103678]    = true, -- Time-Lost Artifact
+				[86566]     = true, -- Forager's Gloves
+				[63207]     = true, -- Wrap of Unity
+				[63353]     = true, -- Shroud of Cooperation
+				[63206]     = true, -- Wrap of Unity
+				[65274]     = true, -- Cloak of Coordination
+			},
 			ItemJunkList = {},
 			
 			ExpandTutorialShown = false,

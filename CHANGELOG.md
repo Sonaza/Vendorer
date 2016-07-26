@@ -1,3 +1,6 @@
+## 2.2.3
+* Added some items with passive or otherwise useful bonuses to the default ignore list.
+
 ## 2.2.2
 * Made narrow frame the default again.
 * Added notification about ability to switch frame width.
