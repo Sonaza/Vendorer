@@ -1,6 +1,11 @@
-local ADDON_NAME, SHARED = ...;
+------------------------------------------------------------
+-- Vendorer by Sonaza
+-- All rights reserved
+-- http://sonaza.com
+------------------------------------------------------------
+
+local ADDON_NAME, Addon = ...;
 local _;
-local Addon = unpack(SHARED);
 
 local FilteredMerchantItems = nil;
 

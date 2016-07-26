@@ -1,12 +1,15 @@
-local ADDON_NAME, SHARED = ...;
+------------------------------------------------------------
+-- Vendorer by Sonaza
+-- All rights reserved
+-- http://sonaza.com
+------------------------------------------------------------
 
-local _G = getfenv(0);
-
-local LibStub = LibStub;
-local Addon = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceEvent-3.0");
-local AceDB = LibStub("AceDB-3.0");
+local ADDON_NAME = ...;
+local Addon = LibStub("AceAddon-3.0"):NewAddon(select(2, ...), ADDON_NAME, "AceEvent-3.0");
 _G["Vendorer"] = Addon;
-SHARED[1] = Addon;
+
+local AceDB = LibStub("AceDB-3.0");
+local _;
 
 local LOCALIZED_CLOTH   = GetItemSubClassInfo(4, 1);
 local LOCALIZED_LEATHER = GetItemSubClassInfo(4, 2);
