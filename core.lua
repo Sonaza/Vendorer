@@ -13,6 +13,9 @@ local LOCALIZED_LEATHER = GetItemSubClassInfo(4, 2);
 local LOCALIZED_MAIL    = GetItemSubClassInfo(4, 3);
 local LOCALIZED_PLATE   = GetItemSubClassInfo(4, 4);
 
+local LOCALIZED_ARMOR    = GetItemClassInfo(4);
+local LOCALIZED_COSMETIC = GetItemSubClassInfo(4, 5);
+
 local CLASS_ARMOR_TYPES = {
 	WARRIOR     = LOCALIZED_PLATE,
 	PALADIN     = LOCALIZED_PLATE,
@@ -1106,8 +1109,8 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 				end
 				
 				if(Addon.db.global.PaintArmorTypes) then
-					if(isUsable and itemType == GetItemClassInfo(4) and Addon:IsArmorItemSlot(itemEquipLoc)) then
-						if(itemSubType ~= GetItemSubClassInfo(4, 5) and not Addon:IsValidClassArmorType(itemSubType)) then
+					if(isUsable and itemType == LOCALIZED_ARMOR and Addon:IsArmorItemSlot(itemEquipLoc)) then
+						if(itemSubType ~= LOCALIZED_COSMETIC and not Addon:IsValidClassArmorType(itemSubType)) then
 							SetItemButtonNameFrameVertexColor(merchantButton, 0.5, 0, 0);
 							SetItemButtonSlotVertexColor(merchantButton, 0.5, 0, 0);
 							SetItemButtonTextureVertexColor(itemButton, 0.5, 0, 0);
