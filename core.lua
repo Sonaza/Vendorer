@@ -1105,12 +1105,14 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 					rarityBorder:Show();
 				end
 				
-				if(isUsable and itemType == GetItemClassInfo(4) and Addon:IsArmorItemSlot(itemEquipLoc)) then
-					if(itemSubType ~= GetItemSubClassInfo(4, 5) and not Addon:IsValidClassArmorType(itemSubType)) then
-						SetItemButtonNameFrameVertexColor(merchantButton, 0.5, 0, 0);
-						SetItemButtonSlotVertexColor(merchantButton, 0.5, 0, 0);
-						SetItemButtonTextureVertexColor(itemButton, 0.5, 0, 0);
-						SetItemButtonNormalTextureVertexColor(itemButton, 0.5, 0, 0);
+				if(Addon.db.global.PaintArmorTypes) then
+					if(isUsable and itemType == GetItemClassInfo(4) and Addon:IsArmorItemSlot(itemEquipLoc)) then
+						if(itemSubType ~= GetItemSubClassInfo(4, 5) and not Addon:IsValidClassArmorType(itemSubType)) then
+							SetItemButtonNameFrameVertexColor(merchantButton, 0.5, 0, 0);
+							SetItemButtonSlotVertexColor(merchantButton, 0.5, 0, 0);
+							SetItemButtonTextureVertexColor(itemButton, 0.5, 0, 0);
+							SetItemButtonNormalTextureVertexColor(itemButton, 0.5, 0, 0);
+						end
 					end
 				end
 			end
