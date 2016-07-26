@@ -23,8 +23,6 @@ local _GameTooltip_SetMerchantItem = GameTooltip.SetMerchantItem;
 local _GameTooltip_SetMerchantCostItem = GameTooltip.SetMerchantCostItem;
 
 GameTooltip.SetMerchantItem = function(self, index)
-	-- print("GameTooltip.SetMerchantItem", index)
-	
 	if(not index) then return end
 	
 	if(FilteredMerchantItems[index]) then
@@ -84,8 +82,6 @@ _G.GetMerchantItemCostItem = function(index, itemIndex)
 end
 
 _G.GetMerchantItemInfo = function(index)
-	-- index)
-	
 	if(not index) then return end
 	
 	if(not FilteredMerchantItems[index]) then Addon:RefreshFilteredItems(); end
@@ -241,8 +237,6 @@ function Addon:FilterItem(index)
 					result = comparison.func(itemMinLevel, value);
 					
 				elseif(comparison.type == VALUE_TYPE_ILVL and value) then
-					-- print(token, comparison.pattern, itemLevel, value);
-					
 					matchFound = true;
 					result = comparison.func(itemLevel, value);
 					
@@ -273,10 +267,7 @@ function Addon:FilterItem(index)
 				for costItemIndex = 1, numCostItems do
 					local _, costItemValue, costItemLink, currencyName = _GetMerchantItemCostItem(index, costItemIndex);
 					if(costItemLink) then
-						-- local itemName = strmatch(costItemLink, "%[(.+)%]");
-						-- if(itemName) then
-							result = result or strfind(string.lower(costItemLink), token) ~= nil;
-						-- end
+						result = result or strfind(string.lower(costItemLink), token) ~= nil;
 					elseif(currencyName) then
 						result = result or strfind(string.lower(currencyName), token) ~= nil;
 					end
