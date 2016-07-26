@@ -287,10 +287,14 @@ function Addon:FilterItem(index)
 	return filter;
 end
 
+function Addon:GetUnfilteredMerchantNumItems()
+	return _GetMerchantNumItems();
+end
+
 function Addon:RefreshFilteredItems()
 	FilteredMerchantItems = {};
 	
-	local merchantItems = _GetMerchantNumItems();
+	local merchantItems = Addon:GetUnfilteredMerchantNumItems();
 	for index = 1, merchantItems do 
 		if(Addon.FilterText == "" or Addon:FilterItem(index)) then
 			tinsert(FilteredMerchantItems, index);

@@ -1,5 +1,6 @@
 ## 2.2.3
 * Added some items with passive or otherwise useful bonuses to the default ignore list.
+* If using wide frame the merchant window will now automatically temporarily collapse to narrow width if vendor only has one page's worth of goods. 
 
 ## 2.2.2
 * Made narrow frame the default again.

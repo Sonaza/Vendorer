@@ -263,8 +263,21 @@ function Addon:UpdateExtensionPanel()
 	end
 end
 
+function Addon:GetCurrentExtension()
+	local extension = Addon.db.global.MerchantFrameExtension;
+	local numItems = Addon:GetUnfilteredMerchantNumItems();
+	
+	if(numItems <= 10 and extension == VENDORER_EXTENSION_WIDE) then
+		extension = VENDORER_EXTENSION_NARROW;
+	end
+	
+	return extension;
+end
+
 function Addon:ShowExtensionPanel()
-	if(Addon.db.global.MerchantFrameExtension == VENDORER_EXTENSION_WIDE) then
+	local extension = Addon:GetCurrentExtension();
+	
+	if(extension == VENDORER_EXTENSION_WIDE) then
 		MerchantFrame:SetWidth(834);
 		MERCHANT_ITEMS_PER_PAGE = 20;
 		
@@ -273,7 +286,7 @@ function Addon:ShowExtensionPanel()
 		VendorerMerchantFrameExtension:Show();
 		VendorerMerchantFrameExtensionNarrow:Hide();
 		VendorerMerchantFrameExtensionWide:Show();
-	else
+	elseif(extension == VENDORER_EXTENSION_NARROW) then
 		MerchantFrame:SetWidth(500);
 		MERCHANT_ITEMS_PER_PAGE = 10;
 	
@@ -1035,7 +1048,8 @@ function Addon:MERCHANT_CLOSED()
 end
 
 hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
-	if(Addon.db.global.MerchantFrameExtension == VENDORER_EXTENSION_WIDE) then
+	local extension = Addon:GetCurrentExtension();
+	if(extension == VENDORER_EXTENSION_WIDE) then
 		MerchantItem11:ClearAllPoints();
 		MerchantItem11:SetPoint("TOPLEFT", MerchantItem2, "TOPRIGHT", 12, 0);
 		MerchantItem11:Show();
@@ -1087,7 +1101,7 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 				end
 				
 				if(isUsable and itemType == "Armor" and Addon:IsArmorItemSlot(itemEquipLoc)) then
-					if(itemSubType ~="Cosmetic" and not Addon:IsValidClassArmorType(itemSubType)) then
+					if(itemSubType ~= "Cosmetic" and not Addon:IsValidClassArmorType(itemSubType)) then
 						SetItemButtonNameFrameVertexColor(merchantButton, 0.5, 0, 0);
 						SetItemButtonSlotVertexColor(merchantButton, 0.5, 0, 0);
 						SetItemButtonTextureVertexColor(itemButton, 0.5, 0, 0);
