@@ -8,26 +8,31 @@ local AceDB = LibStub("AceDB-3.0");
 _G["Vendorer"] = Addon;
 SHARED[1] = Addon;
 
+local LOCALIZED_CLOTH   = GetItemSubClassInfo(4, 1);
+local LOCALIZED_LEATHER = GetItemSubClassInfo(4, 2);
+local LOCALIZED_MAIL    = GetItemSubClassInfo(4, 3);
+local LOCALIZED_PLATE   = GetItemSubClassInfo(4, 4);
+
 local CLASS_ARMOR_TYPES = {
-	WARRIOR     = "Plate",
-	PALADIN     = "Plate",
-	DEATHKNIGHT = "Plate",
-	HUNTER      = "Mail",
-	SHAMAN      = "Mail",
-	MONK        = "Leather",
-	DRUID       = "Leather",
-	ROGUE       = "Leather",
-	DEMONHUNTER = "Leather",
-	MAGE        = "Cloth",
-	WARLOCK     = "Cloth",
-	PRIEST      = "Cloth",
+	WARRIOR     = LOCALIZED_PLATE,
+	PALADIN     = LOCALIZED_PLATE,
+	DEATHKNIGHT = LOCALIZED_PLATE,
+	HUNTER      = LOCALIZED_MAIL,
+	SHAMAN      = LOCALIZED_MAIL,
+	MONK        = LOCALIZED_LEATHER,
+	DRUID       = LOCALIZED_LEATHER,
+	ROGUE       = LOCALIZED_LEATHER,
+	DEMONHUNTER = LOCALIZED_LEATHER,
+	MAGE        = LOCALIZED_PLATE,
+	WARLOCK     = LOCALIZED_PLATE,
+	PRIEST      = LOCALIZED_PLATE,
 };
 
 local ARMOR_TYPE_LEVEL = {
-	["Cloth"]	= 1,
-	["Leather"]	= 2,
-	["Mail"]	= 3,
-	["Plate"]	= 4,
+	[LOCALIZED_CLOTH]   = 1,
+	[LOCALIZED_LEATHER] = 2,
+	[LOCALIZED_MAIL]    = 3,
+	[LOCALIZED_PLATE]   = 4,
 };
 
 local ARMOR_SLOTS = {
@@ -1100,8 +1105,8 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 					rarityBorder:Show();
 				end
 				
-				if(isUsable and itemType == "Armor" and Addon:IsArmorItemSlot(itemEquipLoc)) then
-					if(itemSubType ~= "Cosmetic" and not Addon:IsValidClassArmorType(itemSubType)) then
+				if(isUsable and itemType == GetItemClassInfo(4) and Addon:IsArmorItemSlot(itemEquipLoc)) then
+					if(itemSubType ~= GetItemSubClassInfo(4, 5) and not Addon:IsValidClassArmorType(itemSubType)) then
 						SetItemButtonNameFrameVertexColor(merchantButton, 0.5, 0, 0);
 						SetItemButtonSlotVertexColor(merchantButton, 0.5, 0, 0);
 						SetItemButtonTextureVertexColor(itemButton, 0.5, 0, 0);
