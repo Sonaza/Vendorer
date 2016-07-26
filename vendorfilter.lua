@@ -354,7 +354,7 @@ end);
 
 hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 	local numMerchantItems = GetMerchantNumItems();
-	local realNumMerchantItems = _GetMerchantNumItems();
+	local realNumMerchantItems = Addon:GetUnfilteredMerchantNumItems();
 	local maxPages = math.ceil(numMerchantItems / MERCHANT_ITEMS_PER_PAGE);
 	
 	if(maxPages <= 1) then
