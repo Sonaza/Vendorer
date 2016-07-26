@@ -79,6 +79,22 @@ local STAT_SLOTS = {
 	["INVTYPE_WRIST"]			= true,
 };
 
+local DEFAULT_IGNORE_LIST_ITEMS = {
+	[33820]     = true, -- Weather-Beaten Fishing Hat
+	[2901]      = true, -- Mining Pick
+	[44731]     = true, -- Bouquet of Ebon Roses
+	[19970]     = true, -- Arcanite Fishing Pole
+	[116913]    = true, -- Peon's Mining Pick
+	[116916]    = true, -- Gorepetal's Gentle Grasp
+	[84661]     = true, -- Dragon Fishing Pole
+	[103678]    = true, -- Time-Lost Artifact
+	[86566]     = true, -- Forager's Gloves
+	[63207]     = true, -- Wrap of Unity
+	[63353]     = true, -- Shroud of Cooperation
+	[63206]     = true, -- Wrap of Unity
+	[65274]     = true, -- Cloak of Coordination
+};
+
 StaticPopupDialogs["VENDORER_CONFIRM_SELL_UNUSABLES"] = {
 	text = "Are you sure you want to sell unusable items? You can still buyback them after.",
 	button1 = YES,
@@ -96,8 +112,8 @@ StaticPopupDialogs["VENDORER_CONFIRM_CLEAR_IGNORE_LIST"] = {
 	button1 = YES,
 	button2 = NO,
 	OnAccept = function(self)
-		Addon.db.global.ItemIgnoreList = {};
-		Addon:AddMessage("Ignore list wiped.");
+		Addon.db.global.ItemIgnoreList = DEFAULT_IGNORE_LIST_ITEMS;
+		Addon:AddMessage("Ignore list wiped (restored to defaults).");
 	end,
 	timeout = 0,
 	whileDead = 1,
@@ -150,21 +166,7 @@ function Addon:OnInitialize()
 			AutoRepair = false,
 			SmartAutoRepair = true,
 			
-			ItemIgnoreList = {
-				[33820]     = true, -- Weather-Beaten Fishing Hat
-				[2901]      = true, -- Mining Pick
-				[44731]     = true, -- Bouquet of Ebon Roses
-				[19970]     = true, -- Arcanite Fishing Pole
-				[116913]    = true, -- Peon's Mining Pick
-				[116916]    = true, -- Gorepetal's Gentle Grasp
-				[84661]     = true, -- Dragon Fishing Pole
-				[103678]    = true, -- Time-Lost Artifact
-				[86566]     = true, -- Forager's Gloves
-				[63207]     = true, -- Wrap of Unity
-				[63353]     = true, -- Shroud of Cooperation
-				[63206]     = true, -- Wrap of Unity
-				[65274]     = true, -- Cloak of Coordination
-			},
+			ItemIgnoreList = DEFAULT_IGNORE_LIST_ITEMS,
 			ItemJunkList = {},
 			
 			ExpandTutorialShown = false,
