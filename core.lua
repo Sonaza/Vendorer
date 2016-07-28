@@ -1226,3 +1226,39 @@ function Addon:UpdateBuybackInfo()
 		end
 	end
 end
+
+local _MerchantItemButton_OnModifiedClick = MerchantItemButton_OnModifiedClick;
+function MerchantItemButton_OnModifiedClick(self, button)
+	if ( MerchantFrame.selectedTab == 1 ) then
+		-- Is merchant frame
+		if ( HandleModifiedItemClick(GetMerchantItemLink(self:GetID())) ) then
+			return;
+		end
+		if ( IsModifiedClick("SPLITSTACK")) then
+			local maxStack = GetMerchantItemMaxStack(self:GetID());
+			local _, _, price, stackCount, _, _, extendedCost = GetMerchantItemInfo(self:GetID());
+			
+			-- TODO: Support shift-click for stacks of extended cost items
+			if (stackCount > 1 and extendedCost) then
+				MerchantItemButton_OnClick(self, button);
+				return;
+			end
+			
+			local canAfford;
+			if (price and price > 0) then
+				canAfford = floor(GetMoney() / (price / stackCount));
+			else
+				canAfford = maxStack;
+			end
+			
+			if ( maxStack > 1 ) then
+				-- local maxPurchasable = min(maxStack, canAfford);
+				-- OpenStackSplitFrame(maxPurchasable, self, "BOTTOMLEFT", "TOPLEFT");
+				OpenStackSplitFrame(10000, self, "BOTTOMLEFT", "TOPLEFT");
+			end
+			return;
+		end
+	else
+		HandleModifiedItemClick(GetBuybackItemLink(self:GetID()));
+	end
+end

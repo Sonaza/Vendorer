@@ -21,3 +21,4 @@ autorepair.lua
 knownitems.lua
 VendorerFrames.xml
 VendorerItemListsFrame.xml
+VendorerStackSplitFrame.xml
