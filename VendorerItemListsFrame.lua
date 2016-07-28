@@ -8,7 +8,7 @@ local ADDON_NAME, Addon = ...;
 local _;
 
 tinsert(UISpecialFrames, "VendorerItemListsFrame");
-UIPanelWindows["VendorerItemListsFrame"] = { area = "left", pushable = 1 };
+UIPanelWindows["VendorerItemListsFrame"] = { area = "left", pushable = 1, allowOtherPanels = true };
 
 function VendorerItemListsFrameItems_Update()
 	local scrollFrame = VendorerItemListsFrameItems;
@@ -115,6 +115,9 @@ function Addon:OpenVendorerItemListsFrame(title, items)
 	HybridScrollFrame_SetOffset(VendorerItemListsFrameItems, 0);
 	VendorerItemListsFrameItemsScrollBar:SetValue(0);
 	VendorerItemListsFrameItems_Update();
+	
+	VendorerItemListsFrame:ClearAllPoints();
+	VendorerItemListsFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 0, 0);
 	
 	ShowUIPanel(VendorerItemListsFrame);
 end

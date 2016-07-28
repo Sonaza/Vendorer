@@ -141,12 +141,6 @@
 						</Anchors>
 					</Slider>
 				</Frames>
-				<Scripts>
-					<OnMouseUp>
-						print("POTATOS");
-						ClearCursor();
-					</OnMouseUp>
-				</Scripts>
 			</ScrollFrame>
 			<Button name="VendorerItemListsDragReceiver" frameStrata="HIGH" enableMouse="true" setAllPoints="true" hidden="true">
 				<Layers>

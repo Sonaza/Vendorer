@@ -1034,6 +1034,8 @@ function Addon:MERCHANT_CLOSED()
 	Addon.PlayerMoney = GetMoney();
 	
 	Addon:ResetAllFilters();
+	
+	VendorerItemListsFrame:Hide();
 end
 
 hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function() Addon:UpdateMerchantInfo() end);
@@ -1107,18 +1109,20 @@ function Addon:UpdateMerchantInfo()
 				end
 				
 				-- Optional dependency for transmogs
-				if(CanIMogIt and CanIMogIt:IsEquippable(itemLink)) then
-					local playerKnowsTransmogFromItem = CanIMogIt:PlayerKnowsTransmogFromItem(itemLink);
-					if(not playerKnowsTransmogFromItem) then
-						rarityBorder.transmogrifyAsterisk:Show();
-						
-						local _, isUsable = Addon:GetItemTooltipInfo(itemLink);
-						if(isUsable) then
-							rarityBorder.transmogrifyAsterisk.iconSelf:Show();
-							rarityBorder.transmogrifyAsterisk.iconOther:Hide();
-						else
-							rarityBorder.transmogrifyAsterisk.iconOther:Show();
-							rarityBorder.transmogrifyAsterisk.iconSelf:Hide();
+				if(Addon.db.global.ShowTransmogAsterisk and CanIMogIt) then
+					if(CanIMogIt:IsEquippable(itemLink) and CanIMogIt:IsTransmogable(itemLink)) then
+						local playerKnowsTransmogFromItem = CanIMogIt:PlayerKnowsTransmogFromItem(itemLink);
+						if(not playerKnowsTransmogFromItem) then
+							rarityBorder.transmogrifyAsterisk:Show();
+							
+							local _, isUsable = Addon:GetItemTooltipInfo(itemLink);
+							if(isUsable) then
+								rarityBorder.transmogrifyAsterisk.iconSelf:Show();
+								rarityBorder.transmogrifyAsterisk.iconOther:Hide();
+							else
+								rarityBorder.transmogrifyAsterisk.iconOther:Show();
+								rarityBorder.transmogrifyAsterisk.iconSelf:Hide();
+							end
 						end
 					end
 				end

@@ -14,7 +14,7 @@ function Addon:OpenSettingsMenu(anchor)
 	end
 	
 	DropDownMenuFrame:SetPoint("BOTTOM", anchor, "CENTER", 0, 5);
-	EasyMenu(Addon:GetMenuData(), DropDownMenuFrame, "cursor", 0, 0, "MENU", 5);
+	EasyMenu(Addon:GetMenuData(), DropDownMenuFrame, "cursor", 0, 0, "MENU", 2.5);
 	
 	DropDownList1:ClearAllPoints();
 	DropDownList1:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", -1, -2);
@@ -98,5 +98,9 @@ function Addon:GetMenuData()
 end
 
 function VendorerSettingsButton_OnClick(self)
-	Addon:OpenSettingsMenu(self);
+	if(DropDownList1:IsVisible() and select(2, DropDownList1:GetPoint()) == self) then
+		CloseMenus();
+	else
+		Addon:OpenSettingsMenu(self);
+	end
 end
