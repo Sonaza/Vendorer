@@ -11,13 +11,18 @@ _G["Vendorer"] = Addon;
 local AceDB = LibStub("AceDB-3.0");
 local _;
 
-local LOCALIZED_CLOTH   = GetItemSubClassInfo(4, 1);
-local LOCALIZED_LEATHER = GetItemSubClassInfo(4, 2);
-local LOCALIZED_MAIL    = GetItemSubClassInfo(4, 3);
-local LOCALIZED_PLATE   = GetItemSubClassInfo(4, 4);
+-- Get some localized strings
+local LOCALIZED_CLOTH           = GetItemSubClassInfo(4, 1);
+local LOCALIZED_LEATHER         = GetItemSubClassInfo(4, 2);
+local LOCALIZED_MAIL            = GetItemSubClassInfo(4, 3);
+local LOCALIZED_PLATE           = GetItemSubClassInfo(4, 4);
+local LOCALIZED_ARMOR           = GetItemClassInfo(4);
+local LOCALIZED_COSMETIC        = GetItemSubClassInfo(4, 5);
+local LOCALIZED_MISCELLANEOUS   = GetItemClassInfo(15);
 
-local LOCALIZED_ARMOR    = GetItemClassInfo(4);
-local LOCALIZED_COSMETIC = GetItemSubClassInfo(4, 5);
+VENDORER_IGNORE_ITEMS_BUTTON_TEXT = "Ignore Items";
+VENDORER_ADD_JUNK_BUTTON_TEXT = "Add Junk Items";
+VENDORER_SETTINGS_BUTTON_TEXT = "|TInterface\\Scenarios\\ScenarioIcon-Interact:14:14:0:0|t Settings";
 
 local CLASS_ARMOR_TYPES = {
 	WARRIOR     = LOCALIZED_PLATE,
@@ -162,12 +167,15 @@ function Addon:OnInitialize()
 			MerchantFrameExtension = VENDORER_EXTENSION_NARROW,
 			AutoSellJunk = false,
 			PaintArmorTypes = true,
+			PaintKnownItems = true,
 			
 			AutoRepair = false,
 			SmartAutoRepair = true,
 			
 			ItemIgnoreList = DEFAULT_IGNORE_LIST_ITEMS,
 			ItemJunkList = {},
+			
+			ShowTransmogAsterisk = true,
 			
 			ExpandTutorialShown = false,
 		},
@@ -185,16 +193,11 @@ function Addon:OnInitialize()
 	end
 end
 
-function Addon:RestoreSavedSettings()
-	Addon:UpdateExtensionToggleButton();
-	VendorerAutoSellJunkButton:SetChecked(self.db.global.AutoSellJunk);
-	VendorerArmorPaintRedButton:SetChecked(self.db.global.PaintArmorTypes);
-	
-	VendorerAutoRepairButton:SetChecked(self.db.global.AutoRepair);
-	VendorerAutoSmartRepairButton:SetChecked(self.db.global.SmartAutoRepair);
-end
-
 function Addon:OnEnable()
+	if(not VendorerItemListsFrame) then
+		error("You have updated the addon but only reloaded the interface. Please restart the game.", 1);
+	end
+	
 	Addon:RegisterEvent("MERCHANT_SHOW");
 	Addon:RegisterEvent("MERCHANT_CLOSED");
 	Addon:RegisterEvent("MERCHANT_UPDATE");
@@ -202,8 +205,6 @@ function Addon:OnEnable()
 	Addon:RegisterEvent("UPDATE_INVENTORY_DURABILITY");
 	
 	Addon.PlayerMoney = GetMoney();
-	
-	Addon:EnhanceMerchantFrame();
 	
 	Addon:RestoreSavedSettings();
 
@@ -219,6 +220,22 @@ function Addon:OnEnable()
 	if(not Addon.db.global.ExpandTutorialShown) then
 		VendorerExtensionTutorialFrame:Show();
 	end
+	
+	Addon:SetMerchantFramePanelWidth();
+end
+
+function Addon:Announce(str)
+	Addon:AddMessage(str);
+	
+	if(Parrot) then
+		Parrot:ShowMessage(str, "Errors", false);
+	end
+end
+
+function Addon:RestoreSavedSettings()
+	Addon:UpdateExtensionToggleButton();
+	VendorerAutoRepairButton:SetChecked(self.db.global.AutoRepair);
+	VendorerAutoSmartRepairButton:SetChecked(self.db.global.SmartAutoRepair);
 end
 
 function Addon:MERCHANT_UPDATE()
@@ -235,13 +252,21 @@ function Addon:CURSOR_UPDATE()
 end
 
 function Addon:EnhanceMerchantFrame()
-	MerchantNextPageButton:ClearAllPoints();
-	MerchantNextPageButton:SetPoint("LEFT", MerchantPrevPageButton, "RIGHT", 94, 0);
+	local extension = Addon:GetCurrentExtension();
+	
+	local offset = 0;
+	if(extension ~= VENDORER_EXTENSION_NONE) then
+		offset = 164;
+	end
 	
 	MerchantPageText:SetWidth(164);
 	MerchantPageText:ClearAllPoints();
-	MerchantPageText:SetPoint("LEFT", MerchantNextPageButton, "RIGHT", 0, 0);
+	MerchantPageText:SetPoint("BOTTOM", MerchantFrame, "BOTTOM", -offset / 2 + 3, 89);
 	MerchantPageText:SetJustifyH("CENTER");
+	
+	MerchantNextPageButton:ClearAllPoints();
+	MerchantNextPageButton:SetPoint("RIGHT", MerchantFrame, "BOTTOMRIGHT", -offset - 6, 96);
+	MerchantNextPageButton:SetFrameLevel(MerchantFrame:GetFrameLevel()+2);
 	
 	MerchantExtraCurrencyInset:ClearAllPoints();
 	MerchantExtraCurrencyInset:SetPoint("BOTTOMRIGHT", MerchantFrame, "BOTTOMRIGHT", -169, 4);
@@ -274,6 +299,8 @@ function Addon:UpdateExtensionPanel()
 	else
 		Addon:HideExtensionPanel();
 	end
+	
+	Addon:EnhanceMerchantFrame();
 end
 
 function Addon:GetCurrentExtension()
@@ -287,8 +314,20 @@ function Addon:GetCurrentExtension()
 	return extension;
 end
 
+local extensionWidths = {
+	[VENDORER_EXTENSION_NONE]   = 336,
+	[VENDORER_EXTENSION_NARROW] = 500,
+	[VENDORER_EXTENSION_WIDE]   = 834,
+};
+
+function Addon:SetMerchantFramePanelWidth()
+	local extension = Addon:GetCurrentExtension();
+	-- UIPanelWindows["MerchantFrame"].width = extensionWidths[extension];
+end
+
 function Addon:ShowExtensionPanel()
 	local extension = Addon:GetCurrentExtension();
+	Addon:SetMerchantFramePanelWidth();
 	
 	if(extension == VENDORER_EXTENSION_WIDE) then
 		MerchantFrame:SetWidth(834);
@@ -320,6 +359,8 @@ end
 function Addon:HideExtensionPanel()
 	MerchantFrame:SetWidth(336);
 	MERCHANT_ITEMS_PER_PAGE = 10;
+	
+	Addon:SetMerchantFramePanelWidth();
 	
 	VendorerExtraMerchantItems:Hide();
 	
@@ -355,7 +396,7 @@ function VendorerCheckButtonTemplate_OnLoad(self)
 			text:SetText("Highlight " .. Addon:GetClassArmorType());
 		end
 		
-		text:SetFontObject("VendorerCheckButtonFont");
+		text:SetFontObject("VendorerMenuFont");
 	end
 end
 
@@ -474,27 +515,26 @@ function Addon:IsValidClassArmorType(armortype)
 	return Addon:GetClassArmorType() == armortype;
 end
 
+local cachedItemInfo = {};
+
 function Addon:GetItemTooltipInfo(item)
 	if(not item) then return end
 	
+	local _, itemLink, itemRarity, _, _, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(item);
+		
+	if(cachedItemInfo[itemLink]) then
+		return unpack(cachedItemInfo[itemLink]);
+	end
+	
 	local bindType, isUsable, isClassArmorType, notUsableReason;
 	
-	local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
-		itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(item);
-		
-	VendorerTooltip:SetOwner(UIParent, "ANCHOR_NONE");
-	VendorerTooltip:SetHyperlink(itemLink);
-	
 	if(IsEquippableItem(itemLink) and Addon:IsArmorItemSlot(itemEquipLoc)) then
-		if(itemSubType == "Cosmetic" or itemSubType == "Miscellaneous" or Addon:IsValidClassArmorType(itemSubType)) then
+		if(itemSubType == LOCALIZED_COSMETIC or itemSubType == LOCALIZED_MISCELLANEOUS or Addon:IsValidClassArmorType(itemSubType)) then
 			isClassArmorType = true;
 		else
 			isClassArmorType = false;
 		end
-		
 	end
-	
-	local numLines = VendorerTooltip:NumLines();
 	
 	isUsable = true;
 	
@@ -506,11 +546,15 @@ function Addon:GetItemTooltipInfo(item)
 		isUsable = false;
 	end
 	
-	for row = 2, numLines do
+	VendorerTooltip:SetOwner(UIParent, "ANCHOR_NONE");
+	VendorerTooltip:SetHyperlink(itemLink);
+	local numLines = VendorerTooltip:NumLines();
+	
+	for line = 2, numLines do
 		local wasUsable = isUsable;
 		
-		local left = _G["VendorerTooltipTextLeft" .. row];
-		local right = _G["VendorerTooltipTextRight" .. row];
+		local left = _G["VendorerTooltipTextLeft" .. line];
+		local right = _G["VendorerTooltipTextRight" .. line];
 		
 		if(not bindType) then
 			bindType = Addon:ScanBindType(left:GetText());
@@ -522,7 +566,7 @@ function Addon:GetItemTooltipInfo(item)
 				isUsable = false;
 			end
 			
-			if(right and (right:GetText() == itemSubType or row <= 6)) then
+			if(right and (right:GetText() == itemSubType or line <= 6)) then
 				if(Addon:IsRedText(right)) then
 					if(isUsable and not notUsableReason) then notUsableReason = NOT_USABLE_TYPE end
 					isUsable = false;
@@ -558,6 +602,7 @@ function Addon:GetItemTooltipInfo(item)
 	if(not bindType) then bindType = BT_UNKNOWN end
 	if(isUsable == nil) then isUsable = true; end
 	
+	cachedItemInfo[itemLink] = { bindType, isUsable, isClassArmorType, notUsableReason, tooltipItemSlot, tooltipItemType, itemSubType };
 	return bindType, isUsable, isClassArmorType, notUsableReason, tooltipItemSlot, tooltipItemType, itemSubType;
 end
 
@@ -602,7 +647,64 @@ local function FilterUnusableItems(bagIndex, slotIndex)
 	return false;
 end
 
+function Addon:GetItemID(itemLink)
+	if(not itemLink) then return end
+	
+	local itemID = strmatch(itemLink, "item:(%d+)");
+	return itemID and tonumber(itemID) or nil;
+end
+
+function VendorerIgnoreItemsButton_IgnoreItem(self)
+	local cursor, _, itemLink = GetCursorInfo();
+	if(cursor == "item" and itemLink) then
+		local itemID = Addon:GetItemID(itemLink);
+		
+		if(Addon.db.global.ItemJunkList[itemID]) then
+			Addon.db.global.ItemJunkList[itemID] = nil;
+			Addon:AddMessage(string.format("%s removed from junk sell list.", itemLink));
+		end
+		
+		if(not Addon.db.global.ItemIgnoreList[itemID]) then
+			Addon.db.global.ItemIgnoreList[itemID] = true;
+			Addon:AddMessage(string.format("%s added to ignore list.", itemLink));
+		else
+			Addon.db.global.ItemIgnoreList[itemID] = nil;
+			Addon:AddMessage(string.format("%s removed from ignore list.", itemLink));
+		end
+		ClearCursor();
+	end
+	
+	VendorerIgnoreItemsButton_OnEnter(VendorerIgnoreItemsButton);
+	VendorerItemListsFrameItems_Update();
+end
+
+function VendorerAddItemsButton_AddItem(self)
+	local cursor, _, itemLink = GetCursorInfo();
+	if(cursor == "item" and itemLink) then
+		local itemID = Addon:GetItemID(itemLink);
+		
+		if(Addon.db.global.ItemIgnoreList[itemID]) then
+			Addon.db.global.ItemIgnoreList[itemID] = nil;
+			Addon:AddMessage(string.format("%s removed from ignore list.", itemLink));
+		end
+		
+		if(not Addon.db.global.ItemJunkList[itemID]) then
+			Addon.db.global.ItemJunkList[itemID] = true;
+			Addon:AddMessage(string.format("%s added to junk sell list.", itemLink));
+		else
+			Addon.db.global.ItemJunkList[itemID] = nil;
+			Addon:AddMessage(string.format("%s removed from junk sell list.", itemLink));
+		end
+		ClearCursor();
+	end
+	
+	VendorerAddItemsButton_OnEnter(VendorerAddItemsButton);
+	VendorerItemListsFrameItems_Update();
+end
+
 function VendorerIgnoreItemsButton_OnEnter(self)
+	if(VendorerItemListsFrame:IsVisible()) then return end
+	
 	GameTooltip:ClearAllPoints();
 	GameTooltip:SetOwner(self, "ANCHOR_PRESERVE");
 	GameTooltip:SetPoint("TOPLEFT", self, "RIGHT", 0, 70);
@@ -658,7 +760,13 @@ end
 
 function VendorerIgnoreItemsButton_OnClick(self, button)
 	if(button == "LeftButton") then
-		VendorerIgnoreItemsButton_IgnoreItem(self);
+		if(not GetCursorInfo()) then
+			Addon:OpenVendorerItemListsFrame("Vendorer Ignored Items", Addon.db.global.ItemIgnoreList);
+			VendorerItemListsFrameDescription:SetText("These items will not be sold.");
+			VendorerItemListsFrame.addItemFunction = VendorerIgnoreItemsButton_IgnoreItem;
+		else
+			VendorerIgnoreItemsButton_IgnoreItem(self);
+		end
 	elseif(button == "RightButton" and IsShiftKeyDown()) then
 		if(not GetCursorInfo()) then
 			for link, _ in pairs(Addon.db.global.ItemIgnoreList) do
@@ -671,32 +779,9 @@ function VendorerIgnoreItemsButton_OnClick(self, button)
 	end
 end
 
-function Addon:GetItemID(itemLink)
-	if(not itemLink) then return end
-	
-	local item_id = strmatch(itemLink, "item:(%d+)");
-	return item_id and tonumber(item_id) or nil;
-end
-
-function VendorerIgnoreItemsButton_IgnoreItem(self)
-	local cursor, _, itemLink = GetCursorInfo();
-	if(cursor == "item" and itemLink) then
-		local item_id = Addon:GetItemID(itemLink);
-		
-		if(not Addon.db.global.ItemIgnoreList[item_id]) then
-			Addon.db.global.ItemIgnoreList[item_id] = true;
-			Addon:AddMessage(string.format("%s added to ignore list.", itemLink));
-		else
-			Addon.db.global.ItemIgnoreList[item_id] = nil;
-			Addon:AddMessage(string.format("%s removed from ignore list.", itemLink));
-		end
-		ClearCursor();
-	end
-	
-	VendorerIgnoreItemsButton_OnEnter(VendorerIgnoreItemsButton);
-end
-
 function VendorerAddItemsButton_OnEnter(self)
+	if(VendorerItemListsFrame:IsVisible()) then return end
+
 	GameTooltip:ClearAllPoints();
 	GameTooltip:SetOwner(self, "ANCHOR_PRESERVE");
 	GameTooltip:SetPoint("TOPLEFT", self, "RIGHT", 0, 70);
@@ -745,14 +830,19 @@ end
 
 function VendorerAddItemsButton_OnLeave(self)
 	self.text:SetFontObject("VendorerButtonFont");
-	
 	GameTooltip:Hide();
 	self:SetScript("OnUpdate", nil);
 end
 
 function VendorerAddItemsButton_OnClick(self, button)
 	if(button == "LeftButton") then
-		VendorerAddItemsButton_AddItem(self);
+		if(not GetCursorInfo()) then
+			Addon:OpenVendorerItemListsFrame("Vendorer Junk Items", Addon.db.global.ItemJunkList);
+			VendorerItemListsFrameDescription:SetText("These items are always sold.");
+			VendorerItemListsFrame.addItemFunction = VendorerAddItemsButton_AddItem;
+		else
+			VendorerAddItemsButton_AddItem(self);
+		end
 	elseif(button == "RightButton" and IsShiftKeyDown()) then
 		if(not GetCursorInfo()) then
 			for link, _ in pairs(Addon.db.global.ItemJunkList) do
@@ -763,24 +853,6 @@ function VendorerAddItemsButton_OnClick(self, button)
 			ClearCursor();
 		end
 	end
-end
-
-function VendorerAddItemsButton_AddItem(self)
-	local cursor, _, itemLink = GetCursorInfo();
-	if(cursor == "item" and itemLink) then
-		local item_id = Addon:GetItemID(itemLink);
-		
-		if(not Addon.db.global.ItemJunkList[item_id]) then
-			Addon.db.global.ItemJunkList[item_id] = true;
-			Addon:AddMessage(string.format("%s added to junk sell list.", itemLink));
-		else
-			Addon.db.global.ItemJunkList[item_id] = nil;
-			Addon:AddMessage(string.format("%s removed from junk sell list.", itemLink));
-		end
-		ClearCursor();
-	end
-	
-	VendorerAddItemsButton_OnEnter(VendorerAddItemsButton);
 end
 
 ----------------------------------------------------------------------
@@ -861,8 +933,6 @@ function VendorerSellButton_OnLeave(self)
 	GameTooltip:Hide();
 end
 
------------------------------
-
 function VendorerSellJunkButton_OnEnter(self)
 	local items = Addon:ScanContainers(FilterJunkItems);
 	local sellPrice = 0;
@@ -887,8 +957,6 @@ end
 function VendorerSellJunkButton_OnClick(self, button)
 	Addon:SellJunk();
 end
-
------------------------------
 
 function VendorerSellUnusablesButton_OnEnter(self, button)
 	local items = Addon:ScanContainers(FilterUnusableItems);
@@ -937,15 +1005,6 @@ function VendorerSellUnusablesButton_OnClick(self, button)
 	StaticPopup_Show("VENDORER_CONFIRM_SELL_UNUSABLES");
 end
 
-function VendorerAutoSellJunkButton_OnClick(self)
-	Addon.db.global.AutoSellJunk = self:GetChecked();
-end
-
-function VendorerArmorPaintRedButton_OnClick(self)
-	Addon.db.global.PaintArmorTypes = self:GetChecked();
-	MerchantFrame_UpdateMerchantInfo();
-end
-
 function VendorerAutoRepairButton_OnClick(self)
 	Addon.db.global.AutoRepair = self:GetChecked();
 end
@@ -967,84 +1026,6 @@ function Addon:MERCHANT_SHOW()
 	end
 end
 
-function Addon:UPDATE_INVENTORY_DURABILITY()
-	local repairAllCost, canRepair = GetRepairAllCost();
-	if(not canRepair) then
-		SetDesaturation(VendorerSmartRepairButtonIcon, true);
-		VendorerSmartRepairButton:Disable();
-	else
-		SetDesaturation(VendorerSmartRepairButtonIcon, false);
-		VendorerSmartRepairButton:Enable();
-	end
-end
-
-hooksecurefunc("MerchantFrame_UpdateRepairButtons", function()
-	if(CanMerchantRepair() and CanGuildBankRepair()) then
-		MerchantRepairAllButton:SetPoint("BOTTOMRIGHT", MerchantFrame, "BOTTOMLEFT", 83, 29)
-		VendorerSmartRepairButton:Show();
-		
-		local repairAllCost, canRepair = GetRepairAllCost();
-		if(not canRepair) then
-			SetDesaturation(VendorerSmartRepairButtonIcon, true);
-			VendorerSmartRepairButton:Disable();
-		else
-			SetDesaturation(VendorerSmartRepairButtonIcon, false);
-			VendorerSmartRepairButton:Enable();
-		end
-	else
-		VendorerSmartRepairButton:Hide();
-	end
-end);
-
-function VendorerSmartRepairButton_OnEnter(self)
-	local playerMoney, guildMoney = Addon:GetAutoRepairCost(true);
-	
-	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-	GameTooltip:AddLine("Smart Repair Items");
-	GameTooltip:AddLine("Repair items by maximizing the guild bank repairs.", 1, 1, 1);
-	GameTooltip:AddLine(" ");
-	
-	if(guildMoney > 0) then
-		GameTooltip:AddLine("The Guild Bank Covers");
-		SetTooltipMoney(GameTooltip, guildMoney, "GUILD_REPAIR");
-	end
-	
-	if(playerMoney > 0) then
-		GameTooltip:AddLine("You Cover");
-		SetTooltipMoney(GameTooltip, playerMoney, "GUILD_REPAIR");
-	end
-	
-	if(playerMoney == 0 and guildMoney == 0) then
-		GameTooltip:AddLine(" ");
-		GameTooltip:AddLine("All of your items have full durability.");
-	end
-	
-	GameTooltip:AddLine(" ");
-	local amount = GetGuildBankWithdrawMoney();
-	local guildBankMoney = GetGuildBankMoney();
-	if ( amount == -1 ) then
-		-- Guild leader shows full guild bank amount
-		amount = guildBankMoney;
-	else
-		amount = min(amount, guildBankMoney);
-	end
-	GameTooltip:AddLine(GUILDBANK_REPAIR, nil, nil, nil, true);
-	SetTooltipMoney(GameTooltip, amount, "GUILD_REPAIR");
-	
-	GameTooltip:Show();
-end
-
-function VendorerSmartRepairButton_OnLeave(self)
-	GameTooltip:Hide();
-end
-
-function VendorerSmartRepairButton_OnClick(self)
-	Addon:DoAutoRepair(true);
-	
-	GameTooltip:Hide();
-	VendorerSmartRepairButton_OnEnter(self);
-end
-
 function Addon:MERCHANT_CLOSED()
 	local diff = tonumber(GetMoney() - Addon.PlayerMoney);
 	local moneystring = GetCoinTextureString(math.abs(diff));
@@ -1060,7 +1041,25 @@ function Addon:MERCHANT_CLOSED()
 	Addon:ResetAllFilters();
 end
 
-hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
+hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function() Addon:UpdateMerchantInfo() end);
+hooksecurefunc("MerchantFrame_UpdateBuybackInfo", function() Addon:UpdateBuybackInfo() end);
+
+function Addon:UpdateMerchantInfo()
+	local numMerchantItems = GetMerchantNumItems();
+	local realNumMerchantItems = Addon:GetUnfilteredMerchantNumItems();
+	local maxPages = math.ceil(numMerchantItems / MERCHANT_ITEMS_PER_PAGE);
+	
+	if(maxPages <= 1) then
+		MerchantPageText:SetFormattedText(
+			"%d/%d items", numMerchantItems, realNumMerchantItems
+		);
+	else
+		MerchantPageText:SetFormattedText(
+			"Page %d/%d  %d/%d items", MerchantFrame.page, maxPages, numMerchantItems, realNumMerchantItems
+		);
+	end
+	MerchantPageText:Show();
+	
 	local extension = Addon:GetCurrentExtension();
 	if(extension == VENDORER_EXTENSION_WIDE) then
 		MerchantItem11:ClearAllPoints();
@@ -1074,16 +1073,15 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 		MerchantItem12:Hide();
 	end
 	
-	local numMerchantItems = GetMerchantNumItems();
-	
 	for i=1, MERCHANT_ITEMS_PER_PAGE, 1 do
-		local index = (((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i);
+		local index = ((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i;
 		local itemButton = _G["MerchantItem"..i.."ItemButton"];
 		local merchantButton = _G["MerchantItem"..i];
 		
 		local rarityBorder = _G["VendorerMerchantItem"..i.."Rarity"];
 		if(rarityBorder) then
 			rarityBorder:Hide();
+			rarityBorder.transmogrifyAsterisk:Hide();
 		end
 		
 		if(not itemButton.rarityBorder) then
@@ -1099,10 +1097,10 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 		end
 		
 		if(index <= numMerchantItems) then
-			local link = GetMerchantItemLink(index);
-			if(link) then
+			local itemLink = GetMerchantItemLink(index);
+			if(itemLink) then
 				local _, _, _, _, _, isUsable = GetMerchantItemInfo(index);
-				local _, _, rarity, _, reqLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(link);
+				local _, _, rarity, _, _, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(itemLink);
 				
 				if(rarityBorder and rarity and rarity >= 1) then
 					local r, g, b = GetItemQualityColor(rarity);
@@ -1113,15 +1111,45 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 					rarityBorder:Show();
 				end
 				
+				-- Optional dependency for transmogs
+				if(CanIMogIt and CanIMogIt:IsEquippable(itemLink)) then
+					local playerKnowsTransmogFromItem = CanIMogIt:PlayerKnowsTransmogFromItem(itemLink);
+					if(not playerKnowsTransmogFromItem) then
+						rarityBorder.transmogrifyAsterisk:Show();
+						
+						local _, isUsable = Addon:GetItemTooltipInfo(itemLink);
+						if(isUsable) then
+							rarityBorder.transmogrifyAsterisk.iconSelf:Show();
+							rarityBorder.transmogrifyAsterisk.iconOther:Hide();
+						else
+							rarityBorder.transmogrifyAsterisk.iconOther:Show();
+							rarityBorder.transmogrifyAsterisk.iconSelf:Hide();
+						end
+					end
+				end
+				
+				local shouldColorize = false;
+				local color = { 0.6, 0.0, 0.0 };
+				
 				if(Addon.db.global.PaintArmorTypes) then
 					if(isUsable and itemType == LOCALIZED_ARMOR and Addon:IsArmorItemSlot(itemEquipLoc)) then
 						if(itemSubType ~= LOCALIZED_COSMETIC and not Addon:IsValidClassArmorType(itemSubType)) then
-							SetItemButtonNameFrameVertexColor(merchantButton, 0.5, 0, 0);
-							SetItemButtonSlotVertexColor(merchantButton, 0.5, 0, 0);
-							SetItemButtonTextureVertexColor(itemButton, 0.5, 0, 0);
-							SetItemButtonNormalTextureVertexColor(itemButton, 0.5, 0, 0);
+							shouldColorize = true;
 						end
 					end
+				end
+				
+				if(Addon.db.global.PaintKnownItems and Addon:IsItemKnown(itemLink)) then
+					shouldColorize = true;
+					color = { 0.6, 0.3, 0.0 };
+				end
+				
+				if(shouldColorize) then
+					local r, g, b = unpack(color);
+					SetItemButtonNameFrameVertexColor(merchantButton, r, g, b);
+					SetItemButtonSlotVertexColor(merchantButton, r, g, b);
+					SetItemButtonTextureVertexColor(itemButton, r, g, b);
+					SetItemButtonNormalTextureVertexColor(itemButton, r, g, b);
 				end
 			end
 		end
@@ -1160,9 +1188,9 @@ hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
 			end
 		end
 	end
-end);
+end
 
-hooksecurefunc("MerchantFrame_UpdateBuybackInfo", function()
+function Addon:UpdateBuybackInfo()
 	MerchantItem11:ClearAllPoints();
 	MerchantItem11:SetPoint("TOPLEFT", MerchantItem9, "BOTTOMLEFT", 0, -15);
 	
@@ -1175,6 +1203,7 @@ hooksecurefunc("MerchantFrame_UpdateBuybackInfo", function()
 		local rarityBorder = _G["VendorerMerchantItem"..i.."Rarity"];
 		if(rarityBorder) then
 			rarityBorder:Hide();
+			rarityBorder.transmogrifyAsterisk:Hide();
 		end
 		
 		if(not itemButton.rarityBorder) then
@@ -1201,13 +1230,5 @@ hooksecurefunc("MerchantFrame_UpdateBuybackInfo", function()
 				rarityBorder:Show();
 			end
 		end
-	end
-end);
-
-function Addon:Announce(str)
-	Addon:AddMessage(str);
-	
-	if(Parrot) then
-		Parrot:ShowMessage(str, "Errors", false);
 	end
 end

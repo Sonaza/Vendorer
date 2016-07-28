@@ -27,10 +27,17 @@
 		<Color r="1" g="1" b="1"/>
 	</Font>
 	
-	<Font name="VendorerCheckButtonFont" virtual="true" inherits="VendorerButtonFont">
+	<Font name="VendorerMenuFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
+		<Shadow>
+			<Offset>
+				<AbsDimension x="0" y="-1"/>
+			</Offset>
+			<Color r="0" g="0" b="0"/>
+		</Shadow>
 		<FontHeight>
-			<AbsValue val="9"/>
+			<AbsValue val="10"/>
 		</FontHeight>
+		<Color r="1" g="1" b="1"/>
 	</Font>
 	
 	<Frame name="VendorerMerchantItemRarityBorderTemplate" virtual="true" enableMouse="false">
@@ -66,6 +73,26 @@
 				</Texture>
 			</Layer>
 		</Layers>
+		<Frames>
+			<Frame parentKey="transmogrifyAsterisk" hidden="true">
+				<Size x="13" y="13"/>
+				<Anchors>
+					<Anchor point="CENTER" relativeTo="$parent" relativePoint="TOPRIGHT" x="-4" y="-4"/>
+				</Anchors>
+				<Layers>
+					<Layer level="OVERLAY">
+						<Texture parentKey="iconSelf" file="Interface\AddOns\!Vendorer\media\TransmogrifyAsterisk" setAllPoints="true" hidden="true">
+							<Color r="1" g="1" b="1"/>
+							<TexCoords left="0" right="0.5" top="0" bottom="1"/>
+						</Texture>
+						<Texture parentKey="iconOther" file="Interface\AddOns\!Vendorer\media\TransmogrifyAsterisk" setAllPoints="true" hidden="true">
+							<Color r="1" g="1" b="1"/>
+							<TexCoords left="0.5" right="1" top="0" bottom="1"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
 	</Frame>
 	
 	<Frame name="VendorerExtraMerchantItems" parent="MerchantFrame">
@@ -265,7 +292,7 @@
 		<Scripts>
 			<OnShow>
 				self:SetScale(0.8);
-				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+2);
+				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+1);
 			</OnShow>
 		</Scripts>
 	</Frame>
@@ -386,39 +413,10 @@
 				</Scripts>
 			</CheckButton>
 			
-			<CheckButton name="VendorerArmorPaintRedButton" inherits="VendorerCheckButtonTemplate" text="Highlight Armor">
-				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="$parent" x="6" y="85"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						VendorerCheckButtonTemplate_OnLoad(self);
-						self.tooltip = {
-							"Highlight Class Armor Types",
-							"|cffffffffPaints armor types not used by your current class red."
-						};
-					</OnLoad>
-					<OnClick function="VendorerArmorPaintRedButton_OnClick"/>
-				</Scripts>
-			</CheckButton>
-			
-			<CheckButton name="VendorerAutoSellJunkButton" inherits="VendorerCheckButtonTemplate" text="Auto Sell Junk">
-				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="$parent" x="6" y="60"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						VendorerCheckButtonTemplate_OnLoad(self);
-						self.tooltip = {"Auto Sell Junk", "|cffffffffToggle automatic selling of junk|nwhen visiting vendors."};
-					</OnLoad>
-					<OnClick function="VendorerAutoSellJunkButton_OnClick"/>
-				</Scripts>
-			</CheckButton>
-			
 			<Button name="VendorerIgnoreItemsButton">
 				<Size x="144" y="22"/>
 				<Anchors>
-					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="36"/>
+					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="66"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">
@@ -443,7 +441,7 @@
 							</Anchors>
 							<Color r="1" g="0.75" b="0.15"/>
 						</Texture>
-						<FontString name="$parentText" inherits="VendorerButtonFont" justifyH="LEFT" parentKey="text" text="Ignore Items">
+						<FontString name="$parentText" inherits="VendorerButtonFont" justifyH="LEFT" parentKey="text" text="VENDORER_IGNORE_ITEMS_BUTTON_TEXT">
 							<Size x="98" y="46"/>
 							<Anchors>
 								<Anchor point="LEFT" x="32" y="0"/>
@@ -468,7 +466,7 @@
 			<Button name="VendorerAddItemsButton">
 				<Size x="144" y="22"/>
 				<Anchors>
-					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="10"/>
+					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="40"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">
@@ -493,7 +491,7 @@
 							</Anchors>
 							<Color r="1" g="0.75" b="0.15"/>
 						</Texture>
-						<FontString name="$parentText" inherits="VendorerButtonFont" justifyH="RIGHT" parentKey="text" text="Add Junk Items">
+						<FontString name="$parentText" inherits="VendorerButtonFont" justifyH="RIGHT" parentKey="text" text="VENDORER_ADD_JUNK_BUTTON_TEXT">
 							<Size x="98" y="46"/>
 							<Anchors>
 								<Anchor point="RIGHT" x="-32" y="0"/>
@@ -514,7 +512,18 @@
 					<OnLeave function="VendorerAddItemsButton_OnLeave"/>
 				</Scripts>
 			</Button>
-			
+			<Button name="VendorerSettingsButton" inherits="UIPanelButtonTemplate" text="VENDORER_SETTINGS_BUTTON_TEXT">
+				<Size x="144" y="26"/>
+				<Anchors>
+					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="10"/>
+				</Anchors>
+				<Scripts>
+					<OnClick function="VendorerSettingsButton_OnClick"/>
+				</Scripts>
+				<NormalFont style="VendorerButtonFont"/>
+				<HighlightFont style="VendorerButtonFontHighlight"/>
+				<DisabledFont style="VendorerButtonFont"/>
+			</Button>
 		</Frames>
 		<Scripts>
 			<OnShow>

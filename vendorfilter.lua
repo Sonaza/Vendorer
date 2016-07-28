@@ -336,7 +336,6 @@ end);
 
 hooksecurefunc("MerchantFrame_Update", function()
 	if(MerchantFrame.selectedTab == 1) then
-		MerchantFrame_UpdateMerchantInfo();
 		Addon:UpdateExtensionPanel();
 		MerchantFrameLootFilter:SetPoint("TOPRIGHT", MerchantFrame, "TOPRIGHT", -35, -28);
 		VendorerToggleExtensionFrameButtons:Show();
@@ -346,21 +345,6 @@ hooksecurefunc("MerchantFrame_Update", function()
 		MerchantFrameLootFilter:SetPoint("TOPRIGHT", MerchantFrame, "TOPRIGHT", 0, -28);
 		VendorerToggleExtensionFrameButtons:Hide();
 	end
-end);
-
-hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function()
-	local numMerchantItems = GetMerchantNumItems();
-	local realNumMerchantItems = Addon:GetUnfilteredMerchantNumItems();
-	local maxPages = math.ceil(numMerchantItems / MERCHANT_ITEMS_PER_PAGE);
-	
-	if(maxPages <= 1) then
-		MerchantPageText:SetFormattedText("%d/%d items", numMerchantItems, realNumMerchantItems);
-	else
-		MerchantPageText:SetFormattedText("Page %d/%d  %d/%d items",
-			MerchantFrame.page, maxPages, numMerchantItems, realNumMerchantItems);
-	end
-	
-	MerchantPageText:Show();
 end);
 
 function VendorerFilterEditBox_OnEnter(self)
