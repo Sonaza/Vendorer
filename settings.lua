@@ -32,18 +32,6 @@ function Addon:GetMenuData()
 			text = "Vendorer Options", isTitle = true, notCheckable = true,
 		},
 		{
-			text = "Auto sell junk items",
-			func = function()
-				self.db.global.AutoSellJunk = not self.db.global.AutoSellJunk;
-			end,
-			checked = function() return self.db.global.AutoSellJunk; end,
-			isNotRadio = true,
-			tooltipTitle = "Auto Sell Junk",
-			tooltipText = "Toggle automatic selling of junk when visiting vendors.",
-			tooltipOnButton = 1,
-			keepShownOnClick = 1,
-		},
-		{
 			text = "Highlight own armor types",
 			func = function()
 				self.db.global.PaintArmorTypes = not self.db.global.PaintArmorTypes;
@@ -66,6 +54,21 @@ function Addon:GetMenuData()
 			isNotRadio = true,
 			tooltipTitle = "Paint Known Items",
 			tooltipText = "Paints known items and pets orange to make unlearned items easier to distinguish.",
+			tooltipOnButton = 1,
+			keepShownOnClick = 1,
+		},
+		{
+			text = "Use improved stack purchasing",
+			func = function()
+				self.db.global.UseImprovedStackSplit = not self.db.global.UseImprovedStackSplit;
+				-- Close both split frames just in case
+				VendorerStackSplitFrame:Cancel();
+				StackSplitFrameCancel_Click();
+			end,
+			checked = function() return self.db.global.UseImprovedStackSplit; end,
+			isNotRadio = true,
+			tooltipTitle = "Use improved stack purchasing",
+			tooltipText = "When buying in bulk use Vendorer's replacement window which allows buying several stacks at once among other things.",
 			tooltipOnButton = 1,
 			keepShownOnClick = 1,
 		},

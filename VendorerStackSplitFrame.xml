@@ -2,10 +2,24 @@
 ..\FrameXML\UI.xsd">
 	<Script file="VendorerStackSplitFrame.lua"/>
 	
-	<Frame name="VendorerStackSplitFrame" frameStrata="HIGH" parent="UIParent" toplevel="true" enableMouse="true" enableKeyboard="true" hidden="true" clampedToScreen="true">
+	<Font name="VendorerNumberFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" virtual="true">
+		<Shadow>
+			<Offset>
+				<AbsDimension x="0" y="-1"/>
+			</Offset>
+			<Color r="0" g="0" b="0"/>
+		</Shadow>
+		<FontHeight>
+			<AbsValue val="10"/>
+		</FontHeight>
+		<Color r="1" g="1" b="1"/>
+	</Font>
+	
+	<Frame name="VendorerStackSplitFrame" mixin="VendorerStackSplitMixin" frameStrata="HIGH" parent="UIParent"
+		   toplevel="true" enableMouse="true" enableKeyboard="true" hidden="true" clampedToScreen="true">
 		<Size x="166" y="128"/>
 		<Anchors>
-			<Anchor point="TOPLEFT" relativeTo="MerchantFrame" relativePoint="TOPRIGHT"/>
+			<Anchor point="CENTER" relativeTo="UIParent"/>
 		</Anchors>
 		<Layers>
 			<Layer level="BACKGROUND">
@@ -14,25 +28,96 @@
 				</Texture>
 			</Layer>
 			<Layer level="BORDER">
-				<FontString name="$parentTitle" inherits="GameFontHighlight" text="Vendorer">
+				<FontString name="$parentSplitNumber" parentKey="splitNumber" inherits="VendorerNumberFont" text="1337" justifyH="RIGHT">
 					<Anchors>
-						<Anchor point="TOP" relativeTo="$parent" relativePoint="TOP" x="10" y="-5"/>
+						<Anchor point="RIGHT" relativeTo="$parent" relativePoint="TOPRIGHT" x="-29" y="-31"/>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentTotalCost" parentKey="totalCost" inherits="VendorerNumberFont" text=" " justifyH="CENTER">
+					<Anchors>
+						<Anchor point="TOP" relativeTo="$parent" relativePoint="TOP" x="3" y="-46"/>
 					</Anchors>
 				</FontString>
 			</Layer>
 		</Layers>
 		<Frames>
-			
+			<Button name="$parentLeftButton" parentKey="leftButton">
+				<Size x="16" y="16"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativePoint="TOP" x="-59" y="-31"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						self:GetParent():Decrement();
+					</OnClick>
+				</Scripts>
+				<NormalTexture file="Interface\MoneyFrame\Arrow-Left-Up"/>
+				<PushedTexture file="Interface\MoneyFrame\Arrow-Left-Down"/>
+				<DisabledTexture file="Interface\MoneyFrame\Arrow-Left-Disabled"/>
+			</Button>
+			<Button name="$parentRightButton" parentKey="rightButton">
+				<Size x="16" y="16"/>
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="TOP" x="63" y="-31"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						self:GetParent():Increment();
+					</OnClick>
+				</Scripts>
+				<NormalTexture file="Interface\MoneyFrame\Arrow-Right-Up"/>
+				<PushedTexture file="Interface\MoneyFrame\Arrow-Right-Down"/>
+				<DisabledTexture file="Interface\MoneyFrame\Arrow-Right-Disabled"/>
+			</Button>
+			<Button name="$parentOkayButton" inherits="VendorerPanelButtonTemplate" text="OKAY">
+				<Size x="64" y="24"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativePoint="BOTTOM" x="-1" y="30"/>
+				</Anchors>
+				<Scripts>
+					<!-- <OnClick function="StackSplitFrameOkay_Click"/> -->
+				</Scripts>
+			</Button>
+			<Button name="$parentCancelButton" inherits="VendorerPanelButtonTemplate" text="CANCEL">
+				<Size x="64" y="24"/>
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="BOTTOM" x="3" y="30"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						self:GetParent():Cancel();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="$parentDerpButton" inherits="VendorerPanelButtonTemplate" text="Derp">
+				<Size x="64" y="24"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativePoint="BOTTOM" x="-1" y="55"/>
+				</Anchors>
+				<Scripts>
+					<!-- <OnClick function="StackSplitFrameOkay_Click"/> -->
+				</Scripts>
+			</Button>
+			<Button name="$parentStackButton" inherits="VendorerPanelButtonTemplate" text="Stack">
+				<Size x="64" y="24"/>
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="BOTTOM" x="3" y="55"/>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+					</OnLoad>
+					<OnClick>
+						self:GetParent():Stack(button);
+					</OnClick>
+				</Scripts>
+			</Button>
 		</Frames>
 		<Scripts>
-			<!-- <OnLoad function="VendorerItemListsFrame_OnLoad"/>
-			<OnShow function="VendorerItemListsFrame_OnShow"/> -->
-			<OnMouseDown>
-				self:StartMoving();
-			</OnMouseDown>
-			<OnMouseUp>
-				self:StopMovingOrSizing();
-			</OnMouseUp>
+			<OnHide method="OnHide"/>
+			<OnChar method="OnChar"/>
+			<OnMouseWheel method="OnMouseWheel"/>
+			<OnKeyDown method="OnKeyDown"/>
 		</Scripts>
 	</Frame>
 

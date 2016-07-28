@@ -26,6 +26,15 @@ VENDORER_SETTINGS_BUTTON_TEXT = "|TInterface\\Scenarios\\ScenarioIcon-Interact:1
 
 VENDORER_BIG_DRAG_ITEM_HERE_TEXT = "|cffffd200Drag item here to|nadd it to the list|r";
 
+VENDORER_AUTO_SELL_JUNK_TITLE_TEXT = "Auto Sell Junk";
+VENDORER_AUTO_SELL_JUNK_HINT_TEXT = "|cffffffffToggle automatic selling of junk when visiting vendors.";
+
+VENDORER_AUTO_REPAIR_TITLE_TEXT = "Auto Repair";
+VENDORER_AUTO_REPAIR_HINT_TEXT = "|cffffffffRepair all gear automatically if possible.";
+
+VENDORER_USE_SMART_REPAIR_TITLE_TEXT = "Use Smart Repair";
+VENDORER_USE_SMART_REPAIR_HINT_TEXT = "|cffffffffWhen doing automatic repair allow Vendorer to try and spend full guild repair allowance first.|n|n|cff00c6ffNote:|cffffffff this option only applies to auto repair!|n|nProbably not recommended if you have unlimited repair funds.";
+
 local CLASS_ARMOR_TYPES = {
 	WARRIOR     = LOCALIZED_PLATE,
 	PALADIN     = LOCALIZED_PLATE,
@@ -171,6 +180,8 @@ function Addon:OnInitialize()
 			PaintArmorTypes = true,
 			PaintKnownItems = true,
 			
+			UseImprovedStackSplit = true,
+			
 			AutoRepair = false,
 			SmartAutoRepair = true,
 			
@@ -237,6 +248,7 @@ end
 
 function Addon:RestoreSavedSettings()
 	Addon:UpdateExtensionToggleButton();
+	VendorerAutoSellJunkButton:SetChecked(self.db.global.AutoSellJunk);
 	VendorerAutoRepairButton:SetChecked(self.db.global.AutoRepair);
 	VendorerAutoSmartRepairButton:SetChecked(self.db.global.SmartAutoRepair);
 end
@@ -396,24 +408,26 @@ function VendorerCheckButtonTemplate_OnLoad(self)
 end
 
 function VendorerCheckButtonTemplate_OnEnter(self)
-	if(self.tooltip) then
+	if(self.tooltipTitle and self.tooltipText) then
 		GameTooltip:ClearAllPoints();
 		GameTooltip:SetOwner(self, "ANCHOR_PRESERVE");
 		GameTooltip:SetPoint("LEFT", self, "RIGHT", 130, 0);
 		
-		if(type(self.tooltip) == "string") then
-			GameTooltip:AddLine(self.tooltip, nil, nil, nil, true);
-			
-		elseif(type(self.tooltip) == "table") then
-			for _, line in pairs(self.tooltip) do
-				GameTooltip:AddLine(line, nil, nil, nil, true);
-			end
-			
-		elseif(type(self.tooltip) == "function") then
-			self.tooltip();
-		end
+		local titleText = _G[self.tooltipTitle] or self.tooltipTitle;
+		local tooltipText = _G[self.tooltipText] or self.tooltipText;
+		
+		GameTooltip:AddLine(titleText, nil, nil, nil, true);
+		GameTooltip:AddLine(tooltipText, nil, nil, nil, true);
 		
 		GameTooltip:Show();
+	end
+end
+
+function VendorerCheckButtonTemplate_OnClick(self, button)
+	local buttonName = self:GetName();
+	local func = _G[buttonName .. "_OnClick"];
+	if(func and type(func) == "function") then
+		func(_G[buttonName], button);
 	end
 end
 
@@ -1224,41 +1238,5 @@ function Addon:UpdateBuybackInfo()
 				rarityBorder:Show();
 			end
 		end
-	end
-end
-
-local _MerchantItemButton_OnModifiedClick = MerchantItemButton_OnModifiedClick;
-function MerchantItemButton_OnModifiedClick(self, button)
-	if ( MerchantFrame.selectedTab == 1 ) then
-		-- Is merchant frame
-		if ( HandleModifiedItemClick(GetMerchantItemLink(self:GetID())) ) then
-			return;
-		end
-		if ( IsModifiedClick("SPLITSTACK")) then
-			local maxStack = GetMerchantItemMaxStack(self:GetID());
-			local _, _, price, stackCount, _, _, extendedCost = GetMerchantItemInfo(self:GetID());
-			
-			-- TODO: Support shift-click for stacks of extended cost items
-			if (stackCount > 1 and extendedCost) then
-				MerchantItemButton_OnClick(self, button);
-				return;
-			end
-			
-			local canAfford;
-			if (price and price > 0) then
-				canAfford = floor(GetMoney() / (price / stackCount));
-			else
-				canAfford = maxStack;
-			end
-			
-			if ( maxStack > 1 ) then
-				-- local maxPurchasable = min(maxStack, canAfford);
-				-- OpenStackSplitFrame(maxPurchasable, self, "BOTTOMLEFT", "TOPLEFT");
-				OpenStackSplitFrame(10000, self, "BOTTOMLEFT", "TOPLEFT");
-			end
-			return;
-		end
-	else
-		HandleModifiedItemClick(GetBuybackItemLink(self:GetID()));
 	end
 end

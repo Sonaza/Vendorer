@@ -55,7 +55,7 @@
 					</Frame>
 				</Frames>
 			</Frame>
-			<Button name="$parentRemoveItem" inherits="UIPanelButtonTemplate" text="Remove">
+			<Button name="$parentRemoveItem" inherits="VendorerPanelButtonTemplate" text="Remove">
 				<Size x="64" y="30"/>
 				<Anchors>
 					<Anchor point="RIGHT" relativePoint="RIGHT" relativeTo="$parent" x="-8" y="0"/>
@@ -65,9 +65,6 @@
 						VendorerItemListItemButtonRemove_OnClick(self:GetParent(), button);
 					</OnClick>
 				</Scripts>
-				<NormalFont style="VendorerButtonFont"/>
-				<HighlightFont style="VendorerButtonFontHighlight"/>
-				<DisabledFont style="VendorerButtonFont"/>
 			</Button>
 		</Frames>
 		<NormalTexture file="Interface\ClassTrainerFrame\TrainerTextures">
@@ -139,6 +136,13 @@
 							<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-20" y="-12"/>
 							<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-20" y="10"/>
 						</Anchors>
+						<Layers>
+							<Layer level="BACKGROUND">
+								<Texture setAllPoints="true">
+									<Color r="0" g="0" b="0" a="0.6"/>
+								</Texture>
+							</Layer>
+						</Layers>
 					</Slider>
 				</Frames>
 			</ScrollFrame>

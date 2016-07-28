@@ -53,6 +53,12 @@
 		<Color r="1" g="1" b="1"/>
 	</Font>
 	
+	<Button name="VendorerPanelButtonTemplate" inherits="UIPanelButtonTemplate" virtual="true">
+		<NormalFont style="VendorerButtonFont"/>
+		<HighlightFont style="VendorerButtonFontHighlight"/>
+		<DisabledFont style="VendorerButtonFont"/>
+	</Button>
+	
 	<Frame name="VendorerMerchantItemRarityBorderTemplate" virtual="true" enableMouse="false">
 		<Anchors>
 			<Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="$parent" x="-1" y="1"/>
@@ -312,12 +318,9 @@
 	
 	<Frame name="VendorerCheckButtonTemplate" inherits="UICheckButtonTemplate" virtual="true">
 		<Scripts>
-			<OnLoad>
-				VendorerCheckButtonTemplate_OnLoad(self);
-			</OnLoad>
-			<OnEnter>
-				VendorerCheckButtonTemplate_OnEnter(self);
-			</OnEnter>
+			<OnLoad function="VendorerCheckButtonTemplate_OnLoad"/>
+			<OnEnter function="VendorerCheckButtonTemplate_OnEnter"/>
+			<OnClick function="VendorerCheckButtonTemplate_OnClick"/>
 			<OnLeave>
 				GameTooltip:Hide();
 			</OnLeave>
@@ -367,65 +370,55 @@
 					<OnClick></OnClick>
 				</Scripts>
 			</Button>
-			
-			<Button name="VendorerSellJunkButton" inherits="UIPanelButtonTemplate" text="Sell Junk Items">
+			<Button name="VendorerSellJunkButton" inherits="VendorerPanelButtonTemplate" text="Sell Junk Items">
 				<Size x="144" y="26"/>
 				<Anchors>
 					<Anchor point="TOP" relativePoint="TOP" relativeTo="$parent" x="1" y="-56"/>
 				</Anchors>
 				<Scripts>
-					<!-- <OnLoad function="VendorerCheckButtonTemplate_OnLoad"/> -->
 					<OnClick function="VendorerSellJunkButton_OnClick"/>
 					<OnEnter function="VendorerSellJunkButton_OnEnter"/>
 					<OnLeave function="VendorerSellButton_OnLeave"/>
 				</Scripts>
-				<NormalFont style="VendorerButtonFont"/>
-				<HighlightFont style="VendorerButtonFontHighlight"/>
-				<DisabledFont style="VendorerButtonFont"/>
 			</Button>
-			
-			<Button name="VendorerSellUnusablesButton" inherits="UIPanelButtonTemplate" text="Sell Unusables">
+			<Button name="VendorerSellUnusablesButton" inherits="VendorerPanelButtonTemplate" text="Sell Unusables">
 				<Size x="144" y="26"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerSellJunkButton" x="0" y="-6"/>
 				</Anchors>
 				<Scripts>
-					<!-- <OnLoad function="VendorerCheckButtonTemplate_OnLoad"/> -->
 					<OnClick function="VendorerSellUnusablesButton_OnClick"/>
 					<OnEnter function="VendorerSellUnusablesButton_OnEnter"/>
 					<OnLeave function="VendorerSellButton_OnLeave"/>
 				</Scripts>
-				<NormalFont style="VendorerButtonFont"/>
-				<HighlightFont style="VendorerButtonFontHighlight"/>
-				<DisabledFont style="VendorerButtonFont"/>
 			</Button>
-			
-			<CheckButton name="VendorerAutoRepairButton" inherits="VendorerCheckButtonTemplate" text="Auto Repair">
+			<CheckButton name="VendorerAutoSellJunkButton" inherits="VendorerCheckButtonTemplate" text="VENDORER_AUTO_SELL_JUNK_TITLE_TEXT">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_AUTO_SELL_JUNK_TITLE_TEXT" type="string"/>
+					<KeyValue key="tooltipText" value="VENDORER_AUTO_SELL_JUNK_HINT_TEXT" type="string"/>
+				</KeyValues>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerSellUnusablesButton" x="0" y="-6"/>
 				</Anchors>
-				<Scripts>
-					<OnLoad>
-						VendorerCheckButtonTemplate_OnLoad(self);
-						self.tooltip = {"Auto Repair Armor", "|cffffffffRepair all gear automatically if possible."};
-					</OnLoad>
-					<OnClick function="VendorerAutoRepairButton_OnClick"/>
-				</Scripts>
 			</CheckButton>
-			
-			<CheckButton name="VendorerAutoSmartRepairButton" inherits="VendorerCheckButtonTemplate" text="Use Smart Repair">
+			<CheckButton name="VendorerAutoRepairButton" inherits="VendorerCheckButtonTemplate" text="VENDORER_AUTO_REPAIR_TITLE_TEXT">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_AUTO_REPAIR_TITLE_TEXT" type="string"/>
+					<KeyValue key="tooltipText" value="VENDORER_AUTO_REPAIR_HINT_TEXT" type="string"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerAutoSellJunkButton" x="0" y="-25"/>
+				</Anchors>
+			</CheckButton>
+			<CheckButton name="VendorerAutoSmartRepairButton" inherits="VendorerCheckButtonTemplate" text="VENDORER_USE_SMART_REPAIR_TITLE_TEXT">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_USE_SMART_REPAIR_TITLE_TEXT" type="string"/>
+					<KeyValue key="tooltipText" value="VENDORER_USE_SMART_REPAIR_HINT_TEXT" type="string"/>
+				</KeyValues>
 				<Anchors>
 					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerAutoRepairButton" x="0" y="-25"/>
 				</Anchors>
-				<Scripts>
-					<OnLoad>
-						VendorerCheckButtonTemplate_OnLoad(self);
-						self.tooltip = {"Use Smart Repair", "|cffffffffWhen doing automatic repair allow Vendorer to try and spend full guild repair allowance first.|n|n|cff00c6ffNote:|cffffffff this option only applies to auto repair!|n|nProbably not recommended if you have unlimited repair funds."};
-					</OnLoad>
-					<OnClick function="VendorerAutoSmartRepairButton_OnClick"/>
-				</Scripts>
 			</CheckButton>
-			
 			<Button name="VendorerIgnoreItemsButton">
 				<Size x="144" y="22"/>
 				<Anchors>
@@ -525,7 +518,7 @@
 					<OnLeave function="VendorerAddItemsButton_OnLeave"/>
 				</Scripts>
 			</Button>
-			<Button name="VendorerSettingsButton" inherits="UIPanelButtonTemplate" text="VENDORER_SETTINGS_BUTTON_TEXT">
+			<Button name="VendorerSettingsButton" inherits="VendorerPanelButtonTemplate" text="VENDORER_SETTINGS_BUTTON_TEXT">
 				<Size x="144" y="26"/>
 				<Anchors>
 					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="10"/>
@@ -533,9 +526,6 @@
 				<Scripts>
 					<OnClick function="VendorerSettingsButton_OnClick"/>
 				</Scripts>
-				<NormalFont style="VendorerButtonFont"/>
-				<HighlightFont style="VendorerButtonFontHighlight"/>
-				<DisabledFont style="VendorerButtonFont"/>
 			</Button>
 		</Frames>
 		<Scripts>
