@@ -7,8 +7,8 @@
 local ADDON_NAME, Addon = ...;
 local _;
 
-tinsert(UISpecialFrames, "VendorerItemListsFrame");
-UIPanelWindows["VendorerItemListsFrame"] = { area = "left", pushable = 1, allowOtherPanels = true };
+-- UIPanelWindows["VendorerItemListsFrame"] = { area = "left", pushable = 1, allowOtherPanels = true };
+tinsert(UIChildWindows, "VendorerItemListsFrame");
 
 function VendorerItemListsFrameItems_Update()
 	local scrollFrame = VendorerItemListsFrameItems;
@@ -65,7 +65,20 @@ function VendorerItemListsFrame_OnLoad(self)
 	VendorerItemListsFrameItemsScrollBar.doNotHide = true;
 end
 
+function VendorerItemListsFrame_Reanchor()
+	if(VendorerItemListsFrame.anchorframe == MerchantFrame) then
+		HideUIPanel(VendorerItemListsFrame);
+		
+		VendorerItemListsFrame:ClearAllPoints();
+		VendorerItemListsFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 20, 0);
+		
+		ShowUIPanel(VendorerItemListsFrame);
+	end
+end
+
 function VendorerItemListsFrame_OnShow(self)
+	HideUIPanel(GetUIPanel("right"));
+			
 	if(self.titleText) then
 		VendorerItemListsFrameTitle:SetText(self.titleText);
 	end
@@ -73,6 +86,8 @@ function VendorerItemListsFrame_OnShow(self)
 	if(self.itemList) then
 		self.itemCount:SetText(("|cffffffff%d|r items"):format(#self.itemList));
 	end
+	
+	self.anchorframe = MerchantFrame;
 end
 
 function VendorerItemListItemButton_OnEnter(self)
@@ -117,7 +132,7 @@ function Addon:OpenVendorerItemListsFrame(title, items)
 	VendorerItemListsFrameItems_Update();
 	
 	VendorerItemListsFrame:ClearAllPoints();
-	VendorerItemListsFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 0, 0);
+	VendorerItemListsFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 20, 0);
 	
 	ShowUIPanel(VendorerItemListsFrame);
 end

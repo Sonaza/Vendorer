@@ -171,6 +171,7 @@
 			<OnShow function="VendorerItemListsFrame_OnShow"/>
 			<OnMouseDown>
 				self:StartMoving();
+				self.anchorframe = nil;
 			</OnMouseDown>
 			<OnMouseUp>
 				self:StopMovingOrSizing();

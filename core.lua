@@ -200,11 +200,12 @@ function Addon:OnEnable()
 		error("You have updated the addon but only reloaded the interface. Please restart the game.", 1);
 	end
 	
-	Addon:RegisterEvent("MERCHANT_SHOW");
-	Addon:RegisterEvent("MERCHANT_CLOSED");
-	Addon:RegisterEvent("MERCHANT_UPDATE");
-	Addon:RegisterEvent("CURSOR_UPDATE");
-	Addon:RegisterEvent("UPDATE_INVENTORY_DURABILITY");
+	self:RegisterEvent("MERCHANT_SHOW");
+	self:RegisterEvent("MERCHANT_CLOSED");
+	self:RegisterEvent("MERCHANT_UPDATE");
+	self:RegisterEvent("CURSOR_UPDATE");
+	self:RegisterEvent("UPDATE_INVENTORY_DURABILITY");
+	self:RegisterEvent("TRANSMOG_COLLECTION_UPDATED");
 	
 	Addon.PlayerMoney = GetMoney();
 	
@@ -224,8 +225,6 @@ function Addon:OnEnable()
 	if(not Addon.db.global.ExpandTutorialShown) then
 		VendorerExtensionTutorialFrame:Show();
 	end
-	
-	Addon:SetMerchantFramePanelWidth();
 end
 
 function Addon:Announce(str)
@@ -267,7 +266,7 @@ function Addon:EnhanceMerchantFrame()
 	
 	MerchantPageText:SetWidth(164);
 	MerchantPageText:ClearAllPoints();
-	MerchantPageText:SetPoint("BOTTOM", MerchantFrame, "BOTTOM", -offset / 2 + 3, 89);
+	MerchantPageText:SetPoint("BOTTOM", MerchantFrame, "BOTTOM", -offset / 2 + 3, 90);
 	MerchantPageText:SetJustifyH("CENTER");
 	
 	MerchantNextPageButton:ClearAllPoints();
@@ -307,6 +306,10 @@ function Addon:UpdateExtensionPanel()
 	end
 	
 	Addon:EnhanceMerchantFrame();
+	
+	if(VendorerItemListsFrame:IsVisible()) then
+		VendorerItemListsFrame_Reanchor();
+	end
 end
 
 function Addon:GetCurrentExtension()
@@ -320,20 +323,8 @@ function Addon:GetCurrentExtension()
 	return extension;
 end
 
-local extensionWidths = {
-	[VENDORER_EXTENSION_NONE]   = 336,
-	[VENDORER_EXTENSION_NARROW] = 500,
-	[VENDORER_EXTENSION_WIDE]   = 834,
-};
-
-function Addon:SetMerchantFramePanelWidth()
-	local extension = Addon:GetCurrentExtension();
-	-- UIPanelWindows["MerchantFrame"].width = extensionWidths[extension];
-end
-
 function Addon:ShowExtensionPanel()
 	local extension = Addon:GetCurrentExtension();
-	Addon:SetMerchantFramePanelWidth();
 	
 	if(extension == VENDORER_EXTENSION_WIDE) then
 		MerchantFrame:SetWidth(834);
@@ -365,8 +356,6 @@ end
 function Addon:HideExtensionPanel()
 	MerchantFrame:SetWidth(336);
 	MERCHANT_ITEMS_PER_PAGE = 10;
-	
-	Addon:SetMerchantFramePanelWidth();
 	
 	VendorerExtraMerchantItems:Hide();
 	
@@ -682,7 +671,9 @@ function VendorerIgnoreItemsButton_IgnoreItem(self)
 		Addon:UpdateVendorerItemLists();
 	end
 	
-	VendorerIgnoreItemsButton_OnEnter(VendorerIgnoreItemsButton);
+	if(not VendorerItemListsFrame:IsVisible()) then
+		VendorerIgnoreItemsButton_OnEnter(VendorerIgnoreItemsButton);
+	end
 end
 
 function VendorerAddItemsButton_AddItem(self)
@@ -707,12 +698,12 @@ function VendorerAddItemsButton_AddItem(self)
 		Addon:UpdateVendorerItemLists();
 	end
 	
-	VendorerAddItemsButton_OnEnter(VendorerAddItemsButton);
+	if(not VendorerItemListsFrame:IsVisible()) then
+		VendorerAddItemsButton_OnEnter(VendorerAddItemsButton);
+	end
 end
 
 function VendorerIgnoreItemsButton_OnEnter(self)
-	if(VendorerItemListsFrame:IsVisible()) then return end
-	
 	GameTooltip:ClearAllPoints();
 	GameTooltip:SetOwner(self, "ANCHOR_PRESERVE");
 	GameTooltip:SetPoint("TOPLEFT", self, "RIGHT", 0, 70);
@@ -803,8 +794,6 @@ function VendorerAddItemsButton_OnClick(self, button)
 end
 
 function VendorerAddItemsButton_OnEnter(self)
-	if(VendorerItemListsFrame:IsVisible()) then return end
-
 	GameTooltip:ClearAllPoints();
 	GameTooltip:SetOwner(self, "ANCHOR_PRESERVE");
 	GameTooltip:SetPoint("TOPLEFT", self, "RIGHT", 0, 70);
@@ -1035,7 +1024,13 @@ function Addon:MERCHANT_CLOSED()
 	
 	Addon:ResetAllFilters();
 	
-	VendorerItemListsFrame:Hide();
+	HideUIPanel(VendorerItemListsFrame);
+end
+
+function Addon:TRANSMOG_COLLECTION_UPDATED()
+	if(MerchantFrame:IsVisible() and Addon.db.global.ShowTransmogAsterisk) then
+		MerchantFrame_UpdateMerchantInfo();
+	end
 end
 
 hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function() Addon:UpdateMerchantInfo() end);
@@ -1110,13 +1105,13 @@ function Addon:UpdateMerchantInfo()
 				
 				-- Optional dependency for transmogs
 				if(Addon.db.global.ShowTransmogAsterisk and CanIMogIt) then
-					if(CanIMogIt:IsEquippable(itemLink) and CanIMogIt:IsTransmogable(itemLink)) then
-						local playerKnowsTransmogFromItem = CanIMogIt:PlayerKnowsTransmogFromItem(itemLink);
-						if(not playerKnowsTransmogFromItem) then
+					local isTransmogable, isKnown, anotherCharacter = Addon:GetKnownTransmogInfo(itemLink);
+					
+					if(isTransmogable) then
+						if(not isKnown) then
 							rarityBorder.transmogrifyAsterisk:Show();
 							
-							local _, isUsable = Addon:GetItemTooltipInfo(itemLink);
-							if(isUsable) then
+							if(not anotherCharacter) then
 								rarityBorder.transmogrifyAsterisk.iconSelf:Show();
 								rarityBorder.transmogrifyAsterisk.iconOther:Hide();
 							else

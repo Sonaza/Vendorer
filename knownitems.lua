@@ -191,3 +191,26 @@ function Addon:IsGarrisonBlueprintKnown(itemID)
 	
 	return false;
 end
+
+function Addon:GetKnownTransmogInfo(itemLink)
+	if(not CanIMogIt) then return end
+	if(not CanIMogIt:IsEquippable(itemLink)) then return false end
+	
+	local isTransmogable, isKnown, anotherCharacter;
+	
+	if(CanIMogIt:IsTransmogable(itemLink)) then
+		isTransmogable      = true;
+		isKnown             = false;
+		anotherCharacter    = false;
+		
+		if (CanIMogIt:PlayerKnowsTransmogFromItem(itemLink) or CanIMogIt:PlayerKnowsTransmog(itemLink)) then
+			isKnown = true;
+		elseif(not CanIMogIt:CharacterCanLearnTransmog(itemLink)) then
+			anotherCharacter = true;
+		end
+	else
+		isTransmogable = false;
+	end
+	
+	return isTransmogable, isKnown, anotherCharacter;
+end
