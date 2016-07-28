@@ -146,17 +146,35 @@
 						print("POTATOS");
 						ClearCursor();
 					</OnMouseUp>
-					<OnEnter function="VendorerItemListsFrame_OnEnter"/>
-					<OnLeave function="VendorerItemListsFrame_OnLeave"/>
 				</Scripts>
 			</ScrollFrame>
+			<Button name="VendorerItemListsDragReceiver" frameStrata="HIGH" enableMouse="true" setAllPoints="true" hidden="true">
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture file="Interface\AddOns\!Vendorer\media\ShadowBlob" setAllPoints="true">
+							<Color r="1" g="1" b="1" a="0.65"/>
+						</Texture>
+					</Layer>
+					<Layer level="BORDER">
+						<FontString name="$parentHelp" inherits="VendorerBigFont" text="VENDORER_BIG_DRAG_ITEM_HERE_TEXT">
+							<Anchors>
+								<Anchor point="CENTER" relativeTo="$parent" x="0" y="-5"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnShow function="VendorerItemListsDragReceiver_OnShow"/>
+					<OnEnter function="VendorerItemListsDragReceiver_OnEnter"/>
+					<OnLeave function="VendorerItemListsDragReceiver_OnLeave"/>
+					<OnClick function="VendorerItemListsDragReceiver_OnClick"/>
+					<OnUpdate function="VendorerItemListsDragReceiver_OnUpdate"/>
+				</Scripts>
+			</Button>
 		</Frames>
 		<Scripts>
 			<OnLoad function="VendorerItemListsFrame_OnLoad"/>
 			<OnShow function="VendorerItemListsFrame_OnShow"/>
-			<OnEnter function="VendorerItemListsFrame_OnEnter"/>
-			<OnLeave function="VendorerItemListsFrame_OnLeave"/>
-			<OnUpdate function="VendorerItemListsFrame_OnUpdate"/>
 			<OnMouseDown>
 				self:StartMoving();
 			</OnMouseDown>

@@ -24,6 +24,8 @@ VENDORER_IGNORE_ITEMS_BUTTON_TEXT = "Ignore Items";
 VENDORER_ADD_JUNK_BUTTON_TEXT = "Add Junk Items";
 VENDORER_SETTINGS_BUTTON_TEXT = "|TInterface\\Scenarios\\ScenarioIcon-Interact:14:14:0:0|t Settings";
 
+VENDORER_BIG_DRAG_ITEM_HERE_TEXT = "|cffffd200Drag item here to|nadd it to the list|r";
+
 local CLASS_ARMOR_TYPES = {
 	WARRIOR     = LOCALIZED_PLATE,
 	PALADIN     = LOCALIZED_PLATE,
@@ -211,6 +213,8 @@ function Addon:OnEnable()
 	hooksecurefunc("PickupContainerItem", function()
 		VendorerIgnoreItemsButtonHighlight:Show();
 		VendorerAddItemsButtonHighlight:Show();
+		
+		VendorerItemListsDragReceiver:Show();
 	end);
 	
 	VendorerExtensionTutorialFrame:HookScript("OnHide", function()
@@ -248,6 +252,8 @@ function Addon:CURSOR_UPDATE()
 	if(GetCursorInfo() ~= "item") then
 		VendorerIgnoreItemsButtonHighlight:Hide();
 		VendorerAddItemsButtonHighlight:Hide();
+		
+		VendorerItemListsDragReceiver:Hide();
 	end
 end
 
@@ -672,10 +678,11 @@ function VendorerIgnoreItemsButton_IgnoreItem(self)
 			Addon:AddMessage(string.format("%s removed from ignore list.", itemLink));
 		end
 		ClearCursor();
+		
+		Addon:UpdateVendorerItemLists();
 	end
 	
 	VendorerIgnoreItemsButton_OnEnter(VendorerIgnoreItemsButton);
-	VendorerItemListsFrameItems_Update();
 end
 
 function VendorerAddItemsButton_AddItem(self)
@@ -696,10 +703,11 @@ function VendorerAddItemsButton_AddItem(self)
 			Addon:AddMessage(string.format("%s removed from junk sell list.", itemLink));
 		end
 		ClearCursor();
+		
+		Addon:UpdateVendorerItemLists();
 	end
 	
 	VendorerAddItemsButton_OnEnter(VendorerAddItemsButton);
-	VendorerItemListsFrameItems_Update();
 end
 
 function VendorerIgnoreItemsButton_OnEnter(self)
@@ -714,27 +722,20 @@ function VendorerIgnoreItemsButton_OnEnter(self)
 	GameTooltip:AddLine(" ");
 	GameTooltip:AddLine("|cffffffffIgnored items will not be automatically sold.");
 	
-	local ignored = {};
+	local items = {};
 	for itemID, _ in pairs(Addon.db.global.ItemIgnoreList) do
 		local _, link = GetItemInfo(itemID);
-		tinsert(ignored, link);
+		tinsert(items, link);
 	end
 	
-	local numIgnoredItems = #ignored;
+	GameTooltip:AddLine(" ");
+	GameTooltip:AddLine("|cff00ff00Left-click  |cffffffffView items on the list");
+	
+	local numIgnoredItems = #items;
 	if(numIgnoredItems > 0) then
-		GameTooltip:AddLine(" ");
-		GameTooltip:AddLine("|cffffcc00Shift Right-Click |cffffffffWipe the ignore list");
+		GameTooltip:AddLine("|cff00ff00Shift right-click  |cffffffffWipe the ignore list");
 		GameTooltip:AddLine(" ");
 		GameTooltip:AddLine(string.format("%d Ignored Items", numIgnoredItems));
-		
-		for index, link in pairs(ignored) do
-			GameTooltip:AddLine(link);
-			
-			if(index >= 15 and numIgnoredItems > 15) then
-				GameTooltip:AddLine(string.format("+ %d more", numIgnoredItems-15));
-				break;
-			end
-		end
 	end
 	
 	self.text:SetFontObject("VendorerButtonFontHighlight");
@@ -753,7 +754,6 @@ end
 
 function VendorerIgnoreItemsButton_OnLeave(self)
 	self.text:SetFontObject("VendorerButtonFont");
-	
 	GameTooltip:Hide();
 	self:SetScript("OnUpdate", nil);
 end
@@ -761,6 +761,7 @@ end
 function VendorerIgnoreItemsButton_OnClick(self, button)
 	if(button == "LeftButton") then
 		if(not GetCursorInfo()) then
+			GameTooltip:Hide();
 			Addon:OpenVendorerItemListsFrame("Vendorer Ignored Items", Addon.db.global.ItemIgnoreList);
 			VendorerItemListsFrameDescription:SetText("These items will not be sold.");
 			VendorerItemListsFrame.addItemFunction = VendorerIgnoreItemsButton_IgnoreItem;
@@ -771,6 +772,28 @@ function VendorerIgnoreItemsButton_OnClick(self, button)
 		if(not GetCursorInfo()) then
 			for link, _ in pairs(Addon.db.global.ItemIgnoreList) do
 				StaticPopup_Show("VENDORER_CONFIRM_CLEAR_IGNORE_LIST");
+				return;
+			end
+		else
+			ClearCursor();
+		end
+	end
+end
+
+function VendorerAddItemsButton_OnClick(self, button)
+	if(button == "LeftButton") then
+		if(not GetCursorInfo()) then
+			GameTooltip:Hide();
+			Addon:OpenVendorerItemListsFrame("Vendorer Junk Items", Addon.db.global.ItemJunkList);
+			VendorerItemListsFrameDescription:SetText("These items are always sold.");
+			VendorerItemListsFrame.addItemFunction = VendorerAddItemsButton_AddItem;
+		else
+			VendorerAddItemsButton_AddItem(self);
+		end
+	elseif(button == "RightButton" and IsShiftKeyDown()) then
+		if(not GetCursorInfo()) then
+			for link, _ in pairs(Addon.db.global.ItemJunkList) do
+				StaticPopup_Show("VENDORER_CONFIRM_CLEAR_JUNKSELL_LIST");
 				return;
 			end
 		else
@@ -797,21 +820,14 @@ function VendorerAddItemsButton_OnEnter(self)
 		tinsert(items, link);
 	end
 	
+	GameTooltip:AddLine(" ");
+	GameTooltip:AddLine("|cff00ff00Left-click  |cffffffffView items on the list");
+	
 	local numIgnoredItems = #items;
 	if(numIgnoredItems > 0) then
-		GameTooltip:AddLine(" ");
-		GameTooltip:AddLine("|cffffcc00Shift Right-Click |cffffffffWipe the junk sell list");
+		GameTooltip:AddLine("|cff00ff00Shift right-click |cffffffffWipe the junk list");
 		GameTooltip:AddLine(" ");
 		GameTooltip:AddLine(string.format("%d Junk Items", numIgnoredItems));
-		
-		for index, link in pairs(items) do
-			GameTooltip:AddLine(link);
-			
-			if(index >= 15 and numIgnoredItems > 15) then
-				GameTooltip:AddLine(string.format("+ %d more", numIgnoredItems-15));
-				break;
-			end
-		end
 	end
 	
 	self.text:SetFontObject("VendorerButtonFont");
@@ -832,27 +848,6 @@ function VendorerAddItemsButton_OnLeave(self)
 	self.text:SetFontObject("VendorerButtonFont");
 	GameTooltip:Hide();
 	self:SetScript("OnUpdate", nil);
-end
-
-function VendorerAddItemsButton_OnClick(self, button)
-	if(button == "LeftButton") then
-		if(not GetCursorInfo()) then
-			Addon:OpenVendorerItemListsFrame("Vendorer Junk Items", Addon.db.global.ItemJunkList);
-			VendorerItemListsFrameDescription:SetText("These items are always sold.");
-			VendorerItemListsFrame.addItemFunction = VendorerAddItemsButton_AddItem;
-		else
-			VendorerAddItemsButton_AddItem(self);
-		end
-	elseif(button == "RightButton" and IsShiftKeyDown()) then
-		if(not GetCursorInfo()) then
-			for link, _ in pairs(Addon.db.global.ItemJunkList) do
-				StaticPopup_Show("VENDORER_CONFIRM_CLEAR_JUNKSELL_LIST");
-				return;
-			end
-		else
-			ClearCursor();
-		end
-	end
 end
 
 ----------------------------------------------------------------------

@@ -81,7 +81,7 @@ function Addon:GetMenuData()
 			tooltipText = transmogTooltipText,
 			tooltipOnButton = 1,
 			tooltipWhileDisabled = true,
-			disabled = (CanIMogIt ~= nil),
+			disabled = (CanIMogIt == nil),
 			keepShownOnClick = 1,
 		},
 		{
@@ -94,32 +94,9 @@ function Addon:GetMenuData()
 		},
 	};
 	
-	for _, item in ipairs(data) do item.fontObject = "VendorerMenuFont" end
-	
 	return data;
 end
 
 function VendorerSettingsButton_OnClick(self)
 	Addon:OpenSettingsMenu(self);
 end
-
-hooksecurefunc("UIDropDownMenu_AddButton", function(info, level)
-	if ( not level ) then
-		level = 1;
-	end
-	
-	local listFrame = _G["DropDownList"..level];
-	local index = listFrame and (listFrame.numButtons + 1) or 1;
-	
-	listFrame = listFrame or _G["DropDownList"..level];
-	local listFrameName = listFrame:GetName();
-	
-	local button = _G[listFrameName.."Button"..index];
-	
-	if(info.text) then
-		if(info.fontObject) then
-			button:SetDisabledFontObject(info.fontObject);
-			print("SETTING DISABLED FONT", button:GetText());
-		end
-	end
-end);

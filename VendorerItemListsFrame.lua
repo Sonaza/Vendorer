@@ -11,8 +11,6 @@ tinsert(UISpecialFrames, "VendorerItemListsFrame");
 UIPanelWindows["VendorerItemListsFrame"] = { area = "left", pushable = 1 };
 
 function VendorerItemListsFrameItems_Update()
-	if(not VendorerItemListsFrame:IsVisible()) then return end
-
 	local scrollFrame = VendorerItemListsFrameItems;
 	local offset = HybridScrollFrame_GetOffset(scrollFrame);
 	local buttons = scrollFrame.buttons;
@@ -58,7 +56,7 @@ function VendorerItemListsFrameItems_Update()
 end
 
 function VendorerItemListsFrame_OnLoad(self)
-	SetPortraitToTexture(self.portrait, "Interface\\Icons\\INV_Inscription_Tarot_6oTankDeck");
+	SetPortraitToTexture(self.portrait, "Interface\\Icons\\INV_Artifact_tome02");
 	
 	VendorerItemListsFrame.itemList = {};
 	
@@ -73,7 +71,7 @@ function VendorerItemListsFrame_OnShow(self)
 	end
 	
 	if(self.itemList) then
-		self.itemCount:SetText(("%d items"):format(#self.itemList));
+		self.itemCount:SetText(("|cffffffff%d|r items"):format(#self.itemList));
 	end
 end
 
@@ -90,24 +88,35 @@ function VendorerItemListItemButton_OnEnter(self)
 	ShoppingTooltip2:Hide();
 end
 
-function Addon:OpenVendorerItemListsFrame(title, items)
-	if(VendorerItemListsFrame:IsShown()) then HideUIPanel(VendorerItemListsFrame) end
+function Addon:UpdateVendorerItemLists()
+	VendorerItemListsFrame_ReindexItems();
+	VendorerItemListsFrameItems_Update();
+end
 
-	VendorerItemListsFrame.titleText = title;
-	
+function VendorerItemListsFrame_ReindexItems()
 	local indexedItems = {};
-	for itemID, _ in pairs(items) do
+	for itemID, _ in pairs(VendorerItemListsFrame.itemListOriginal) do
 		local name = GetItemInfo(itemID);
 		if(name) then -- only add found items
 			tinsert(indexedItems, itemID)
 		end
 	end
 	VendorerItemListsFrame.itemList = indexedItems;
+end
+
+function Addon:OpenVendorerItemListsFrame(title, items)
+	if(VendorerItemListsFrame:IsShown()) then HideUIPanel(VendorerItemListsFrame) end
+
+	VendorerItemListsFrame.titleText = title;
+	
 	VendorerItemListsFrame.itemListOriginal = items;
+	VendorerItemListsFrame_ReindexItems();
+	
+	HybridScrollFrame_SetOffset(VendorerItemListsFrameItems, 0);
+	VendorerItemListsFrameItemsScrollBar:SetValue(0);
+	VendorerItemListsFrameItems_Update();
 	
 	ShowUIPanel(VendorerItemListsFrame);
-	
-	VendorerItemListsFrameItems_Update();
 end
 
 function VendorerItemListItemButtonRemove_OnClick(itembutton)
@@ -116,26 +125,44 @@ function VendorerItemListItemButtonRemove_OnClick(itembutton)
 	
 	local _, itemLink = GetItemInfo(itemID);
 	Addon:AddMessage(string.format("%s removed from the list.", itemLink));
-end
-
-function VendorerItemListsFrame_OnEnter(self)
-	VendorerItemListsFrame.hovering = true;
-end
-
-function VendorerItemListsFrame_OnLeave(self)
-	VendorerItemListsFrame.hovering = false;
-end
-
-function VendorerItemListsFrame_OnUpdate(self)
-	if(not VendorerItemListsFrame.hovering) then return end
 	
-	if(not IsMouseButtonDown("LeftButton")) then
-		print("POTATOS");
+	Addon:UpdateVendorerItemLists()
+end
+
+function VendorerItemListsDragReceiver_OnShow(self)
+	self.hovering = false;
+	self:RegisterForClicks("LeftButtonUp");
+end
+
+function VendorerItemListsDragReceiver_OnEnter(self)
+	if(IsMouseButtonDown("LeftButton")) then
+		self.hovering = true;
+	end
+end
+
+function VendorerItemListsDragReceiver_OnLeave(self)
+	self.hovering = false;
+end
+
+function VendorerItemListsDragReceiver_OnClick(self, button)
+	if(button == "LeftButton") then
 		if(VendorerItemListsFrame.addItemFunction) then
 			VendorerItemListsFrame.addItemFunction();
 		end
 		
-		self.hovering = false;
+		VendorerItemListsDragReceiver:Hide();
+	end
+end
+
+function VendorerItemListsDragReceiver_OnUpdate(self)
+	if(not self.hovering) then return end
+	
+	if(not IsMouseButtonDown("LeftButton")) then
+		if(VendorerItemListsFrame.addItemFunction) then
+			VendorerItemListsFrame.addItemFunction();
+		end
+		
+		VendorerItemListsDragReceiver:Hide();
 	end
 end
 

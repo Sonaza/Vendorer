@@ -27,6 +27,19 @@
 		<Color r="1" g="1" b="1"/>
 	</Font>
 	
+	<Font name="VendorerBigFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
+		<Shadow>
+			<Offset>
+				<AbsDimension x="0" y="-2"/>
+			</Offset>
+			<Color r="0" g="0" b="0"/>
+		</Shadow>
+		<FontHeight>
+			<AbsValue val="16"/>
+		</FontHeight>
+		<Color r="1" g="1" b="1"/>
+	</Font>
+	
 	<Font name="VendorerMenuFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
 		<Shadow>
 			<Offset>
