@@ -186,9 +186,6 @@ function Addon:IsGarrisonBlueprintKnown(itemID)
 	local buildingID = garrisonBuildings[itemID];
 	if(buildingID) then
 		local _, name, _, _, _, _, _, _, _, _, needsPlan = C_Garrison.GetBuildingInfo(buildingID);
-		if(not needsPlan) then
-			print("has plan for", name)
-		end
 		return needsPlan == false;
 	end
 	
