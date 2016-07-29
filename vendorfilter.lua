@@ -317,6 +317,11 @@ function Addon:ResetAllFilters()
 end
 
 function Addon:RefreshFilter()
+	if(VendorerStackSplitFrame:IsPurchasing()) then
+		VendorerStackSplitFrame:CancelPurchase();
+		Addon:Announce("Pending bulk purchase canceled due to filtering change.");
+	end
+	
 	Addon.FilterText = string.trim(string.lower(VendorerFilterEditBox:GetText()));
 	MerchantFrame.page = 1;
 	Addon:UpdateMerchantItems();
@@ -331,6 +336,11 @@ function Vendorer_OnSearchTextChanged(self)
 end
 
 hooksecurefunc("MerchantFrame_SetFilter", function()
+	if(VendorerStackSplitFrame:IsPurchasing()) then
+		VendorerStackSplitFrame:CancelPurchase();
+		Addon:Announce("Pending bulk purchase canceled due to filtering change.");
+	end
+	
 	Addon:UpdateMerchantItems();
 end);
 
@@ -344,6 +354,7 @@ hooksecurefunc("MerchantFrame_Update", function()
 		Addon:HideExtensionPanel();
 		MerchantFrameLootFilter:SetPoint("TOPRIGHT", MerchantFrame, "TOPRIGHT", 0, -28);
 		VendorerToggleExtensionFrameButtons:Hide();
+		VendorerStackSplitFrame:Cancel();
 	end
 end);
 

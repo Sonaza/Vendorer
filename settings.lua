@@ -58,6 +58,24 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
+			text = "Show icon for missing transmogs" .. (not CanIMogIt and " (disabled)" or ""),
+			func = function()
+				self.db.global.ShowTransmogAsterisk = not self.db.global.ShowTransmogAsterisk;
+				MerchantFrame_UpdateMerchantInfo();
+			end,
+			checked = function() return self.db.global.ShowTransmogAsterisk; end,
+			isNotRadio = true,
+			tooltipTitle = "Show icon for missing transmogs",
+			tooltipText = transmogTooltipText,
+			tooltipOnButton = 1,
+			tooltipWhileDisabled = true,
+			disabled = (CanIMogIt == nil),
+			keepShownOnClick = 1,
+		},
+		{
+			text = " ", isTitle = true, notCheckable = true,
+		},
+		{
 			text = "Use improved stack purchasing",
 			func = function()
 				self.db.global.UseImprovedStackSplit = not self.db.global.UseImprovedStackSplit;
@@ -73,18 +91,15 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
-			text = "Show icon for missing transmogs" .. (not CanIMogIt and " (disabled)" or ""),
+			text = "Throttle purchases to a safe interval",
 			func = function()
-				self.db.global.ShowTransmogAsterisk = not self.db.global.ShowTransmogAsterisk;
-				MerchantFrame_UpdateMerchantInfo();
+				self.db.global.UseSafePurchase = not self.db.global.UseSafePurchase;
 			end,
-			checked = function() return self.db.global.ShowTransmogAsterisk; end,
+			checked = function() return self.db.global.UseSafePurchase; end,
 			isNotRadio = true,
-			tooltipTitle = "Show icon for missing transmogs",
-			tooltipText = transmogTooltipText,
+			tooltipTitle = "Throttle purchases to a safe interval",
+			tooltipText = "If you encounter errors when trying to purchase items more than one stack at a time try enabling this option. Vendorer will throttle item purchases to a slower rate.",
 			tooltipOnButton = 1,
-			tooltipWhileDisabled = true,
-			disabled = (CanIMogIt == nil),
 			keepShownOnClick = 1,
 		},
 		{

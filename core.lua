@@ -112,7 +112,7 @@ local DEFAULT_IGNORE_LIST_ITEMS = {
 };
 
 StaticPopupDialogs["VENDORER_CONFIRM_SELL_UNUSABLES"] = {
-	text = "Are you sure you want to sell unusable items? You can still buyback them after.",
+	text = "Are you sure you want to sell unusable items? You can still buy them back after.",
 	button1 = YES,
 	button2 = NO,
 	OnAccept = function(self)
@@ -181,6 +181,7 @@ function Addon:OnInitialize()
 			PaintKnownItems = true,
 			
 			UseImprovedStackSplit = true,
+			UseSafePurchase = false,
 			
 			AutoRepair = false,
 			SmartAutoRepair = true,
@@ -536,6 +537,7 @@ function Addon:GetItemTooltipInfo(item)
 	end
 	
 	local bindType, isUsable, isClassArmorType, notUsableReason;
+	local isUnique = false;
 	
 	if(IsEquippableItem(itemLink) and Addon:IsArmorItemSlot(itemEquipLoc)) then
 		if(itemSubType == LOCALIZED_COSMETIC or itemSubType == LOCALIZED_MISCELLANEOUS or Addon:IsValidClassArmorType(itemSubType)) then
@@ -602,6 +604,10 @@ function Addon:GetItemTooltipInfo(item)
 			isUsable = isUsable and not Addon:IsRedText(left);
 			if(wasUsable and not isUsable) then notUsableReason = NOT_USABLE_RACE end
 		end
+		
+		if(left:GetText() == ITEM_UNIQUE) then
+			isUnique = true;
+		end
 	end
 	
 	if(not tooltipItemType and IsEquippableItem(itemLink)) then
@@ -611,8 +617,8 @@ function Addon:GetItemTooltipInfo(item)
 	if(not bindType) then bindType = BT_UNKNOWN end
 	if(isUsable == nil) then isUsable = true; end
 	
-	cachedItemInfo[itemLink] = { bindType, isUsable, isClassArmorType, notUsableReason, tooltipItemSlot, tooltipItemType, itemSubType };
-	return bindType, isUsable, isClassArmorType, notUsableReason, tooltipItemSlot, tooltipItemType, itemSubType;
+	cachedItemInfo[itemLink] = { bindType, isUsable, isClassArmorType, notUsableReason, tooltipItemSlot, tooltipItemType, itemSubType, isUnique };
+	return bindType, isUsable, isClassArmorType, notUsableReason, tooltipItemSlot, tooltipItemType, itemSubType, isUnique;
 end
 
 local function FilterUnusableItems(bagIndex, slotIndex)
@@ -1039,6 +1045,7 @@ function Addon:MERCHANT_CLOSED()
 	Addon:ResetAllFilters();
 	
 	HideUIPanel(VendorerItemListsFrame);
+	VendorerStackSplitFrame:Cancel();
 end
 
 function Addon:TRANSMOG_COLLECTION_UPDATED()

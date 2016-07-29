@@ -104,11 +104,14 @@ function VendorerItemListItemButton_OnEnter(self)
 end
 
 function Addon:UpdateVendorerItemLists()
+	if(not VendorerItemListsFrame:IsVisible()) then return end
 	VendorerItemListsFrame_ReindexItems();
 	VendorerItemListsFrameItems_Update();
 end
 
 function VendorerItemListsFrame_ReindexItems()
+	if(not VendorerItemListsFrame:IsVisible()) then return end
+	
 	local indexedItems = {};
 	for itemID, _ in pairs(VendorerItemListsFrame.itemListOriginal) do
 		local name = GetItemInfo(itemID);

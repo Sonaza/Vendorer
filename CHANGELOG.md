@@ -1,11 +1,15 @@
 ## 2.3.0
 * Added an optional dependency for the addon CanIMogIt and a marker to display if an item's appearance has not yet been added to the wardrobe.
-* Added a new options menu to replace list of checkboxes.
+* Added a bulk purchase system. When enabled shift-clicking merchant items will bring up the Vendorer's bulk purchase window.
+	* Bulk purchase window allows buying items more than one stack at a time and shows the total price of items being purchased.
+	* Additionally it has some other quality of life features.
+	* Optionally this feature can be disabled to use Blizzard's stock system.
+* Added a new options menu to replace some of the checkboxes.
 * Added option to paint known items and pets sold by vendors a shade of reddish orange. Option is enabled by default.
 * Added a dedicated menu window for ignored item and junk item lists where you can browse the items in more detail and remove them one by one. You can open the menu by left clicking the drop areas on the side panel.
 * Improved localization independence further.
 * Moved the next page button and page info text to more logical places.
-* Some code refactoring.
+* Code refactoring.
 
 ## 2.2.4
 * Mages, Warlocks and Priests don't use plate. Oops.

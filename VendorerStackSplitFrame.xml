@@ -75,7 +75,9 @@
 					<Anchor point="RIGHT" relativePoint="BOTTOM" x="-1" y="30"/>
 				</Anchors>
 				<Scripts>
-					<!-- <OnClick function="StackSplitFrameOkay_Click"/> -->
+					<OnClick>
+						self:GetParent():Okay();
+					</OnClick>
 				</Scripts>
 			</Button>
 			<Button name="$parentCancelButton" inherits="VendorerPanelButtonTemplate" text="CANCEL">
@@ -89,13 +91,20 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentDerpButton" inherits="VendorerPanelButtonTemplate" text="Derp">
+			<Button name="$parentSetMaxButton" parentKey="setMax" inherits="VendorerPanelButtonTemplate" text="Max">
 				<Size x="64" y="24"/>
 				<Anchors>
 					<Anchor point="RIGHT" relativePoint="BOTTOM" x="-1" y="55"/>
 				</Anchors>
 				<Scripts>
-					<!-- <OnClick function="StackSplitFrameOkay_Click"/> -->
+					<OnLoad>
+						self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+					</OnLoad>
+					<OnClick>
+						self:GetParent():SetMax(button);
+					</OnClick>
+					<OnEnter function="VendorerStackSplitFrameSetMaxButton_OnEnter"/>
+					<OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
 			</Button>
 			<Button name="$parentStackButton" inherits="VendorerPanelButtonTemplate" text="Stack">
@@ -110,14 +119,41 @@
 					<OnClick>
 						self:GetParent():Stack(button);
 					</OnClick>
+					<OnEnter function="VendorerStackSplitFrameStackButton_OnEnter"/>
+					<OnLeave function="GameTooltip_Hide"/>
 				</Scripts>
 			</Button>
+			<Frame name="$parentPleaseWait" parentKey="waiting" setAllPoints="true" enableMouse="true" hidden="true">
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture file="Interface\AddOns\!Vendorer\media\StackSplit" setAllPoints="true">
+							<TexCoords left="0.01171875" right="0.66015625" top="0" bottom="1"/>
+							<Color r="0" g="0" b="0" a="0.5"/>
+						</Texture>
+					</Layer>
+					<Layer level="OVERLAY">
+						<Texture file="Interface\Timer\Challenges-Logo">
+							<Size x="80" y="80"/>
+							<Anchors>
+								<Anchor point="CENTER" relativeTo="$parent"/>
+							</Anchors>
+							<TexCoords left="0.14453125" right="0.85546875" top="0.14453125" bottom="0.85546875"/>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						self:SetFrameLevel(self:GetParent():GetFrameLevel()+10);
+					</OnLoad>
+				</Scripts>
+			</Frame>
 		</Frames>
 		<Scripts>
 			<OnHide method="OnHide"/>
 			<OnChar method="OnChar"/>
 			<OnMouseWheel method="OnMouseWheel"/>
 			<OnKeyDown method="OnKeyDown"/>
+			<OnEvent method="OnEvent"/>
 		</Scripts>
 	</Frame>
 
