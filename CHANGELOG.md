@@ -1,5 +1,5 @@
 ## 2.3.0
-* Added an optional dependency for the addon CanIMogIt and a marker to display if an item's appearance has not yet been added to the wardrobe.
+* Added an optional dependency for the addon **CanIMogIt** and a marker to display if an item's appearance has not yet been added to the wardrobe.
 * Added a bulk purchase system. When enabled shift-clicking merchant items will bring up the Vendorer's bulk purchase window.
 	* Bulk purchase window allows buying items more than one stack at a time and shows the total price of items being purchased.
 	* Additionally you can instantly set maximum purchase or change number of items stack at a time.
