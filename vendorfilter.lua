@@ -319,7 +319,7 @@ end
 function Addon:RefreshFilter()
 	if(VendorerStackSplitFrame:IsPurchasing()) then
 		VendorerStackSplitFrame:CancelPurchase();
-		Addon:Announce("Pending bulk purchase canceled due to filtering change.");
+		Addon:AddMessage("Pending bulk purchase canceled due to filtering change.");
 	end
 	
 	Addon.FilterText = string.trim(string.lower(VendorerFilterEditBox:GetText()));
@@ -338,7 +338,7 @@ end
 hooksecurefunc("MerchantFrame_SetFilter", function()
 	if(VendorerStackSplitFrame:IsPurchasing()) then
 		VendorerStackSplitFrame:CancelPurchase();
-		Addon:Announce("Pending bulk purchase canceled due to filtering change.");
+		Addon:AddMessage("Pending bulk purchase canceled due to filtering change.");
 	end
 	
 	Addon:UpdateMerchantItems();

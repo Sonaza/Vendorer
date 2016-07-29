@@ -7,8 +7,9 @@
 local ADDON_NAME, Addon = ...;
 local _;
 
--- UIPanelWindows["VendorerItemListsFrame"] = { area = "left", pushable = 1, allowOtherPanels = true };
+-- UIPanelWindows["VendorerItemListsFrame"] = { area = "left", pushable = 0 };
 tinsert(UIChildWindows, "VendorerItemListsFrame");
+tinsert(UISpecialFrames, "VendorerItemListsFrame");
 
 function VendorerItemListsFrameItems_Update()
 	local scrollFrame = VendorerItemListsFrameItems;
@@ -68,9 +69,13 @@ end
 function VendorerItemListsFrame_Reanchor()
 	if(VendorerItemListsFrame.anchorframe == MerchantFrame) then
 		HideUIPanel(VendorerItemListsFrame);
-		
+	
 		VendorerItemListsFrame:ClearAllPoints();
-		VendorerItemListsFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 20, 0);
+		if(MerchantFrame:IsVisible()) then
+			VendorerItemListsFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 20, 0);
+		else
+			VendorerItemListsFrame:SetPoint("TOP", UIParent, "CENTER", 0, 260);
+		end
 		
 		ShowUIPanel(VendorerItemListsFrame);
 	end
@@ -104,13 +109,12 @@ function VendorerItemListItemButton_OnEnter(self)
 end
 
 function Addon:UpdateVendorerItemLists()
-	if(not VendorerItemListsFrame:IsVisible()) then return end
 	VendorerItemListsFrame_ReindexItems();
 	VendorerItemListsFrameItems_Update();
 end
 
 function VendorerItemListsFrame_ReindexItems()
-	if(not VendorerItemListsFrame:IsVisible()) then return end
+	if(not VendorerItemListsFrame.itemListOriginal) then return end
 	
 	local indexedItems = {};
 	for itemID, _ in pairs(VendorerItemListsFrame.itemListOriginal) do
@@ -123,7 +127,7 @@ function VendorerItemListsFrame_ReindexItems()
 end
 
 function Addon:OpenVendorerItemListsFrame(title, items)
-	if(VendorerItemListsFrame:IsShown()) then HideUIPanel(VendorerItemListsFrame) end
+	if(VendorerItemListsFrame:IsVisible()) then HideUIPanel(VendorerItemListsFrame) end
 
 	VendorerItemListsFrame.titleText = title;
 	
@@ -135,7 +139,11 @@ function Addon:OpenVendorerItemListsFrame(title, items)
 	VendorerItemListsFrameItems_Update();
 	
 	VendorerItemListsFrame:ClearAllPoints();
-	VendorerItemListsFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 20, 0);
+	if(MerchantFrame:IsVisible()) then
+		VendorerItemListsFrame:SetPoint("TOPLEFT", MerchantFrame, "TOPRIGHT", 20, 0);
+	else
+		VendorerItemListsFrame:SetPoint("TOP", UIParent, "CENTER", 0, 260);
+	end
 	
 	ShowUIPanel(VendorerItemListsFrame);
 end

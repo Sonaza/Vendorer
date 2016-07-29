@@ -149,11 +149,6 @@ StaticPopupDialogs["VENDORER_CONFIRM_CLEAR_JUNKSELL_LIST"] = {
 	hideOnEscape = 1,
 };
 
-local MESSAGE_PATTERN = "|cffe8608fVendorer|r %s";
-function Addon:AddMessage(pattern, ...)
-	DEFAULT_CHAT_FRAME:AddMessage(MESSAGE_PATTERN:format(string.format(pattern, ...)));
-end
-
 function Addon:IsArmorItemSlot(itemslot)
 	return ARMOR_SLOTS[itemslot];
 end
@@ -224,10 +219,8 @@ function Addon:OnEnable()
 	Addon:RestoreSavedSettings();
 
 	hooksecurefunc("PickupContainerItem", function()
-		VendorerIgnoreItemsButtonHighlight:Show();
-		VendorerAddItemsButtonHighlight:Show();
-		
-		VendorerItemListsDragReceiver:Show();
+		Addon:ToggleCursorHighlights(true);
+		Addon:RegisterEvent("ITEM_UNLOCKED");
 	end);
 	
 	VendorerExtensionTutorialFrame:HookScript("OnHide", function()
@@ -237,6 +230,14 @@ function Addon:OnEnable()
 	if(not Addon.db.global.ExpandTutorialShown) then
 		VendorerExtensionTutorialFrame:Show();
 	end
+end
+
+local MESSAGE_PATTERN = "|cffe8608fVendorer|r %s";
+function Addon:AddMessage(pattern, ...)
+	DEFAULT_CHAT_FRAME:AddMessage(MESSAGE_PATTERN:format(string.format(pattern, ...)), 1, 1, 1);
+end
+function Addon:AddShortMessage(pattern, ...)
+	DEFAULT_CHAT_FRAME:AddMessage(string.format(pattern, ...), 1, 1, 1);
 end
 
 function Addon:Announce(str)
@@ -254,18 +255,32 @@ function Addon:RestoreSavedSettings()
 	VendorerAutoSmartRepairButton:SetChecked(self.db.global.SmartAutoRepair);
 end
 
-function Addon:MERCHANT_UPDATE()
-	if(MerchantFrame.selectedTab == 1) then
-		Addon:UpdateMerchantItems();
+function Addon:ToggleCursorHighlights(toggle)
+	if(toggle) then
+		VendorerIgnoreItemsButtonHighlight:Show();
+		VendorerJunkItemsButtonHighlight:Show();
+		VendorerItemListsDragReceiver:Show();
+	else
+		VendorerIgnoreItemsButtonHighlight:Hide();
+		VendorerJunkItemsButtonHighlight:Hide();
+		VendorerItemListsDragReceiver:Hide();
 	end
 end
 
+function Addon:ITEM_UNLOCKED()
+	if(CursorHasItem()) then return end
+	Addon:ToggleCursorHighlights(false);
+	Addon:UnregisterEvent("ITEM_UNLOCKED");
+end
+
 function Addon:CURSOR_UPDATE()
-	if(GetCursorInfo() ~= "item") then
-		VendorerIgnoreItemsButtonHighlight:Hide();
-		VendorerAddItemsButtonHighlight:Hide();
-		
-		VendorerItemListsDragReceiver:Hide();
+	if(CursorHasItem()) then return end
+	Addon:ToggleCursorHighlights(false);
+end
+
+function Addon:MERCHANT_UPDATE()
+	if(MerchantFrame.selectedTab == 1) then
+		Addon:UpdateMerchantItems();
 	end
 end
 
@@ -669,26 +684,11 @@ function Addon:GetItemID(itemLink)
 	return itemID and tonumber(itemID) or nil;
 end
 
-function VendorerIgnoreItemsButton_IgnoreItem(self)
+function Addon:AddCursorItemToIgnoreList()
 	local cursor, _, itemLink = GetCursorInfo();
 	if(cursor == "item" and itemLink) then
-		local itemID = Addon:GetItemID(itemLink);
-		
-		if(Addon.db.global.ItemJunkList[itemID]) then
-			Addon.db.global.ItemJunkList[itemID] = nil;
-			Addon:AddMessage(string.format("%s removed from junk sell list.", itemLink));
-		end
-		
-		if(not Addon.db.global.ItemIgnoreList[itemID]) then
-			Addon.db.global.ItemIgnoreList[itemID] = true;
-			Addon:AddMessage(string.format("%s added to ignore list.", itemLink));
-		else
-			Addon.db.global.ItemIgnoreList[itemID] = nil;
-			Addon:AddMessage(string.format("%s removed from ignore list.", itemLink));
-		end
+		Addon:AddItemToIgnoreList(itemLink);
 		ClearCursor();
-		
-		Addon:UpdateVendorerItemLists();
 	end
 	
 	if(not VendorerItemListsFrame:IsVisible()) then
@@ -696,31 +696,56 @@ function VendorerIgnoreItemsButton_IgnoreItem(self)
 	end
 end
 
-function VendorerAddItemsButton_AddItem(self)
+function Addon:AddItemToIgnoreList(itemLink)
+	if(not itemLink) then return end
+	local itemID = Addon:GetItemID(itemLink);
+	
+	if(Addon.db.global.ItemJunkList[itemID]) then
+		Addon.db.global.ItemJunkList[itemID] = nil;
+		Addon:AddMessage(string.format("%s removed from junk sell list.", itemLink));
+	end
+	
+	if(not Addon.db.global.ItemIgnoreList[itemID]) then
+		Addon.db.global.ItemIgnoreList[itemID] = true;
+		Addon:AddMessage(string.format("%s added to ignore list.", itemLink));
+	else
+		Addon.db.global.ItemIgnoreList[itemID] = nil;
+		Addon:AddMessage(string.format("%s removed from ignore list.", itemLink));
+	end
+	
+	Addon:UpdateVendorerItemLists();
+end
+
+function Addon:AddCursorItemToJunkList()
 	local cursor, _, itemLink = GetCursorInfo();
 	if(cursor == "item" and itemLink) then
-		local itemID = Addon:GetItemID(itemLink);
-		
-		if(Addon.db.global.ItemIgnoreList[itemID]) then
-			Addon.db.global.ItemIgnoreList[itemID] = nil;
-			Addon:AddMessage(string.format("%s removed from ignore list.", itemLink));
-		end
-		
-		if(not Addon.db.global.ItemJunkList[itemID]) then
-			Addon.db.global.ItemJunkList[itemID] = true;
-			Addon:AddMessage(string.format("%s added to junk sell list.", itemLink));
-		else
-			Addon.db.global.ItemJunkList[itemID] = nil;
-			Addon:AddMessage(string.format("%s removed from junk sell list.", itemLink));
-		end
+		Addon:AddItemToJunkList(itemLink);
 		ClearCursor();
-		
-		Addon:UpdateVendorerItemLists();
 	end
 	
 	if(not VendorerItemListsFrame:IsVisible()) then
-		VendorerAddItemsButton_OnEnter(VendorerAddItemsButton);
+		VendorerJunkItemsButton_OnEnter(VendorerJunkItemsButton);
 	end
+end
+
+function Addon:AddItemToJunkList(itemLink)
+	if(not itemLink) then return end
+	local itemID = Addon:GetItemID(itemLink);
+	
+	if(Addon.db.global.ItemIgnoreList[itemID]) then
+		Addon.db.global.ItemIgnoreList[itemID] = nil;
+		Addon:AddMessage(string.format("%s removed from ignore list.", itemLink));
+	end
+	
+	if(not Addon.db.global.ItemJunkList[itemID]) then
+		Addon.db.global.ItemJunkList[itemID] = true;
+		Addon:AddMessage(string.format("%s added to junk sell list.", itemLink));
+	else
+		Addon.db.global.ItemJunkList[itemID] = nil;
+		Addon:AddMessage(string.format("%s removed from junk sell list.", itemLink));
+	end
+	
+	Addon:UpdateVendorerItemLists();
 end
 
 function VendorerIgnoreItemsButton_OnEnter(self)
@@ -756,7 +781,7 @@ function VendorerIgnoreItemsButton_OnEnter(self)
 	if(IsMouseButtonDown("LeftButton")) then
 		self:SetScript("OnUpdate", function(self)
 			if(not IsMouseButtonDown("LeftButton")) then
-				VendorerIgnoreItemsButton_IgnoreItem(self);
+				Addon:AddCursorItemToIgnoreList();
 				self:SetScript("OnUpdate", nil);
 			end
 		end);
@@ -769,15 +794,19 @@ function VendorerIgnoreItemsButton_OnLeave(self)
 	self:SetScript("OnUpdate", nil);
 end
 
+function Addon:OpenIgnoredItemsListsFrame()
+	GameTooltip:Hide();
+	VendorerItemListsFrameDescription:SetText("These items will not be sold.");
+	VendorerItemListsFrame.addItemFunction = Addon.AddCursorItemToIgnoreList;
+	Addon:OpenVendorerItemListsFrame("Vendorer Ignored Items", Addon.db.global.ItemIgnoreList);
+end
+
 function VendorerIgnoreItemsButton_OnClick(self, button)
 	if(button == "LeftButton") then
 		if(not GetCursorInfo()) then
-			GameTooltip:Hide();
-			Addon:OpenVendorerItemListsFrame("Vendorer Ignored Items", Addon.db.global.ItemIgnoreList);
-			VendorerItemListsFrameDescription:SetText("These items will not be sold.");
-			VendorerItemListsFrame.addItemFunction = VendorerIgnoreItemsButton_IgnoreItem;
+			Addon:OpenIgnoredItemsListsFrame();
 		else
-			VendorerIgnoreItemsButton_IgnoreItem(self);
+			Addon:AddCursorItemToIgnoreList();
 		end
 	elseif(button == "RightButton" and IsShiftKeyDown()) then
 		if(not GetCursorInfo()) then
@@ -791,15 +820,19 @@ function VendorerIgnoreItemsButton_OnClick(self, button)
 	end
 end
 
-function VendorerAddItemsButton_OnClick(self, button)
+function Addon:OpenJunkItemsListsFrame()
+	GameTooltip:Hide();
+	Addon:OpenVendorerItemListsFrame("Vendorer Junk Items", Addon.db.global.ItemJunkList);
+	VendorerItemListsFrameDescription:SetText("These items are always sold.");
+	VendorerItemListsFrame.addItemFunction = Addon.AddCursorItemToJunkList;
+end
+
+function VendorerJunkItemsButton_OnClick(self, button)
 	if(button == "LeftButton") then
 		if(not GetCursorInfo()) then
-			GameTooltip:Hide();
-			Addon:OpenVendorerItemListsFrame("Vendorer Junk Items", Addon.db.global.ItemJunkList);
-			VendorerItemListsFrameDescription:SetText("These items are always sold.");
-			VendorerItemListsFrame.addItemFunction = VendorerAddItemsButton_AddItem;
+			Addon:OpenJunkItemsListsFrame();
 		else
-			VendorerAddItemsButton_AddItem(self);
+			Addon:AddCursorItemToJunkList();
 		end
 	elseif(button == "RightButton" and IsShiftKeyDown()) then
 		if(not GetCursorInfo()) then
@@ -813,7 +846,7 @@ function VendorerAddItemsButton_OnClick(self, button)
 	end
 end
 
-function VendorerAddItemsButton_OnEnter(self)
+function VendorerJunkItemsButton_OnEnter(self)
 	GameTooltip:ClearAllPoints();
 	GameTooltip:SetOwner(self, "ANCHOR_PRESERVE");
 	GameTooltip:SetPoint("TOPLEFT", self, "RIGHT", 0, 70);
@@ -846,14 +879,14 @@ function VendorerAddItemsButton_OnEnter(self)
 	if(IsMouseButtonDown("LeftButton")) then
 		self:SetScript("OnUpdate", function(self)
 			if(not IsMouseButtonDown("LeftButton")) then
-				VendorerAddItemsButton_AddItem(self);
+				Addon:AddCursorItemToJunkList();
 				self:SetScript("OnUpdate", nil);
 			end
 		end);
 	end
 end
 
-function VendorerAddItemsButton_OnLeave(self)
+function VendorerJunkItemsButton_OnLeave(self)
 	self.text:SetFontObject("VendorerButtonFont");
 	GameTooltip:Hide();
 	self:SetScript("OnUpdate", nil);
@@ -1045,6 +1078,11 @@ function Addon:MERCHANT_CLOSED()
 	Addon:ResetAllFilters();
 	
 	HideUIPanel(VendorerItemListsFrame);
+	
+	if(VendorerStackSplitFrame:IsPurchasing()) then
+		VendorerStackSplitFrame:CancelPurchase();
+		Addon:AddMessage("Pending bulk purchase canceled due to merchant window being closed.");
+	end
 	VendorerStackSplitFrame:Cancel();
 end
 

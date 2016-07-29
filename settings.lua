@@ -7,6 +7,71 @@
 local ADDON_NAME, Addon = ...;
 local _;
 
+SLASH_VENDORER1 = "/vendorer";
+SLASH_VENDORER2 = "/vd";
+SlashCmdList["VENDORER"] = function(params)
+	Addon:HandleConsole(params, strsplit(" ", strtrim(params)));
+end
+
+function Addon:HandleConsole(params, action, ...)
+	if(action == "ignore") then
+		local _, item = strsplit(" ", strtrim(params), 2);
+		if(item) then
+			local _, itemLink = GetItemInfo(item);
+			if(itemLink) then
+				Addon:AddItemToIgnoreList(itemLink);
+			end
+		else
+			Addon:OpenIgnoredItemsListsFrame();
+		end
+	elseif(action == "junk") then
+		local _, item = strsplit(" ", strtrim(params), 2);
+		if(item) then
+			local _, itemLink = GetItemInfo(item);
+			if(itemLink) then
+				Addon:AddItemToJunkList(itemLink);
+			end
+		else
+			Addon:OpenJunkItemsListsFrame();
+		end
+	elseif(action == "autosell") then
+		Addon.db.global.AutoSellJunk = not Addon.db.global.AutoSellJunk;
+		Addon:AddMessage("Auto sell is now %s.", Addon:GetToggleStatusText(Addon.db.global.AutoSellJunk));
+	elseif(action == "autorepair") then
+		Addon.db.global.AutoRepair = not Addon.db.global.AutoRepair;
+		Addon:AddMessage("Auto repair is now %s.", Addon:GetToggleStatusText(Addon.db.global.AutoRepair));
+	elseif(action == "smartrepair") then
+		Addon.db.global.SmartAutoRepair = not Addon.db.global.SmartAutoRepair;
+		Addon:AddMessage("Smart auto repair is now %s.", Addon:GetToggleStatusText(Addon.db.global.SmartAutoRepair));
+		if(Addon.db.global.SmartAutoRepair and not Addon.db.global.AutoRepair) then
+			Addon:AddMessage("|cffffd200Note:|r While auto repair is not enabled, smart auto repair does nothing.");
+		end
+	else	
+		Addon:AddMessage("|cffffd200Usage|r");
+		Addon:AddShortMessage("You can access Vendorer slash commands by typing |cffffd200/vendorer|r or |cffffd200/vd|r.");
+		Addon:AddShortMessage("|cffffd200/vendorer|r ignore |cffaaaaaa[item]|r");
+		Addon:AddShortMessage("  Opens ignored items window or add/remove item from the ignore list.");
+		Addon:AddShortMessage("|cffffd200/vendorer|r junk |cffaaaaaa[item]|r");
+		Addon:AddShortMessage("  Opens junk items window or add/remove item from the junk list.");
+		Addon:AddShortMessage("|cffffd200/vendorer|r autosell|r");
+		Addon:AddShortMessage("  Toggles auto sell. Currently %s.", Addon:GetToggleStatusText(Addon.db.global.AutoSellJunk));
+		Addon:AddShortMessage("|cffffd200/vendorer|r autorepair|r");
+		Addon:AddShortMessage("  Toggles auto repair. Currently %s.", Addon:GetToggleStatusText(Addon.db.global.AutoRepair));
+		Addon:AddShortMessage("|cffffd200/vendorer|r smartrepair|r");
+		Addon:AddShortMessage("  Toggles smart auto repair. Currently %s. Only works when auto repair is enabled.", Addon:GetToggleStatusText(Addon.db.global.SmartAutoRepair));
+	end
+	
+	Addon:RestoreSavedSettings();
+end
+
+function Addon:GetToggleStatusText(status)
+	if(status) then
+		return "|cff43ef00enabled|r";
+	else
+		return "|cffef0000disabled|r";
+	end
+end
+
 local DropDownMenuFrame;
 function Addon:OpenSettingsMenu(anchor)
 	if(not DropDownMenuFrame) then
