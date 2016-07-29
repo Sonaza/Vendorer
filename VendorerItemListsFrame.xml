@@ -3,20 +3,14 @@
 	<Script file="VendorerItemListsFrame.lua"/>
 	
 	<Button name="VendorerItemListItemButtonTemplate" virtual="true">
-		<Size x="296" y="47"/>
+		<Size x="296" y="33"/>
 		<Layers>
 			<Layer level="OVERLAY">
 				<FontString name="$parentName" inherits="VendorerButtonFont" justifyH="LEFT" parentKey="name">
 					<Size x="0" y="12"/>
 					<Anchors>
-						<Anchor point="TOPLEFT" x="48" y="-7"/>
-						<Anchor point="RIGHT" relativeTo="$parent" x="-80" y="0"/>
-					</Anchors>
-				</FontString>
-				<FontString name="$parentSubText" inherits="SystemFont_Shadow_Small" justifyH="LEFT" justifyV="MIDDLE" parentKey="subText">
-					<Size x="240" y="0"/>
-					<Anchors>
-						<Anchor point="LEFT" x="48" y="-8"/>
+						<Anchor point="LEFT" relativeTo="$parent" x="36" y="0"/>
+						<Anchor point="RIGHT" relativeTo="$parent" x="-87" y="0"/>
 					</Anchors>
 				</FontString>
 			</Layer>
@@ -37,7 +31,7 @@
 		</Layers>
 		<Frames>
 			<Frame name="$parentIcon" parentKey="icon">
-				<Size x="36" y="36"/>
+				<Size x="22" y="22"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" x="6" y="-6"/>
 				</Anchors>
@@ -56,9 +50,9 @@
 				</Frames>
 			</Frame>
 			<Button name="$parentRemoveItem" inherits="VendorerPanelButtonTemplate" text="Remove">
-				<Size x="64" y="30"/>
+				<Size x="64" y="28"/>
 				<Anchors>
-					<Anchor point="RIGHT" relativePoint="RIGHT" relativeTo="$parent" x="-8" y="0"/>
+					<Anchor point="RIGHT" relativePoint="RIGHT" relativeTo="$parent" x="-4" y="0"/>
 				</Anchors>
 				<Scripts>
 					<OnClick>

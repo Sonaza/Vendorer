@@ -69,7 +69,7 @@
 				<PushedTexture file="Interface\MoneyFrame\Arrow-Right-Down"/>
 				<DisabledTexture file="Interface\MoneyFrame\Arrow-Right-Disabled"/>
 			</Button>
-			<Button name="$parentOkayButton" inherits="VendorerPanelButtonTemplate" text="OKAY">
+			<Button name="$parentOkayButton" parentKey="okayButton" inherits="VendorerPanelButtonTemplate" text="OKAY">
 				<Size x="64" y="24"/>
 				<Anchors>
 					<Anchor point="RIGHT" relativePoint="BOTTOM" x="-1" y="30"/>

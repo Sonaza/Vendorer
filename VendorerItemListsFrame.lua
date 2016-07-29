@@ -51,8 +51,8 @@ function VendorerItemListsFrameItems_Update()
 		end
 	end
 	
-	local totalHeight = numItems * 47;
-	local displayedHeight = numButtons * 47;
+	local totalHeight = numItems * 33;
+	local displayedHeight = numButtons * 33;
 	HybridScrollFrame_Update(scrollFrame, totalHeight, displayedHeight);
 end
 

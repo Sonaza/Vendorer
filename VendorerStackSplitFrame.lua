@@ -35,13 +35,13 @@ StaticPopupDialogs["VENDORER_CONFIRM_PURCHASE_TOKEN_ITEM"] = {
 		VendorerStackSplitFrame:DoPurchase();
 	end,
 	OnCancel = function()
-
+		VendorerStackSplitFrame.waiting:Hide();
 	end,
 	OnShow = function()
-
+		VendorerStackSplitFrame.okayButton:Disable();
 	end,
 	OnHide = function()
-
+		VendorerStackSplitFrame.okayButton:Enable();
 	end,
 	timeout = 0,
 	hideOnEscape = 1,
@@ -56,13 +56,13 @@ StaticPopupDialogs["VENDORER_CONFIRM_PURCHASE_NONREFUNDABLE_ITEM"] = {
 		VendorerStackSplitFrame:DoPurchase();
 	end,
 	OnCancel = function()
-
+		VendorerStackSplitFrame.waiting:Hide();
 	end,
 	OnShow = function()
-
+		VendorerStackSplitFrame.okayButton:Disable();
 	end,
 	OnHide = function()
-
+		VendorerStackSplitFrame.okayButton:Enable();
 	end,
 	timeout = 0,
 	hideOnEscape = 1,
@@ -77,13 +77,14 @@ StaticPopupDialogs["VENDORER_CONFIRM_HIGH_COST_ITEM"] = {
 		VendorerStackSplitFrame:DoPurchase();
 	end,
 	OnCancel = function()
-
+		VendorerStackSplitFrame.waiting:Hide();
 	end,
 	OnShow = function(self)
 		MoneyFrame_Update(self.moneyFrame, MerchantFrame.price * MerchantFrame.count);
+		VendorerStackSplitFrame.okayButton:Disable();
 	end,
 	OnHide = function()
-
+		VendorerStackSplitFrame.okayButton:Enable();
 	end,
 	timeout = 0,
 	hideOnEscape = 1,
@@ -173,7 +174,7 @@ end
 function VendorerStackSplitMixin:Okay()
 	if(self.purchasing) then return end
 	
-	-- local _, icon, price, stackCount, _, _, extendedCost = GetMerchantItemInfo(self.merchantItemIndex);
+	self.waiting:Show();
 	
 	if(self.itemButton.extendedCost) then
 		self:ConfirmExtendedItemCost(self.itemButton, self.split);
@@ -184,9 +185,9 @@ function VendorerStackSplitMixin:Okay()
 			self:ConfirmHighCostItem(self.itemButton, self.split);
 		else
 			BuyMerchantItem(self.merchantItemIndex, self.split);
+			self:Cancel();
 		end
 	end
-	self:Cancel();
 end
 
 function VendorerStackSplitMixin:ConfirmExtendedItemCost(itemButton, numToPurchase)
@@ -212,7 +213,6 @@ function VendorerStackSplitMixin:ConfirmExtendedItemCost(itemButton, numToPurcha
 	};
 	MerchantFrame.itemIndex = index;
 	MerchantFrame.count = numToPurchase;
-	
 	
 	local itemsString = self:GetTotalPriceString(index, numToPurchase);
 	
@@ -256,9 +256,9 @@ function VendorerStackSplitMixin:ConfirmExtendedItemCost(itemButton, numToPurcha
 	};
 	
 	if (itemButton.showNonrefundablePrompt) then
-		StaticPopup_Show("VENDORER_CONFIRM_PURCHASE_NONREFUNDABLE_ITEM", itemsString, specText, itemInfo);
+		self.dialog = StaticPopup_Show("VENDORER_CONFIRM_PURCHASE_NONREFUNDABLE_ITEM", itemsString, specText, itemInfo);
 	else
-		StaticPopup_Show("VENDORER_CONFIRM_PURCHASE_TOKEN_ITEM", itemsString, specText, itemInfo);
+		self.dialog = StaticPopup_Show("VENDORER_CONFIRM_PURCHASE_TOKEN_ITEM", itemsString, specText, itemInfo);
 	end
 end
 
@@ -280,7 +280,7 @@ function VendorerStackSplitMixin:ConfirmHighCostItem(itemButton, quantity)
 	MerchantFrame.count = quantity;
 	MerchantFrame.price = itemButton.price / stackCount;
 	
-	StaticPopup_Show("VENDORER_CONFIRM_HIGH_COST_ITEM",
+	self.dialog = StaticPopup_Show("VENDORER_CONFIRM_HIGH_COST_ITEM",
 		itemButton.link, nil, 
 		{
 			["texture"] = itemButton.texture, ["name"] = itemName, ["color"] = {r, g, b, 1}, 
@@ -298,8 +298,6 @@ function VendorerStackSplitMixin:DoPurchase()
 	if(Addon.db.global.UseSafePurchase) then
 		self.purchasing = true;
 		
-		self.waiting:Show();
-		
 		self:SetScript("OnChar", nil);
 		self:SetScript("OnKeyDown", nil);
 		
@@ -313,6 +311,7 @@ function VendorerStackSplitMixin:DoPurchase()
 			
 			remaining = remaining - quantity;
 		until(remaining <= 0);
+		self:Cancel();
 	end
 end
 
@@ -349,6 +348,7 @@ function VendorerStackSplitMixin:OnEvent(event, ...)
 end
 
 function VendorerStackSplitMixin:Cancel()
+	self.waiting:Hide();
 	self:Hide();
 end
 
@@ -384,9 +384,8 @@ function VendorerStackSplitFrameStackButton_OnEnter(self)
 	GameTooltip:AddLine("You can also do the same by holding down shift and using the mouse wheel. Holding down control instead uses quarter stack increments.", 1, 1, 1, true);
 	GameTooltip:AddLine(" ");
 	GameTooltip:AddLine("|cff00ff00Left-click|r  Increase by a full stack", 1, 1, 1, true);
-	GameTooltip:AddLine("|cff00ff00Ctrl Left-click|r  Increase by a quarter stack", 1, 1, 1, true);
 	GameTooltip:AddLine("|cff00ff00Right-click|r  Decrease by a full stack", 1, 1, 1, true);
-	GameTooltip:AddLine("|cff00ff00Ctrl Right-click|r  Decrease by a quarter stack", 1, 1, 1, true);
+	GameTooltip:AddLine("|cff00ff00Hold Ctrl with either|r  By a quarter stack instead", 1, 1, 1, true);
 	
 	GameTooltip:Show();
 end
@@ -520,6 +519,8 @@ function VendorerStackSplitMixin:Open(merchantItemIndex, parent, anchor)
 	self.hasExtendedCost = extendedCost;
 	
 	self:Update();
+	
+	self.okayButton:Enable();
 	
 	self:ClearAllPoints();
 	self:SetPoint("BOTTOMLEFT", parent, "TOPLEFT", 0, 0);

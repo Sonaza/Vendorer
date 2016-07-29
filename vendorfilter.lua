@@ -26,7 +26,14 @@ GameTooltip.SetMerchantItem = function(self, index)
 	if(not index) then return end
 	
 	if(FilteredMerchantItems[index]) then
-		return _GameTooltip_SetMerchantItem(self, FilteredMerchantItems[index]);
+		local value = _GameTooltip_SetMerchantItem(self, FilteredMerchantItems[index]);
+		if(Addon.db.global.UseImprovedStackSplit) then
+			local _, _, _, stack = _GetMerchantItemInfo(FilteredMerchantItems[index]);
+			if(stack <= 1) then
+				GameTooltip:AddLine(ITEM_VENDOR_STACK_BUY, 0, 1, 0);
+			end
+		end
+		return value;
 	end
 end
 

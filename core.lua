@@ -219,6 +219,8 @@ function Addon:OnEnable()
 	Addon:RestoreSavedSettings();
 
 	hooksecurefunc("PickupContainerItem", function()
+		if(not CursorHasItem()) then return end
+		
 		Addon:ToggleCursorHighlights(true);
 		Addon:RegisterEvent("ITEM_UNLOCKED");
 	end);
@@ -769,7 +771,7 @@ function VendorerIgnoreItemsButton_OnEnter(self)
 	
 	local numIgnoredItems = #items;
 	if(numIgnoredItems > 0) then
-		GameTooltip:AddLine("|cff00ff00Shift right-click  |cffffffffWipe the ignore list");
+		GameTooltip:AddLine("|cff00ff00Shift Right-click  |cffffffffWipe the ignore list");
 		GameTooltip:AddLine(" ");
 		GameTooltip:AddLine(string.format("%d Ignored Items", numIgnoredItems));
 	end
@@ -867,7 +869,7 @@ function VendorerJunkItemsButton_OnEnter(self)
 	
 	local numIgnoredItems = #items;
 	if(numIgnoredItems > 0) then
-		GameTooltip:AddLine("|cff00ff00Shift right-click |cffffffffWipe the junk list");
+		GameTooltip:AddLine("|cff00ff00Shift Right-click |cffffffffWipe the junk list");
 		GameTooltip:AddLine(" ");
 		GameTooltip:AddLine(string.format("%d Junk Items", numIgnoredItems));
 	end
