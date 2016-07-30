@@ -444,18 +444,18 @@ end
 function VendorerFilterTipsButton_OnEnter()
 	VendorerHintTooltip:ClearLines();
 	
-	VendorerHintTooltip:SetPoint("TOPLEFT", VendorerFilterTipsButton, "TOPRIGHT", -7, 22);
+	VendorerHintTooltip:SetPoint("TOPLEFT", VendorerFilterTipsButton, "TOPRIGHT", -7, 32);
 	VendorerHintTooltip:SetOwner(VendorerFilterTipsButton, "ANCHOR_PRESERVE");
 	
 	VendorerHintTooltip:AddLine("|cffffffffVendorer Filtering Tips|r");
 	VendorerHintTooltip:AddLine(" ");
 	if(Addon.db.global.UseTooltipSearch) then
-		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot, required currency or tooltip text. To search by sentences type words inside quotation marks.", nil, nil, nil, true);
+		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot, required currency or tooltip text.", nil, nil, nil, true);
 	else
-		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot or required currency. To search by sentences type words inside quotation marks.", nil, nil, nil, true);
-		VendorerHintTooltip:AddLine(" ");
-		VendorerHintTooltip:AddLine("Searching by tooltip text is currently disabled.");
+		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot or required currency. Searching by tooltip text is currently disabled.", nil, nil, nil, true);
 	end
+	VendorerHintTooltip:AddLine(" ");
+	VendorerHintTooltip:AddLine("You can also search for phrases by putting the words in quotes. The results will only include items with the same words in the same order as the ones inside the quotes.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("In addition to that you can search by other criteria.");
 	VendorerHintTooltip:AddLine(" ");

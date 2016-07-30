@@ -12,7 +12,7 @@ Sometimes vendors sell so many items it's impossible to find the items you requi
 * **By Price** Enter a price value formatted like 12g34s56c.
 * **Searching for Ranges of Values** Search values can be prefixed with <, <=, > and >= to search for ranges of values. For example >=r90 will find all items that require level higher than or equal to 90. Another example >=250g <=500g will find all items that cost between 250 and 500 gold.
 
-You can also search for sentences by surrounding the words with quotation marks.
+You can also search for phrases by putting the words in quotes. The results will only include items with the same words in the same order as the ones inside the quotes.
 
 ## Other features
 
