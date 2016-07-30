@@ -89,7 +89,7 @@ end
 function Addon:GetMenuData()
 	local transmogTooltipText = "Adds an asterisk to the item icon if you are missing the item skin.";
 	if(not CanIMogIt) then
-		transmogTooltipText = transmogTooltipText .. "|n|nTo enable this feature install the optional dependency |cffffffffCanIMogIt|r first.";
+		transmogTooltipText = transmogTooltipText .. "|n|nTo enable this feature install the optional dependency |cffffffffCan I Mog It|r first.";
 	end
 	
 	local data = {
