@@ -1,7 +1,25 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
 
-	<Font name="VendorerButtonFontHighlight" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
+	<FontFamily name="VendorerBaseFontFamily" virtual="true">
+		<Member alphabet="roman">
+			<Font font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" height="10" outline="NORMAL"/>
+		</Member>
+		<Member alphabet="korean">
+			<Font font="Fonts\2002.TTF" height="11" outline="NORMAL"/>
+		</Member>
+		<Member alphabet="simplifiedchinese">
+			<Font font="Fonts\ARKai_C.ttf" height="13" outline="NORMAL"/>
+		</Member>
+		<Member alphabet="traditionalchinese">
+			<Font font="Fonts\bHEI01B.TTF" height="13" outline="NORMAL"/>
+		</Member>
+		<Member alphabet="russian">
+			<Font font="Fonts\FRIZQT___CYR.TTF" height="11" outline="NORMAL"/>
+		</Member>
+	</FontFamily>
+
+	<Font name="VendorerButtonFontHighlight" inherits="VendorerBaseFontFamily" outline="NORMAL" virtual="true">
 		<Shadow>
 			<Offset>
 				<AbsDimension x="0" y="-1"/>
@@ -14,7 +32,7 @@
 		<Color r="1" g="0.8" b="0.3"/>
 	</Font>
 	
-	<Font name="VendorerButtonFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
+	<Font name="VendorerButtonFont" inherits="VendorerBaseFontFamily" outline="NORMAL" virtual="true">
 		<Shadow>
 			<Offset>
 				<AbsDimension x="0" y="-1"/>
@@ -370,7 +388,7 @@
 					<OnClick></OnClick>
 				</Scripts>
 			</Button>
-			<Button name="VendorerSellJunkButton" inherits="VendorerPanelButtonTemplate" text="Sell Junk Items">
+			<Button name="VendorerSellJunkButton" inherits="VendorerPanelButtonTemplate" text="VENDORER_SELL_JUNK_ITEMS_TEXT">
 				<Size x="144" y="26"/>
 				<Anchors>
 					<Anchor point="TOP" relativePoint="TOP" relativeTo="$parent" x="1" y="-56"/>
@@ -381,7 +399,7 @@
 					<OnLeave function="VendorerSellButton_OnLeave"/>
 				</Scripts>
 			</Button>
-			<Button name="VendorerSellUnusablesButton" inherits="VendorerPanelButtonTemplate" text="Sell Unusables">
+			<Button name="VendorerSellUnusablesButton" inherits="VendorerPanelButtonTemplate" text="VENDORER_SELL_UNUSABLE_ITEMS_TEXT">
 				<Size x="144" y="26"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerSellJunkButton" x="0" y="-6"/>

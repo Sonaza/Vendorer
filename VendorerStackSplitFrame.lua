@@ -295,37 +295,37 @@ function VendorerStackSplitMixin:DoPurchase()
 		error("Purchase info is missing", 2);
 	end
 	
-	if(Addon.db.global.UseSafePurchase) then
-		self.purchasing = true;
-		
-		self:SetScript("OnChar", nil);
-		self:SetScript("OnKeyDown", nil);
-		
-		self:RegisterEvent("BAG_UPDATE_DELAYED");
-		self:PurchaseNext();
-	else
-		local remaining = self.split;
-		repeat
-			local quantity = math.min(remaining, self.maxStack);
-			BuyMerchantItem(self.merchantItemIndex, quantity);
-			
-			remaining = remaining - quantity;
-		until(remaining <= 0);
-		self:Cancel();
-	end
+	self.purchasing = true;
+	self.purchaseIterations = 0;
+	
+	self:SetScript("OnChar", nil);
+	self:SetScript("OnKeyDown", nil);
+	
+	self:RegisterEvent("BAG_UPDATE_DELAYED");
+	self:PurchaseNext();
 end
 
 function VendorerStackSplitMixin:PurchaseNext()
-	if(not self.purchasing) then return end
+	if(not self.purchasing) then return -1 end
 	
-	local quantity = math.min(self.purchaseInfo.remaining, self.purchaseInfo.stackSize);
-	if(quantity > 0) then
-		BuyMerchantItem(self.purchaseInfo.itemIndex, quantity);
-		self.purchaseInfo.remaining = self.purchaseInfo.remaining - quantity;
-	else
-		self.purchasing = false;
-		self.purchaseInfo = nil;
+	-- Number of stacks safe to purchase at a time (without causing "item is busy" errors)
+	local maximumStacksToPurchase = 8;
+	if(Addon.db.global.UseSafePurchase) then
+		maximumStacksToPurchase = 1;
 	end
+	
+	local remaining = math.min(self.purchaseInfo.remaining, maximumStacksToPurchase * self.purchaseInfo.stackSize);
+	repeat
+		local quantity = math.min(remaining, self.maxStack);
+		BuyMerchantItem(self.merchantItemIndex, quantity);
+		
+		remaining = remaining - quantity;
+		self.purchaseInfo.remaining = self.purchaseInfo.remaining - quantity;
+	until(remaining <= 0);
+	
+	self.purchaseIterations = self.purchaseIterations + 1;
+	
+	return self.purchaseInfo.remaining;
 end
 
 function VendorerStackSplitMixin:IsPurchasing()
@@ -341,9 +341,15 @@ function VendorerStackSplitMixin:CancelPurchase()
 end
 
 function VendorerStackSplitMixin:OnEvent(event, ...)
-	self:PurchaseNext();
-	if(not self.purchasing) then
+	local remaining = self:PurchaseNext();
+	if(remaining <= 0) then
 		self:CancelPurchase();
+		
+		if(self.purchaseIterations > 1) then
+			C_Timer.After(0.5, function()
+				Addon:AddMessage("Purchase finished.");
+			end);
+		end
 	end
 end
 
@@ -540,12 +546,6 @@ function MerchantItemButton_OnModifiedClick(self, button)
 				local maxStack = GetMerchantItemMaxStack(merchantItemIndex);
 				local _, _, price, stackCount, _, _, extendedCost = GetMerchantItemInfo(merchantItemIndex);
 				
-				-- TODO: Support shift-click for stacks of extended cost items
-				if (stackCount > 1 and extendedCost) then
-					MerchantItemButton_OnClick(self, button);
-					return;
-				end
-				
 				VendorerStackSplitFrame:Open(merchantItemIndex, self);
 				return;
 			end
@@ -575,11 +575,8 @@ function VendorerStackSplitMixin:OnChar(text)
 end
 
 function VendorerStackSplitMixin:OnKeyDown(key)
-	if(self.purchasing) then return end
-	
-	local numKey = gsub(key, "NUMPAD", "");
 	if(key == "BACKSPACE" or key == "DELETE") then
-		if(self.typing or self.split == 1) then
+		if(not self.typing or self.split == 1) then
 			return;
 		end
 
@@ -589,7 +586,7 @@ function VendorerStackSplitMixin:OnKeyDown(key)
 			self.typing = false;
 		end
 	elseif(key == "ENTER") then
-		-- StackSplitFrameOkay_Click();
+		self:Okay();
 	elseif(GetBindingFromClick(key) == "TOGGLEGAMEMENU") then
 		self:Cancel();
 	elseif(key == "LEFT" or key == "DOWN") then

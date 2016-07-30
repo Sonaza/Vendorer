@@ -194,6 +194,17 @@ end
 
 function Addon:GetKnownTransmogInfo(itemLink)
 	if(not CanIMogIt) then return end
+	
+	local isOutdated = not CanIMogIt.IsEquippable or
+	                   not CanIMogIt.IsTransmogable or
+	                   not CanIMogIt.PlayerKnowsTransmogFromItem or
+	                   not CanIMogIt.PlayerKnowsTransmog or
+	                   not CanIMogIt.CharacterCanLearnTransmog;
+	
+	if(isOutdated) then
+		error("CanIMogIt current version is incompatible. Please update.");
+	end
+	
 	if(not CanIMogIt:IsEquippable(itemLink)) then return false end
 	
 	local isTransmogable, isKnown, anotherCharacter;

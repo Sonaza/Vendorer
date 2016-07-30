@@ -123,6 +123,19 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
+			text = "Enable search from tooltip text",
+			func = function()
+				self.db.global.UseTooltipSearch = not self.db.global.UseTooltipSearch;
+				Addon:RefreshFilter();
+			end,
+			checked = function() return self.db.global.UseTooltipSearch; end,
+			isNotRadio = true,
+			tooltipTitle = "Enable search from tooltip text",
+			tooltipText = "Allow Vendorer to search item tooltip text. This allows for very powerful filtering but is also very resource intensive and may cause problems.",
+			tooltipOnButton = 1,
+			keepShownOnClick = 1,
+		},
+		{
 			text = "Show icon for missing transmogs" .. (not CanIMogIt and " (disabled)" or ""),
 			func = function()
 				self.db.global.ShowTransmogAsterisk = not self.db.global.ShowTransmogAsterisk;

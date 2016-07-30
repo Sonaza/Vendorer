@@ -201,6 +201,58 @@ local VALUE_FILTERS = {
 	{ type = VALUE_TYPE_MONEY, pattern = MONEY_EQ_PATTERN,  func = COMPARISONS.EQ },
 };
 
+local cachedStrings = {};
+function Addon:MakeTooltipString(itemLink)
+	if(not itemLink) then return "" end
+	if(cachedStrings[itemLink]) then return cachedStrings[itemLink] end
+	
+	VendorerTooltip:Hide();
+	VendorerTooltip:SetOwner(UIParent, "ANCHOR_NONE", 99999, 0);
+	VendorerTooltip:SetHyperlink(itemLink);
+	local numLines = VendorerTooltip:NumLines();
+	
+	local string = "";
+	
+	for line = 2, numLines do
+		local left = _G["VendorerTooltipTextLeft" .. line];
+		local right = _G["VendorerTooltipTextRight" .. line];
+		
+		if(left and left:GetText()) then
+			string = string .. " " .. strtrim(left:GetText());
+		end
+		
+		if(right and right:GetText()) then
+			string = string .. " " .. strtrim(right:GetText());
+		end
+	end
+	
+	cachedStrings[itemLink] = strtrim(string.lower(string));
+	return cachedStrings[itemLink];
+end
+
+function Addon:GenerateTokens(text)
+	local tokens = {};
+	
+	local openQuotation = false;
+	for _, token in pairs({ strsplit(" ", text) }) do
+		if(not openQuotation and string.match(token, "%b\"\"")) then
+			tinsert(tokens, string.sub(token, 2, -2));
+		elseif(not openQuotation and string.sub(token, 1, 1) == "\"") then
+			openQuotation = true;
+			tinsert(tokens, string.sub(token, 2));
+		elseif(openQuotation and string.sub(token, -1) == "\"") then
+			openQuotation = false;
+			tokens[#tokens] = tokens[#tokens] .. " " .. string.sub(token, 0, -2);
+		elseif(openQuotation) then
+			tokens[#tokens] = tokens[#tokens] .. " " .. token;
+		else
+			tinsert(tokens, token);
+		end
+	end
+	
+	return tokens;
+end
+
 Addon.FilterText = "";
 function Addon:FilterItem(index)
 	if(Addon.FilterText == "") then return true end
@@ -210,6 +262,7 @@ function Addon:FilterItem(index)
 	
 	local itemName, texture, price, quantity, numAvailable, isUsable, extendedCost = _GetMerchantItemInfo(index);
 	local _, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(itemLink);
+	local equippable = IsEquippableItem(itemLink);
 	
 	local item_id = strmatch(itemLink, "item:(%d+)");
 	item_id = item_id and tonumber(item_id) or "";
@@ -223,8 +276,11 @@ function Addon:FilterItem(index)
 	
 	local filter = true;
 	
-	local tokens = { strsplit(" ", Addon.FilterText) };
+	local tokens = Addon:GenerateTokens(Addon.FilterText);
 	for _, token in pairs(tokens) do
+		-- Escape the search token so it doesn't do regex queries
+		token = string.gsub(token, "[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1");
+		
 		local matchFound = false;
 		local result = true;
 		
@@ -269,7 +325,12 @@ function Addon:FilterItem(index)
 				result = result or strfind(equipSlot, token) ~= nil;
 			end
 			
-			if(extendedCost) then
+			result = result or (token == "usable" and isUsable);
+			result = result or (token == "unusable" and not isUsable);
+			result = result or (token == "equippable" and equippable);
+			result = result or (token == "unequippable" and not equippable);
+			
+			if(not result and extendedCost) then
 				local numCostItems = _GetMerchantItemCostInfo(index);
 				for costItemIndex = 1, numCostItems do
 					local _, costItemValue, costItemLink, currencyName = _GetMerchantItemCostItem(index, costItemIndex);
@@ -279,6 +340,11 @@ function Addon:FilterItem(index)
 						result = result or strfind(string.lower(currencyName), token) ~= nil;
 					end
 				end
+			end
+			
+			if(not result and Addon.db.global.UseTooltipSearch) then
+				local tooltipString = Addon:MakeTooltipString(itemLink);
+				result = strfind(string.lower(tooltipString), token) ~= nil;
 			end
 			
 			filter = filter and result;
@@ -323,6 +389,11 @@ function Addon:ResetAllFilters()
 	FilteredMerchantItems = nil;
 end
 
+function Vendorer_OnSearchTextChanged(self)
+	SearchBoxTemplate_OnTextChanged(self);
+	Addon:RefreshFilter();
+end
+
 function Addon:RefreshFilter()
 	if(VendorerStackSplitFrame:IsPurchasing()) then
 		VendorerStackSplitFrame:CancelPurchase();
@@ -332,14 +403,6 @@ function Addon:RefreshFilter()
 	Addon.FilterText = string.trim(string.lower(VendorerFilterEditBox:GetText()));
 	MerchantFrame.page = 1;
 	Addon:UpdateMerchantItems();
-end
-
-Addon.NoResultsLength = -1;
-function Vendorer_OnSearchTextChanged(self)
-	SearchBoxTemplate_OnTextChanged(self);
-	
-	local filterLength = strlen(VendorerFilterEditBox:GetText());
-	Addon:RefreshFilter();
 end
 
 hooksecurefunc("MerchantFrame_SetFilter", function()
@@ -386,9 +449,18 @@ function VendorerFilterTipsButton_OnEnter()
 	
 	VendorerHintTooltip:AddLine("|cffffffffVendorer Filtering Tips|r");
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot or|nrequired currency.");
+	if(Addon.db.global.UseTooltipSearch) then
+		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot, required currency or tooltip text. To search by sentences type words inside quotation marks.", nil, nil, nil, true);
+	else
+		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot or required currency. To search by sentences type words inside quotation marks.", nil, nil, nil, true);
+		VendorerHintTooltip:AddLine(" ");
+		VendorerHintTooltip:AddLine("Searching by tooltip text is currently disabled.");
+	end
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("In addition to that you can search by other criteria.");
+	VendorerHintTooltip:AddLine(" ");
+	VendorerHintTooltip:AddLine("|cffffffffMagic words|r");
+	VendorerHintTooltip:AddLine("Predefined magic words: |cffffffffusable, unusable, equippable, unequippable|r.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("|cffffffffBy Item ID|r");
 	VendorerHintTooltip:AddLine("Prefix a number with letters |cffffffffid|r. For example |cffffffffid|cfff361946948|r."); 
@@ -413,6 +485,7 @@ function VendorerFilterTipsButton_OnEnter()
 	VendorerHintTooltip:AddLine("items that cost between 250 and 500 gold.");
 	
 	VendorerHintTooltip:SetWidth(240);
+	VendorerHintTooltip:SetScale(0.9);
 	VendorerHintTooltip:Show();
 end
 

@@ -24,6 +24,9 @@ VENDORER_IGNORE_ITEMS_BUTTON_TEXT = "Ignore Items";
 VENDORER_ADD_JUNK_BUTTON_TEXT = "Add Junk Items";
 VENDORER_SETTINGS_BUTTON_TEXT = "|TInterface\\Scenarios\\ScenarioIcon-Interact:14:14:0:0|t Settings";
 
+VENDORER_SELL_JUNK_ITEMS_TEXT = "Sell Junk Items";
+VENDORER_SELL_UNUSABLE_ITEMS_TEXT = "Sell Unusables";
+
 VENDORER_BIG_DRAG_ITEM_HERE_TEXT = "|cffffd200Drag item here to|nadd it to the list|r";
 
 VENDORER_AUTO_SELL_JUNK_TITLE_TEXT = "Auto Sell Junk";
@@ -178,6 +181,8 @@ function Addon:OnInitialize()
 			UseImprovedStackSplit = true,
 			UseSafePurchase = false,
 			
+			UseTooltipSearch = true,
+			
 			AutoRepair = false,
 			SmartAutoRepair = true,
 			
@@ -232,6 +237,18 @@ function Addon:OnEnable()
 	if(not Addon.db.global.ExpandTutorialShown) then
 		VendorerExtensionTutorialFrame:Show();
 	end
+	
+	Addon:MakeFrameMovable();
+end
+
+function Addon:MakeFrameMovable()
+	MerchantFrame:SetMovable(true);
+	MerchantFrame:SetScript("OnMouseDown", function(self)
+		self:StartMoving();
+	end);
+	MerchantFrame:SetScript("OnMouseUp", function(self)
+		self:StopMovingOrSizing();
+	end);
 end
 
 local MESSAGE_PATTERN = "|cffe8608fVendorer|r %s";
@@ -245,9 +262,10 @@ end
 function Addon:Announce(str)
 	Addon:AddMessage(str);
 	
-	if(Parrot) then
-		Parrot:ShowMessage(str, "Errors", false);
-	end
+	-- Parrot is ded, also not even officially supported feature of this addon :D
+	-- if(Parrot) then
+	-- 	Parrot:ShowMessage(str, "Errors", false);
+	-- end
 end
 
 function Addon:RestoreSavedSettings()
