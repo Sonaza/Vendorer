@@ -118,9 +118,27 @@ function Addon:GetMenuData()
 			checked = function() return self.db.global.PaintKnownItems; end,
 			isNotRadio = true,
 			tooltipTitle = "Paint Known Items",
-			tooltipText = "Paints known items and pets orange to make unlearned items easier to distinguish.",
+			tooltipText = "Paints known items and pets to make unknown items easier to distinguish. You can change the color by clicking the color picker square.",
 			tooltipOnButton = 1,
 			keepShownOnClick = 1,
+			swatchFunc = function()
+				self.db.global.PaintKnownItems = true;
+				
+				local r, g, b = ColorPickerFrame:GetColorRGB();
+				self.db.global.PaintColor.r = r;
+				self.db.global.PaintColor.g = g;
+				self.db.global.PaintColor.b = b;
+				MerchantFrame_UpdateMerchantInfo();
+			end,
+			cancelFunc = function(values)
+				self.db.global.Color.r = values.r;
+				self.db.global.Color.g = values.g;
+				self.db.global.Color.b = values.b;
+			end,
+			hasColorSwatch = true,
+			r = self.db.global.PaintColor.r,
+			g = self.db.global.PaintColor.g,
+			b = self.db.global.PaintColor.b,
 		},
 		{
 			text = "Enable search from tooltip text",

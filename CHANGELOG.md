@@ -9,7 +9,7 @@
 	* You can now filter by item tooltip text. This is enabled by default but can be **very resource intensive** and can be disabled from the settings.
 	* You can search for sentences by surrounding words with quotation marks.
 * Added a new options menu to replace some of the checkboxes.
-* Added option to paint known items and pets sold by vendors a shade of reddish orange. Option is enabled by default.
+* Added option to paint known items and pets sold by vendors to make unknown items esaier to distinguish. You can change the color in the settings. Option is enabled by default.
 * Added a dedicated menu window for ignored item and junk item lists where you can browse the items in more detail and remove them one by one. You can open the menu by left clicking the drop areas on the side panel or by using the new slash commands.
 * Added slash commands available by typing **/vendorer** or **/vd**.
 * Made merchant frame movable.

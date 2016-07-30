@@ -176,7 +176,13 @@ function Addon:OnInitialize()
 			MerchantFrameExtension = VENDORER_EXTENSION_NARROW,
 			AutoSellJunk = false,
 			PaintArmorTypes = true,
+			
 			PaintKnownItems = true,
+			PaintColor = {
+				r = 0.6,
+				g = 0.0,
+				b = 0.0,	
+			},
 			
 			UseImprovedStackSplit = true,
 			UseSafePurchase = false,
@@ -1214,7 +1220,11 @@ function Addon:UpdateMerchantInfo()
 				
 				if(Addon.db.global.PaintKnownItems and Addon:IsItemKnown(itemLink)) then
 					shouldColorize = true;
-					color = { 0.6, 0.3, 0.0 };
+					color = {
+						Addon.db.global.PaintColor.r,
+						Addon.db.global.PaintColor.g,
+						Addon.db.global.PaintColor.b
+					};
 				end
 				
 				if(shouldColorize) then
@@ -1301,6 +1311,54 @@ function Addon:UpdateBuybackInfo()
 				rarityBorder.border:SetVertexColor(r, g, b, a);
 				rarityBorder.highlight:SetVertexColor(r, g, b);
 				rarityBorder:Show();
+			end
+		end
+	end
+end
+
+-- Update function just to refresh item colors for use by settings menu
+function Addon:UpdateMerchantItemColors()
+	print("wtfbbq");
+	local numMerchantItems = GetMerchantNumItems();
+	
+	for i=1, MERCHANT_ITEMS_PER_PAGE, 1 do
+		local index = ((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i;
+		local itemButton = _G["MerchantItem"..i.."ItemButton"];
+		local merchantButton = _G["MerchantItem"..i];
+		
+		if(index <= numMerchantItems) then
+			local itemLink = GetMerchantItemLink(index);
+			if(itemLink) then
+				local _, _, _, _, _, isUsable = GetMerchantItemInfo(index);
+				local _, _, rarity, _, _, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(itemLink);
+				
+				local shouldColorize = false;
+				local color = { 0.6, 0.0, 0.0 };
+				
+				if(Addon.db.global.PaintArmorTypes) then
+					if(isUsable and itemType == LOCALIZED_ARMOR and Addon:IsArmorItemSlot(itemEquipLoc)) then
+						if(itemSubType ~= LOCALIZED_COSMETIC and not Addon:IsValidClassArmorType(itemSubType)) then
+							shouldColorize = true;
+						end
+					end
+				end
+				
+				if(Addon.db.global.PaintKnownItems and Addon:IsItemKnown(itemLink)) then
+					shouldColorize = true;
+					color = {
+						Addon.db.global.PaintColor.r,
+						Addon.db.global.PaintColor.g,
+						Addon.db.global.PaintColor.b
+					};
+				end
+				
+				if(shouldColorize) then
+					local r, g, b = unpack(color);
+					SetItemButtonNameFrameVertexColor(merchantButton, r, g, b);
+					SetItemButtonSlotVertexColor(merchantButton, r, g, b);
+					SetItemButtonTextureVertexColor(itemButton, r, g, b);
+					SetItemButtonNormalTextureVertexColor(itemButton, r, g, b);
+				end
 			end
 		end
 	end
