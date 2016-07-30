@@ -295,33 +295,37 @@ function VendorerStackSplitMixin:DoPurchase()
 		error("Purchase info is missing", 2);
 	end
 	
-	self.purchasing = true;
-	self.purchaseIterations = 0;
-	
-	self:SetScript("OnChar", nil);
-	self:SetScript("OnKeyDown", nil);
-	
-	self:RegisterEvent("BAG_UPDATE_DELAYED");
-	self:PurchaseNext();
+	if(self.purchaseInfo.remaining > 0) then
+		self.purchasing = true;
+		self.purchaseIterations = 0;
+		
+		self:SetScript("OnChar", nil);
+		self:SetScript("OnKeyDown", nil);
+		
+		self:RegisterEvent("BAG_UPDATE_DELAYED");
+		local remaining = self:PurchaseNext();
+	else
+		self:Cancel();
+	end
 end
 
 function VendorerStackSplitMixin:PurchaseNext()
 	if(not self.purchasing) then return -1 end
 	
 	-- Number of stacks safe to purchase at a time (without causing "item is busy" errors)
-	local maximumStacksToPurchase = 8;
+	local maximumStacksToPurchase = 10;
 	if(Addon.db.global.UseSafePurchase) then
 		maximumStacksToPurchase = 1;
 	end
 	
 	local remaining = math.min(self.purchaseInfo.remaining, maximumStacksToPurchase * self.purchaseInfo.stackSize);
-	repeat
-		local quantity = math.min(remaining, self.maxStack);
+	while(remaining > 0) do
+		local quantity = math.min(remaining, self.purchaseInfo.stackSize);
 		BuyMerchantItem(self.merchantItemIndex, quantity);
 		
 		remaining = remaining - quantity;
 		self.purchaseInfo.remaining = self.purchaseInfo.remaining - quantity;
-	until(remaining <= 0);
+	end
 	
 	self.purchaseIterations = self.purchaseIterations + 1;
 	
@@ -341,15 +345,20 @@ function VendorerStackSplitMixin:CancelPurchase()
 end
 
 function VendorerStackSplitMixin:OnEvent(event, ...)
-	local remaining = self:PurchaseNext();
-	if(remaining <= 0) then
-		self:CancelPurchase();
+	if(self.purchaseInfo.remaining > 0) then
+		local remaining = self:PurchaseNext();
 		
-		if(self.purchaseIterations > 1) then
-			C_Timer.After(0.5, function()
-				Addon:AddMessage("Purchase finished.");
-			end);
+		if(remaining <= 0) then
+			self:CancelPurchase();
+			
+			if(self.purchaseIterations > 1) then
+				C_Timer.After(0.5, function()
+					Addon:AddMessage("Purchase finished.");
+				end);
+			end
 		end
+	else
+		self:CancelPurchase();
 	end
 end
 
