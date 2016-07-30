@@ -36,7 +36,7 @@ function Addon:IsItemKnown(itemLink)
 		end
 		
 		if(Addon:IsGarrisonBlueprintKnown(itemID)) then
-			-- cached[itemLink] = true;
+			cached[itemLink] = true;
 			return true;
 		end
 	end

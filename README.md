@@ -14,6 +14,8 @@ Sometimes vendors sell so many items it's impossible to find the items you requi
 
 You can also search for phrases by putting the words in quotes. The results will only include items with the words in the same order as the ones inside the quotes.
 
+Any and all filters can also be negated by prefixing the query word or phrase with either **!** (an exlamation mark) or **-** (a dash).
+
 ## Other features
 
 Vendorer improves ability to bulk purchase. You can buy several stacks at a time and the window will also display total cost of your purchase. If the default setting causes problems, you can throttle purchases to slower rate in the settings.

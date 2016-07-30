@@ -38,6 +38,9 @@ VENDORER_AUTO_REPAIR_HINT_TEXT = "|cffffffffRepair all gear automatically if pos
 VENDORER_USE_SMART_REPAIR_TITLE_TEXT = "Use Smart Repair";
 VENDORER_USE_SMART_REPAIR_HINT_TEXT = "|cffffffffWhen doing automatic repair allow Vendorer to try and spend full guild repair allowance first.|n|n|cff00c6ffNote:|cffffffff this option only applies to auto repair!|n|nProbably not recommended if you have unlimited repair funds.";
 
+VENDORER_CONTRACT_BUTTON_TITLE_TEXT = "Collapse Frame";
+VENDORER_EXPAND_BUTTON_TITLE_TEXT = "Expand Frame";
+
 local CLASS_ARMOR_TYPES = {
 	WARRIOR     = LOCALIZED_PLATE,
 	PALADIN     = LOCALIZED_PLATE,
@@ -434,6 +437,24 @@ function VendorerToggleExtensionFrameButton_OnClick(self, button)
 	if(Addon.db.global.MerchantFrameExtension > 3) then Addon.db.global.MerchantFrameExtension = 3; end
 	
 	Addon:UpdateExtensionToggleButton();
+end
+
+function VendorerToggleExtensionFrameButton_OnEnter(self)
+	if(self.tooltipTitle) then
+		GameTooltip:ClearAllPoints();
+		GameTooltip:SetOwner(VendorerToggleExtensionFrameButtonExpand, "ANCHOR_PRESERVE");
+		GameTooltip:SetPoint("LEFT", VendorerToggleExtensionFrameButtonExpand, "RIGHT", 0, 0);
+		
+		local titleText = _G[self.tooltipTitle] or self.tooltipTitle;
+		GameTooltip:AddLine(titleText, nil, nil, nil, true);
+		
+		if(self.tooltipText) then
+			local tooltipText = _G[self.tooltipText] or self.tooltipText;
+			GameTooltip:AddLine(tooltipText, nil, nil, nil, true);
+		end
+		
+		GameTooltip:Show();
+	end
 end
 
 function VendorerCheckButtonTemplate_OnLoad(self)

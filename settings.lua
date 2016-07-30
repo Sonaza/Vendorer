@@ -86,6 +86,7 @@ function Addon:OpenSettingsMenu(anchor)
 	DropDownList1:SetClampedToScreen(true);
 end
 
+local NEW_FEATURE_ICON = "|TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:0:0:0:-1|t";
 function Addon:GetMenuData()
 	local transmogTooltipText = "Adds an asterisk to the item icon if you are missing the item skin.";
 	if(not CanIMogIt) then
@@ -110,7 +111,7 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
-			text = "Paint known items",
+			text = NEW_FEATURE_ICON .. " Paint known items",
 			func = function()
 				self.db.global.PaintKnownItems = not self.db.global.PaintKnownItems;
 				MerchantFrame_UpdateMerchantInfo();
@@ -141,7 +142,7 @@ function Addon:GetMenuData()
 			b = self.db.global.PaintColor.b,
 		},
 		{
-			text = "Enable search from tooltip text",
+			text = NEW_FEATURE_ICON .. " Enable search from tooltip text",
 			func = function()
 				self.db.global.UseTooltipSearch = not self.db.global.UseTooltipSearch;
 				Addon:RefreshFilter();
@@ -154,7 +155,7 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
-			text = "Show icon for missing transmogs" .. (not CanIMogIt and " (disabled)" or ""),
+			text = NEW_FEATURE_ICON .. " Show icon for missing transmogs" .. (not CanIMogIt and " (disabled)" or ""),
 			func = function()
 				self.db.global.ShowTransmogAsterisk = not self.db.global.ShowTransmogAsterisk;
 				MerchantFrame_UpdateMerchantInfo();
@@ -172,7 +173,7 @@ function Addon:GetMenuData()
 			text = " ", isTitle = true, notCheckable = true,
 		},
 		{
-			text = "Use improved stack purchasing",
+			text = NEW_FEATURE_ICON .. " Use improved stack purchasing",
 			func = function()
 				self.db.global.UseImprovedStackSplit = not self.db.global.UseImprovedStackSplit;
 				-- Close both split frames just in case

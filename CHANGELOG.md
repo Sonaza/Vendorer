@@ -12,6 +12,7 @@
 * Added option to paint known items and pets sold by vendors to make unknown items esaier to distinguish. You can change the color in the settings. Option is enabled by default.
 * Added a dedicated menu window for ignored item and junk item lists where you can browse the items in more detail and remove them one by one. You can open the menu by left clicking the drop areas on the side panel or by using the new slash commands.
 * Added slash commands available by typing **/vendorer** or **/vd**.
+* Fixed error filtering currencies sold by vendors.
 * Made merchant frame movable.
 * Improved localization independence further.
 * Moved the next page button and page info text to more logical places.

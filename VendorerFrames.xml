@@ -222,6 +222,8 @@
 			<OnShow>
 				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+2);
 			</OnShow>
+			<OnEnter function="VendorerToggleExtensionFrameButton_OnEnter"/>
+			<OnLeave function="GameTooltip_Hide"/>
 		</Scripts>
 	</Button>
 	
@@ -232,6 +234,9 @@
 		</Anchors>
 		<Frames>
 			<Button name="VendorerToggleExtensionFrameButtonContract" id="1" inherits="VendorerToggleExtensionFrameButtonTemplate">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_CONTRACT_BUTTON_TITLE_TEXT" type="string"/>
+				</KeyValues>
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parent" x="0" y="0"/>
 				</Anchors>
@@ -241,6 +246,9 @@
 				<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
 			</Button>
 			<Button name="VendorerToggleExtensionFrameButtonExpand" id="2" inherits="VendorerToggleExtensionFrameButtonTemplate">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_EXPAND_BUTTON_TITLE_TEXT" type="string"/>
+				</KeyValues>
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="VendorerToggleExtensionFrameButtonContract" x="-6" y="0"/>
 				</Anchors>
