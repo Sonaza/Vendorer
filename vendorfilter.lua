@@ -455,7 +455,7 @@ function VendorerFilterTipsButton_OnEnter()
 		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot or required currency. Searching by tooltip text is currently disabled.", nil, nil, nil, true);
 	end
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine("You can also search for phrases by putting the words in quotes. The results will only include items with the same words in the same order as the ones inside the quotes.", nil, nil, nil, true);
+	VendorerHintTooltip:AddLine("You can also search for phrases by putting the words in quotes. The results will only include items with the words in the same order as the ones inside the quotes.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("In addition to that you can search by other criteria.");
 	VendorerHintTooltip:AddLine(" ");
