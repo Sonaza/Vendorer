@@ -498,14 +498,14 @@ function VendorerFilterTipsButton_OnEnter()
 	VendorerHintTooltip:AddLine("|cffffffffVendorer Filtering Tips|r");
 	VendorerHintTooltip:AddLine(" ");
 	if(Addon.db.global.UseTooltipSearch) then
-		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot, required currency or tooltip text.", nil, nil, nil, true);
+		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot, required currency or " .. NEW_FEATURE_ICON .. "tooltip text.", nil, nil, nil, true);
 	else
-		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot or required currency. Searching by tooltip text is currently disabled.", nil, nil, nil, true);
+		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot or required currency. Searching by " .. NEW_FEATURE_ICON .. "tooltip text is currently disabled.", nil, nil, nil, true);
 	end
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. " You can also search for phrases by putting the words in quotes. The results will only include items with the words in the same order as the ones inside the quotes.", nil, nil, nil, true);
+	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "You can also search for phrases by putting the words in quotes. The results will only include items with the words in the same order as the ones inside the quotes.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. " Any and all filters can also be negated by prefixing the query word or phrase with |cffffffff! (an exclamation mark)|r.", nil, nil, nil, true);
+	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "Any and all filters can also be negated by prefixing the query word or phrase with |cffffffff! (an exclamation mark)|r.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("In addition to that you can search by other criteria.");
 	VendorerHintTooltip:AddLine(" ");
@@ -513,26 +513,23 @@ function VendorerFilterTipsButton_OnEnter()
 	VendorerHintTooltip:AddLine("Predefined magic words: |cffffffffusable, unusable, equippable, unequippable, known, unknown, available|r.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("|cffffffffBy Item ID|r");
-	VendorerHintTooltip:AddLine("Prefix a number with letters |cffffffffid|r. For example |cffffffffid|cfff361946948|r."); 
+	VendorerHintTooltip:AddLine("Prefix a number with letters |cffffffffid|r. For example |cffffffffid|cfff361946948|r.", nil, nil, nil, true); 
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("|cffffffffBy Required Level|r");
-	VendorerHintTooltip:AddLine("Prefix a number with the letter |cffffffffr|r. For example |cffffffffr|cfff3619492|r.");
+	VendorerHintTooltip:AddLine("Prefix a number with the letter |cffffffffr|r. For example |cffffffffr|cfff3619492|r.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("|cffffffffBy Item Level|r");
-	VendorerHintTooltip:AddLine("Prefix a number with the letter |cffffffffi|r. For example |cffffffffi|cfff36194200|r.");
+	VendorerHintTooltip:AddLine("Prefix a number with the letter |cffffffffi|r. For example |cffffffffi|cfff36194200|r.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("|cffffffffBy Price|r");
-	VendorerHintTooltip:AddLine("Enter a price value formatted like |cffffffff12|rg|cffffffff34|rs|cffffffff56|rc.");
+	VendorerHintTooltip:AddLine("Enter a price value formatted like |cffffffff12|rg|cffffffff34|rs|cffffffff56|rc.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("|cffffffffSearching for Ranges of Values|r");
-	VendorerHintTooltip:AddLine("Search values can be prefixed with |cffffffff>, >=, <|r and |cffffffff<=|r");
-	VendorerHintTooltip:AddLine("to search for ranges of values.");
+	VendorerHintTooltip:AddLine("Search values can be prefixed with |cffffffff>, >=, <|r and |cffffffff<=|r to search for ranges of values.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine("For example |cffffffff>=r|cfff3619490|r will find all items");
-	VendorerHintTooltip:AddLine("that require level higher than or equal to 90.");
+	VendorerHintTooltip:AddLine("For example |cffffffff>=r|cfff3619490|r will find all items that require level higher than or equal to 90.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine("Another example |cffffffff>=|cfff36194250g|r |cffffffff<=|cfff36194500g|r will find all");
-	VendorerHintTooltip:AddLine("items that cost between 250 and 500 gold.");
+	VendorerHintTooltip:AddLine("Another example |cffffffff>=|cfff36194250g|r |cffffffff<=|cfff36194500g|r will find all items that cost between 250 and 500 gold.", nil, nil, nil, true);
 	
 	VendorerHintTooltip:SetMinimumWidth(250);
 	VendorerHintTooltip:SetWidth(250);
