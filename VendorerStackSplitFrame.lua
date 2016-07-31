@@ -367,6 +367,9 @@ function VendorerStackSplitMixin:Cancel()
 	self:Hide();
 end
 
+hooksecurefunc("MerchantPrevPageButton_OnClick", function() VendorerStackSplitFrame:Cancel() end);
+hooksecurefunc("MerchantNextPageButton_OnClick", function() VendorerStackSplitFrame:Cancel() end);
+
 function VendorerStackSplitFrameStackButton_OnClick(self, button)
 	local threshold = VendorerStackSplitFrame.maxStack;
 	if(IsControlKeyDown()) then
