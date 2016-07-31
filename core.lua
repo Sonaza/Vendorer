@@ -491,6 +491,8 @@ function VendorerCheckButtonTemplate_OnClick(self, button)
 	local func = _G[buttonName .. "_OnClick"];
 	if(func and type(func) == "function") then
 		func(_G[buttonName], button);
+	else
+		error(("Missing callback for %s"):format(buttonName), 1);
 	end
 end
 
@@ -1087,6 +1089,10 @@ function VendorerSellUnusablesButton_OnClick(self, button)
 	if(#items == 0) then return end
 	
 	StaticPopup_Show("VENDORER_CONFIRM_SELL_UNUSABLES");
+end
+
+function VendorerAutoSellJunkButton_OnClick(self)
+	Addon.db.global.AutoSellJunk = self:GetChecked();
 end
 
 function VendorerAutoRepairButton_OnClick(self)
