@@ -1,7 +1,25 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
 
-	<Font name="VendorerButtonFontHighlight" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
+	<FontFamily name="VendorerBaseFontFamily" virtual="true">
+		<Member alphabet="roman">
+			<Font font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" height="10" outline="NORMAL"/>
+		</Member>
+		<Member alphabet="korean">
+			<Font font="Fonts\2002.TTF" height="11" outline="NORMAL"/>
+		</Member>
+		<Member alphabet="simplifiedchinese">
+			<Font font="Fonts\ARKai_C.ttf" height="13" outline="NORMAL"/>
+		</Member>
+		<Member alphabet="traditionalchinese">
+			<Font font="Fonts\bHEI01B.TTF" height="13" outline="NORMAL"/>
+		</Member>
+		<Member alphabet="russian">
+			<Font font="Fonts\FRIZQT___CYR.TTF" height="11" outline="NORMAL"/>
+		</Member>
+	</FontFamily>
+
+	<Font name="VendorerButtonFontHighlight" inherits="VendorerBaseFontFamily" outline="NORMAL" virtual="true">
 		<Shadow>
 			<Offset>
 				<AbsDimension x="0" y="-1"/>
@@ -14,7 +32,7 @@
 		<Color r="1" g="0.8" b="0.3"/>
 	</Font>
 	
-	<Font name="VendorerButtonFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
+	<Font name="VendorerButtonFont" inherits="VendorerBaseFontFamily" outline="NORMAL" virtual="true">
 		<Shadow>
 			<Offset>
 				<AbsDimension x="0" y="-1"/>
@@ -27,11 +45,37 @@
 		<Color r="1" g="1" b="1"/>
 	</Font>
 	
-	<Font name="VendorerCheckButtonFont" virtual="true" inherits="VendorerButtonFont">
+	<Font name="VendorerBigFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
+		<Shadow>
+			<Offset>
+				<AbsDimension x="0" y="-2"/>
+			</Offset>
+			<Color r="0" g="0" b="0"/>
+		</Shadow>
 		<FontHeight>
-			<AbsValue val="9"/>
+			<AbsValue val="16"/>
 		</FontHeight>
+		<Color r="1" g="1" b="1"/>
 	</Font>
+	
+	<Font name="VendorerMenuFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
+		<Shadow>
+			<Offset>
+				<AbsDimension x="0" y="-1"/>
+			</Offset>
+			<Color r="0" g="0" b="0"/>
+		</Shadow>
+		<FontHeight>
+			<AbsValue val="10"/>
+		</FontHeight>
+		<Color r="1" g="1" b="1"/>
+	</Font>
+	
+	<Button name="VendorerPanelButtonTemplate" inherits="UIPanelButtonTemplate" virtual="true">
+		<NormalFont style="VendorerButtonFont"/>
+		<HighlightFont style="VendorerButtonFontHighlight"/>
+		<DisabledFont style="VendorerButtonFont"/>
+	</Button>
 	
 	<Frame name="VendorerMerchantItemRarityBorderTemplate" virtual="true" enableMouse="false">
 		<Anchors>
@@ -66,6 +110,26 @@
 				</Texture>
 			</Layer>
 		</Layers>
+		<Frames>
+			<Frame parentKey="transmogrifyAsterisk" hidden="true">
+				<Size x="13" y="13"/>
+				<Anchors>
+					<Anchor point="CENTER" relativeTo="$parent" relativePoint="TOPRIGHT" x="-4" y="-4"/>
+				</Anchors>
+				<Layers>
+					<Layer level="OVERLAY">
+						<Texture parentKey="iconSelf" file="Interface\AddOns\!Vendorer\media\TransmogrifyAsterisk" setAllPoints="true" hidden="true">
+							<Color r="1" g="1" b="1"/>
+							<TexCoords left="0" right="0.5" top="0" bottom="1"/>
+						</Texture>
+						<Texture parentKey="iconOther" file="Interface\AddOns\!Vendorer\media\TransmogrifyAsterisk" setAllPoints="true" hidden="true">
+							<Color r="1" g="1" b="1"/>
+							<TexCoords left="0.5" right="1" top="0" bottom="1"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
 	</Frame>
 	
 	<Frame name="VendorerExtraMerchantItems" parent="MerchantFrame">
@@ -158,6 +222,8 @@
 			<OnShow>
 				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+2);
 			</OnShow>
+			<OnEnter function="VendorerToggleExtensionFrameButton_OnEnter"/>
+			<OnLeave function="GameTooltip_Hide"/>
 		</Scripts>
 	</Button>
 	
@@ -168,6 +234,9 @@
 		</Anchors>
 		<Frames>
 			<Button name="VendorerToggleExtensionFrameButtonContract" id="1" inherits="VendorerToggleExtensionFrameButtonTemplate">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_CONTRACT_BUTTON_TITLE_TEXT" type="string"/>
+				</KeyValues>
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parent" x="0" y="0"/>
 				</Anchors>
@@ -177,6 +246,9 @@
 				<HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
 			</Button>
 			<Button name="VendorerToggleExtensionFrameButtonExpand" id="2" inherits="VendorerToggleExtensionFrameButtonTemplate">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_EXPAND_BUTTON_TITLE_TEXT" type="string"/>
+				</KeyValues>
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="VendorerToggleExtensionFrameButtonContract" x="-6" y="0"/>
 				</Anchors>
@@ -265,19 +337,16 @@
 		<Scripts>
 			<OnShow>
 				self:SetScale(0.8);
-				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+2);
+				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+1);
 			</OnShow>
 		</Scripts>
 	</Frame>
 	
 	<Frame name="VendorerCheckButtonTemplate" inherits="UICheckButtonTemplate" virtual="true">
 		<Scripts>
-			<OnLoad>
-				VendorerCheckButtonTemplate_OnLoad(self);
-			</OnLoad>
-			<OnEnter>
-				VendorerCheckButtonTemplate_OnEnter(self);
-			</OnEnter>
+			<OnLoad function="VendorerCheckButtonTemplate_OnLoad"/>
+			<OnEnter function="VendorerCheckButtonTemplate_OnEnter"/>
+			<OnClick function="VendorerCheckButtonTemplate_OnClick"/>
 			<OnLeave>
 				GameTooltip:Hide();
 			</OnLeave>
@@ -327,98 +396,59 @@
 					<OnClick></OnClick>
 				</Scripts>
 			</Button>
-			
-			<Button name="VendorerSellJunkButton" inherits="UIPanelButtonTemplate" text="Sell Junk Items">
+			<Button name="VendorerSellJunkButton" inherits="VendorerPanelButtonTemplate" text="VENDORER_SELL_JUNK_ITEMS_TEXT">
 				<Size x="144" y="26"/>
 				<Anchors>
 					<Anchor point="TOP" relativePoint="TOP" relativeTo="$parent" x="1" y="-56"/>
 				</Anchors>
 				<Scripts>
-					<!-- <OnLoad function="VendorerCheckButtonTemplate_OnLoad"/> -->
 					<OnClick function="VendorerSellJunkButton_OnClick"/>
 					<OnEnter function="VendorerSellJunkButton_OnEnter"/>
 					<OnLeave function="VendorerSellButton_OnLeave"/>
 				</Scripts>
-				<NormalFont style="VendorerButtonFont"/>
-				<HighlightFont style="VendorerButtonFontHighlight"/>
-				<DisabledFont style="VendorerButtonFont"/>
 			</Button>
-			
-			<Button name="VendorerSellUnusablesButton" inherits="UIPanelButtonTemplate" text="Sell Unusables">
+			<Button name="VendorerSellUnusablesButton" inherits="VendorerPanelButtonTemplate" text="VENDORER_SELL_UNUSABLE_ITEMS_TEXT">
 				<Size x="144" y="26"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerSellJunkButton" x="0" y="-6"/>
 				</Anchors>
 				<Scripts>
-					<!-- <OnLoad function="VendorerCheckButtonTemplate_OnLoad"/> -->
 					<OnClick function="VendorerSellUnusablesButton_OnClick"/>
 					<OnEnter function="VendorerSellUnusablesButton_OnEnter"/>
 					<OnLeave function="VendorerSellButton_OnLeave"/>
 				</Scripts>
-				<NormalFont style="VendorerButtonFont"/>
-				<HighlightFont style="VendorerButtonFontHighlight"/>
-				<DisabledFont style="VendorerButtonFont"/>
 			</Button>
-			
-			<CheckButton name="VendorerAutoRepairButton" inherits="VendorerCheckButtonTemplate" text="Auto Repair">
+			<CheckButton name="VendorerAutoSellJunkButton" inherits="VendorerCheckButtonTemplate" text="VENDORER_AUTO_SELL_JUNK_TITLE_TEXT">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_AUTO_SELL_JUNK_TITLE_TEXT" type="string"/>
+					<KeyValue key="tooltipText" value="VENDORER_AUTO_SELL_JUNK_HINT_TEXT" type="string"/>
+				</KeyValues>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerSellUnusablesButton" x="0" y="-6"/>
 				</Anchors>
-				<Scripts>
-					<OnLoad>
-						VendorerCheckButtonTemplate_OnLoad(self);
-						self.tooltip = {"Auto Repair Armor", "|cffffffffRepair all gear automatically if possible."};
-					</OnLoad>
-					<OnClick function="VendorerAutoRepairButton_OnClick"/>
-				</Scripts>
 			</CheckButton>
-			
-			<CheckButton name="VendorerAutoSmartRepairButton" inherits="VendorerCheckButtonTemplate" text="Use Smart Repair">
+			<CheckButton name="VendorerAutoRepairButton" inherits="VendorerCheckButtonTemplate" text="VENDORER_AUTO_REPAIR_TITLE_TEXT">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_AUTO_REPAIR_TITLE_TEXT" type="string"/>
+					<KeyValue key="tooltipText" value="VENDORER_AUTO_REPAIR_HINT_TEXT" type="string"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerAutoSellJunkButton" x="0" y="-25"/>
+				</Anchors>
+			</CheckButton>
+			<CheckButton name="VendorerAutoSmartRepairButton" inherits="VendorerCheckButtonTemplate" text="VENDORER_USE_SMART_REPAIR_TITLE_TEXT">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_USE_SMART_REPAIR_TITLE_TEXT" type="string"/>
+					<KeyValue key="tooltipText" value="VENDORER_USE_SMART_REPAIR_HINT_TEXT" type="string"/>
+				</KeyValues>
 				<Anchors>
 					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerAutoRepairButton" x="0" y="-25"/>
 				</Anchors>
-				<Scripts>
-					<OnLoad>
-						VendorerCheckButtonTemplate_OnLoad(self);
-						self.tooltip = {"Use Smart Repair", "|cffffffffWhen doing automatic repair allow Vendorer to try and spend full guild repair allowance first.|n|n|cff00c6ffNote:|cffffffff this option only applies to auto repair!|n|nProbably not recommended if you have unlimited repair funds."};
-					</OnLoad>
-					<OnClick function="VendorerAutoSmartRepairButton_OnClick"/>
-				</Scripts>
 			</CheckButton>
-			
-			<CheckButton name="VendorerArmorPaintRedButton" inherits="VendorerCheckButtonTemplate" text="Highlight Armor">
-				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="$parent" x="6" y="85"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						VendorerCheckButtonTemplate_OnLoad(self);
-						self.tooltip = {
-							"Highlight Class Armor Types",
-							"|cffffffffPaints armor types not used by your current class red."
-						};
-					</OnLoad>
-					<OnClick function="VendorerArmorPaintRedButton_OnClick"/>
-				</Scripts>
-			</CheckButton>
-			
-			<CheckButton name="VendorerAutoSellJunkButton" inherits="VendorerCheckButtonTemplate" text="Auto Sell Junk">
-				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="$parent" x="6" y="60"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						VendorerCheckButtonTemplate_OnLoad(self);
-						self.tooltip = {"Auto Sell Junk", "|cffffffffToggle automatic selling of junk|nwhen visiting vendors."};
-					</OnLoad>
-					<OnClick function="VendorerAutoSellJunkButton_OnClick"/>
-				</Scripts>
-			</CheckButton>
-			
 			<Button name="VendorerIgnoreItemsButton">
 				<Size x="144" y="22"/>
 				<Anchors>
-					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="36"/>
+					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="66"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">
@@ -443,7 +473,7 @@
 							</Anchors>
 							<Color r="1" g="0.75" b="0.15"/>
 						</Texture>
-						<FontString name="$parentText" inherits="VendorerButtonFont" justifyH="LEFT" parentKey="text" text="Ignore Items">
+						<FontString name="$parentText" inherits="VendorerButtonFont" justifyH="LEFT" parentKey="text" text="VENDORER_IGNORE_ITEMS_BUTTON_TEXT">
 							<Size x="98" y="46"/>
 							<Anchors>
 								<Anchor point="LEFT" x="32" y="0"/>
@@ -465,10 +495,10 @@
 				</Scripts>
 			</Button>
 			
-			<Button name="VendorerAddItemsButton">
+			<Button name="VendorerJunkItemsButton">
 				<Size x="144" y="22"/>
 				<Anchors>
-					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="10"/>
+					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="40"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">
@@ -493,7 +523,7 @@
 							</Anchors>
 							<Color r="1" g="0.75" b="0.15"/>
 						</Texture>
-						<FontString name="$parentText" inherits="VendorerButtonFont" justifyH="RIGHT" parentKey="text" text="Add Junk Items">
+						<FontString name="$parentText" inherits="VendorerButtonFont" justifyH="RIGHT" parentKey="text" text="VENDORER_ADD_JUNK_BUTTON_TEXT">
 							<Size x="98" y="46"/>
 							<Anchors>
 								<Anchor point="RIGHT" x="-32" y="0"/>
@@ -509,12 +539,20 @@
 						self:RegisterForDrag("LeftButton");
 						self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
 					</OnLoad>
-					<OnClick function="VendorerAddItemsButton_OnClick"/>
-					<OnEnter function="VendorerAddItemsButton_OnEnter"/>
-					<OnLeave function="VendorerAddItemsButton_OnLeave"/>
+					<OnClick function="VendorerJunkItemsButton_OnClick"/>
+					<OnEnter function="VendorerJunkItemsButton_OnEnter"/>
+					<OnLeave function="VendorerJunkItemsButton_OnLeave"/>
 				</Scripts>
 			</Button>
-			
+			<Button name="VendorerSettingsButton" inherits="VendorerPanelButtonTemplate" text="VENDORER_SETTINGS_BUTTON_TEXT">
+				<Size x="144" y="26"/>
+				<Anchors>
+					<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent" x="0" y="10"/>
+				</Anchors>
+				<Scripts>
+					<OnClick function="VendorerSettingsButton_OnClick"/>
+				</Scripts>
+			</Button>
 		</Frames>
 		<Scripts>
 			<OnShow>

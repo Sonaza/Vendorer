@@ -15,14 +15,6 @@ function Addon:GetGuildAllowance(triggeredByUser)
 	if(not GetGuildInfo("player")) then return 0 end
 	
 	local amount = GetGuildBankWithdrawMoney();
-	-- local guildBankMoney = GetGuildBankMoney();
-	-- if(amount == -1) then
-	-- 	-- Guild leader shows full guild bank amount
-	-- 	amount = guildBankMoney;
-	-- else
-	-- 	amount = min(amount, guildBankMoney);
-	-- end
-	
 	return amount;
 end
 
@@ -180,3 +172,83 @@ function Addon:GetAutoRepairCost(triggeredByUser)
 	
 	return playerMoney, guildMoney;
 end
+
+function Addon:UPDATE_INVENTORY_DURABILITY()
+	local repairAllCost, canRepair = GetRepairAllCost();
+	if(not canRepair) then
+		SetDesaturation(VendorerSmartRepairButtonIcon, true);
+		VendorerSmartRepairButton:Disable();
+	else
+		SetDesaturation(VendorerSmartRepairButtonIcon, false);
+		VendorerSmartRepairButton:Enable();
+	end
+end
+
+hooksecurefunc("MerchantFrame_UpdateRepairButtons", function() Addon:UpdateRepairButtons() end);
+
+function Addon:UpdateRepairButtons()
+	if(CanMerchantRepair() and CanGuildBankRepair()) then
+		MerchantRepairAllButton:SetPoint("BOTTOMRIGHT", MerchantFrame, "BOTTOMLEFT", 83, 29)
+		VendorerSmartRepairButton:Show();
+		
+		local repairAllCost, canRepair = GetRepairAllCost();
+		if(not canRepair) then
+			SetDesaturation(VendorerSmartRepairButtonIcon, true);
+			VendorerSmartRepairButton:Disable();
+		else
+			SetDesaturation(VendorerSmartRepairButtonIcon, false);
+			VendorerSmartRepairButton:Enable();
+		end
+	else
+		VendorerSmartRepairButton:Hide();
+	end
+end
+
+function VendorerSmartRepairButton_OnEnter(self)
+	local playerMoney, guildMoney = Addon:GetAutoRepairCost(true);
+	
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+	GameTooltip:AddLine("Smart Repair Items");
+	GameTooltip:AddLine("Repair items by maximizing the guild bank repairs.", 1, 1, 1);
+	GameTooltip:AddLine(" ");
+	
+	if(guildMoney > 0) then
+		GameTooltip:AddLine("The Guild Bank Covers");
+		SetTooltipMoney(GameTooltip, guildMoney, "GUILD_REPAIR");
+	end
+	
+	if(playerMoney > 0) then
+		GameTooltip:AddLine("You Cover");
+		SetTooltipMoney(GameTooltip, playerMoney, "GUILD_REPAIR");
+	end
+	
+	if(playerMoney == 0 and guildMoney == 0) then
+		GameTooltip:AddLine(" ");
+		GameTooltip:AddLine("All of your items have full durability.");
+	end
+	
+	GameTooltip:AddLine(" ");
+	local amount = GetGuildBankWithdrawMoney();
+	local guildBankMoney = GetGuildBankMoney();
+	if ( amount == -1 ) then
+		-- Guild leader shows full guild bank amount
+		amount = guildBankMoney;
+	else
+		amount = min(amount, guildBankMoney);
+	end
+	GameTooltip:AddLine(GUILDBANK_REPAIR, nil, nil, nil, true);
+	SetTooltipMoney(GameTooltip, amount, "GUILD_REPAIR");
+	
+	GameTooltip:Show();
+end
+
+function VendorerSmartRepairButton_OnLeave(self)
+	GameTooltip:Hide();
+end
+
+function VendorerSmartRepairButton_OnClick(self)
+	Addon:DoAutoRepair(true);
+	GameTooltip:Hide();
+	VendorerSmartRepairButton_OnEnter(self);
+end
+

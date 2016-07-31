@@ -1,9 +1,9 @@
 ## Interface: 70000
 ## Title: Vendorer
-## Notes: Miscellaneous vendor stuff
+## Notes: Improved merchant frames
 ## Author: Sonaza
-## Version: 2.2.4
-## OptionalDeps: Ace3
+## Version: 2.3.0
+## OptionalDeps: Ace3, CanIMogIt
 ## SavedVariables: VendorerDB
 
 #@no-lib-strip@
@@ -15,6 +15,10 @@ libs\AceEvent-3.0\AceEvent-3.0.xml
 #@end-no-lib-strip@
 
 core.lua
+settings.lua
 vendorfilter.lua
 autorepair.lua
-Frame.xml
+knownitems.lua
+VendorerFrames.xml
+VendorerItemListsFrame.xml
+VendorerStackSplitFrame.xml

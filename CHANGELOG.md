@@ -1,3 +1,23 @@
+## 2.3.0
+* Added an optional dependency for the addon **CanIMogIt** and a marker to display if an item's appearance has not yet been added to the wardrobe.
+* Added a bulk purchase system. When enabled shift-clicking merchant items will bring up the Vendorer's bulk purchase window.
+	* Bulk purchase window allows buying items more than one stack at a time and shows the total price of items being purchased.
+	* Additionally you can instantly set maximum purchase or change number of items stack at a time.
+	* Optionally this feature can be disabled to use Blizzard's stock system.
+	* Disclaimer: there is no warranty for any lost items or currency if this feature works incorrectly. Use at your own risk.
+* Added new filtering options:
+	* You can now filter by item tooltip text. This is enabled by default but can be **very resource intensive** and can be disabled from the settings.
+	* You can search for sentences by surrounding words with quotation marks.
+* Added a new options menu to replace some of the checkboxes.
+* Added option to paint known items and pets sold by vendors to make unknown items esaier to distinguish. You can change the color in the settings. Option is enabled by default.
+* Added a dedicated menu window for ignored item and junk item lists where you can browse the items in more detail and remove them one by one. You can open the menu by left clicking the drop areas on the side panel or by using the new slash commands.
+* Added slash commands available by typing **/vendorer** or **/vd**.
+* Fixed error filtering currencies sold by vendors.
+* Made merchant frame movable.
+* Improved localization independence further.
+* Moved the next page button and page info text to more logical places.
+* Code refactoring.
+
 ## 2.2.4
 * Mages, Warlocks and Priests don't use plate. Oops.
 

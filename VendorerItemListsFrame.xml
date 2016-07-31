@@ -1,0 +1,180 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+	<Script file="VendorerItemListsFrame.lua"/>
+	
+	<Button name="VendorerItemListItemButtonTemplate" virtual="true">
+		<Size x="296" y="33"/>
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString name="$parentName" inherits="VendorerButtonFont" justifyH="LEFT" parentKey="name">
+					<Size x="0" y="12"/>
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parent" x="36" y="0"/>
+						<Anchor point="RIGHT" relativeTo="$parent" x="-87" y="0"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+			<Layer level="OVERLAY" textureSubLevel="1">
+				<Texture parentKey="selectedTex" file="Interface\ClassTrainerFrame\TrainerTextures" hidden="true" alphaMode="ADD">
+					<TexCoords left="0.00195313" right="0.57421875" top="0.84960938" bottom="0.94140625"/>
+				</Texture>
+			</Layer>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="disabledBG" hidden="true" alphaMode="MOD">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="2" y="-2"/>
+						<Anchor point="BOTTOMRIGHT" x="-2" y="2"/>
+					</Anchors>
+					<Color r="0.55" g="0.55" b="0.55" a="1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame name="$parentIcon" parentKey="icon">
+				<Size x="22" y="22"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="6" y="-6"/>
+				</Anchors>
+				<Layers>
+					<Layer level="OVERLAY">
+						<Texture name="$parentTexture" parentKey="texture" setAllPoints="true">
+						</Texture>
+					</Layer>
+				</Layers>
+				<Frames>
+					<Frame parentKey="rarityBorder" inherits="VendorerMerchantItemRarityBorderTemplate">
+						<Anchors>
+							<Anchor point="CENTER" relativeTo="$parent"/>
+						</Anchors>
+					</Frame>
+				</Frames>
+			</Frame>
+			<Button name="$parentRemoveItem" inherits="VendorerPanelButtonTemplate" text="Remove">
+				<Size x="64" y="28"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativePoint="RIGHT" relativeTo="$parent" x="-4" y="0"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						VendorerItemListItemButtonRemove_OnClick(self:GetParent(), button);
+					</OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+		<NormalTexture file="Interface\ClassTrainerFrame\TrainerTextures">
+			<TexCoords left="0.00195313" right="0.57421875" top="0.65820313" bottom="0.75000000"/>
+		</NormalTexture>
+		<HighlightTexture name="$parentHighlight" file="Interface\ClassTrainerFrame\TrainerTextures" alphaMode="ADD">
+			<TexCoords left="0.00195313" right="0.57421875" top="0.75390625" bottom="0.84570313"/>
+		</HighlightTexture>	
+		<Scripts>
+			<OnLoad>
+				self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+			</OnLoad>
+			<OnEnter function="VendorerItemListItemButton_OnEnter"/>
+			<OnLeave>
+				GameTooltip:Hide();
+			</OnLeave>
+			<!-- <OnClick function="GuildRewardsButton_OnClick"/>  -->
+		</Scripts>
+	</Button>
+	
+	<Frame name="VendorerItemListsFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" inherits="ButtonFrameTemplate" hidden="true">
+		<Size x="336" y="444"/>
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MerchantFrame" relativePoint="TOPRIGHT"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="background" file="Interface\GuildFrame\GuildFrame">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parent" x="8" y="-60"/>
+						<Anchor point="BOTTOMRIGHT" relativeTo="$parent" x="-8" y="30"/>
+					</Anchors>
+					<TexCoords left="0.63183594" right="0.94531250" top="0.00195313" bottom="0.57226563"/>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<FontString name="$parentTitle" inherits="GameFontHighlight" text="Vendorer">
+					<Anchors>
+						<Anchor point="TOP" relativeTo="$parent" relativePoint="TOP" x="10" y="-5"/>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentDescription" parentKey="description" inherits="GameFontHighlight" text="Insert description here.">
+					<Anchors>
+						<Anchor point="TOP" relativeTo="$parent" relativePoint="TOP" x="10" y="-34"/>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentHelp" parentKey="help" inherits="GameFontNormal" text="Drag and drop an item to add it to the list.">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativeTo="$parent" relativePoint="BOTTOMLEFT" x="10" y="9"/>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentItemCount" parentKey="itemCount" inherits="GameFontNormal" text="0 items">
+					<Anchors>
+						<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMRIGHT" x="-10" y="9"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<ScrollFrame name="$parentItems" inherits="HybridScrollFrameTemplate">
+				<Size x="320" y="348"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent" x="8" y="-66"/>
+					<Anchor point="BOTTOMRIGHT" relativeTo="$parent" x="-8" y="30"/>
+				</Anchors>
+				<Frames>
+					<Slider name="$parentScrollBar" inherits="HybridScrollBarTemplate">
+						<Anchors>
+							<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-20" y="-12"/>
+							<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-20" y="10"/>
+						</Anchors>
+						<Layers>
+							<Layer level="BACKGROUND">
+								<Texture setAllPoints="true">
+									<Color r="0" g="0" b="0" a="0.6"/>
+								</Texture>
+							</Layer>
+						</Layers>
+					</Slider>
+				</Frames>
+			</ScrollFrame>
+			<Button name="VendorerItemListsDragReceiver" frameStrata="HIGH" enableMouse="true" setAllPoints="true" hidden="true">
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture file="Interface\AddOns\!Vendorer\media\ShadowBlob" setAllPoints="true">
+							<Color r="1" g="1" b="1" a="0.65"/>
+						</Texture>
+					</Layer>
+					<Layer level="BORDER">
+						<FontString name="$parentHelp" inherits="VendorerBigFont" text="VENDORER_BIG_DRAG_ITEM_HERE_TEXT">
+							<Anchors>
+								<Anchor point="CENTER" relativeTo="$parent" x="0" y="-5"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnShow function="VendorerItemListsDragReceiver_OnShow"/>
+					<OnEnter function="VendorerItemListsDragReceiver_OnEnter"/>
+					<OnLeave function="VendorerItemListsDragReceiver_OnLeave"/>
+					<OnClick function="VendorerItemListsDragReceiver_OnClick"/>
+					<OnUpdate function="VendorerItemListsDragReceiver_OnUpdate"/>
+				</Scripts>
+			</Button>
+		</Frames>
+		<Scripts>
+			<OnLoad function="VendorerItemListsFrame_OnLoad"/>
+			<OnShow function="VendorerItemListsFrame_OnShow"/>
+			<OnMouseDown>
+				self:StartMoving();
+				self.anchorframe = nil;
+			</OnMouseDown>
+			<OnMouseUp>
+				self:StopMovingOrSizing();
+			</OnMouseUp>
+		</Scripts>
+	</Frame>
+
+</Ui>
