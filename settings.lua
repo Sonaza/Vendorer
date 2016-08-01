@@ -135,6 +135,7 @@ function Addon:GetMenuData()
 				self.db.global.PaintColor.r = values.r;
 				self.db.global.PaintColor.g = values.g;
 				self.db.global.PaintColor.b = values.b;
+				MerchantFrame_UpdateMerchantInfo();
 			end,
 			hasColorSwatch = true,
 			r = self.db.global.PaintColor.r,
