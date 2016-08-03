@@ -1,5 +1,8 @@
+## 2.3.4
+* Fixed paging error (again) caused by the previous fix.
+
 ## 2.3.3
-* Tweaked the popup threshold to be less frequent if there was no real problem.
+* Tweaked the popup alert threshold to prevent alerts if there was no real problem.
 
 ## 2.3.2
 * Fixed paging error when switching frame extension.
