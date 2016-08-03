@@ -1,3 +1,7 @@
+## 2.3.2
+* Fixed paging error when switching frame extension.
+* Added a popup suggesting disabling tooltip text filtering if it is causing significant framerate drops.
+
 ## 2.3.1
 * Fixed color picker cancel function bug.
 

@@ -155,6 +155,50 @@ StaticPopupDialogs["VENDORER_CONFIRM_CLEAR_JUNKSELL_LIST"] = {
 	hideOnEscape = 1,
 };
 
+StaticPopupDialogs["VENDORER_FILTERING_PERFORMANCE_ALERT"] = {
+	text = "Vendorer tooltip text filtering may be causing significant framerate drops. While a powerful tool, disabling it may improve the game performance.|n|nDo you wish to disable it?",
+	button1 = YES,
+	button2 = NO,
+	OnAccept = function(self)
+		Addon.db.global.UseTooltipSearch = false;
+		Addon:RefreshFilter();
+		Addon:AddMessage("Tooltip filtering disabled.");
+	end,
+	OnCancel = function(self)
+		-- Disable alert for rest of the session
+		VendorerFramerateWatcher:SetScript("OnUpdate", nil);
+	end,
+	timeout = 0,
+	hideOnEscape = 1,
+};
+
+Addon.UpdatedFilteringTime = 0;
+function VendorerFramerateWatcher_OnUpdate(self, elapsed)
+	if(not Addon.db.global.UseTooltipSearch) then return end
+	
+	self.elapsed = (self.elapsed or 0) + elapsed;
+	if(self.elapsed < 0.5) then return end
+	self.elapsed = 0;
+	
+	local framerate = GetFramerate();
+	if(self.averageFPS) then
+		local diff = framerate - self.averageFPS;
+		self.averageFPS = self.averageFPS * 0.7 + framerate * 0.3;
+		
+		if(not MerchantFrame:IsVisible()) then return end
+		
+		if(GetTime() - Addon.UpdatedFilteringTime < 5.0) then
+			if(diff < 0 and math.abs(diff) >= self.averageFPS * 0.25 or framerate <= 7) then
+				if(not StaticPopup_Visible("VENDORER_FILTERING_PERFORMANCE_ALERT")) then
+					StaticPopup_Show("VENDORER_FILTERING_PERFORMANCE_ALERT");
+				end
+			end
+		end
+	else
+		self.averageFPS = framerate;
+	end
+end
+
 function Addon:IsArmorItemSlot(itemslot)
 	return ARMOR_SLOTS[itemslot];
 end
@@ -380,12 +424,22 @@ function Addon:GetCurrentExtension()
 	return extension;
 end
 
+function Addon:SetMerchantItemsPerPage(items)
+	MERCHANT_ITEMS_PER_PAGE = items or 10;
+	local maxPages = Addon:GetUnfilteredMerchantNumItems() / MERCHANT_ITEMS_PER_PAGE;
+	MerchantFrame.page = math.max(1, math.min(maxPages, MerchantFrame.page));
+	
+	if(MerchantFrame.selectedTab == 1) then
+		MerchantFrame_UpdateMerchantInfo();
+	end
+end
+
 function Addon:ShowExtensionPanel()
 	local extension = Addon:GetCurrentExtension();
 	
 	if(extension == VENDORER_EXTENSION_WIDE) then
 		MerchantFrame:SetWidth(834);
-		MERCHANT_ITEMS_PER_PAGE = 20;
+		Addon:SetMerchantItemsPerPage(20);
 		
 		VendorerExtraMerchantItems:Show();
 		
@@ -394,7 +448,7 @@ function Addon:ShowExtensionPanel()
 		VendorerMerchantFrameExtensionWide:Show();
 	elseif(extension == VENDORER_EXTENSION_NARROW) then
 		MerchantFrame:SetWidth(500);
-		MERCHANT_ITEMS_PER_PAGE = 10;
+		Addon:SetMerchantItemsPerPage(10);
 	
 		VendorerExtraMerchantItems:Hide();
 		
@@ -403,22 +457,14 @@ function Addon:ShowExtensionPanel()
 		VendorerMerchantFrameExtensionWide:Hide();
 	end
 	
-	if(MerchantFrame.selectedTab == 1) then
-		MerchantFrame_UpdateMerchantInfo();
-	end
-	
 	VendorerExtensionFrameItems:Show();
 end
 
 function Addon:HideExtensionPanel()
 	MerchantFrame:SetWidth(336);
-	MERCHANT_ITEMS_PER_PAGE = 10;
+	Addon:SetMerchantItemsPerPage(10);
 	
 	VendorerExtraMerchantItems:Hide();
-	
-	if(MerchantFrame.selectedTab == 1) then
-		MerchantFrame_UpdateMerchantInfo();
-	end
 	
 	VendorerMerchantFrameExtension:Hide();
 	

@@ -71,6 +71,12 @@
 		<Color r="1" g="1" b="1"/>
 	</Font>
 	
+	<Frame name="VendorerFramerateWatcher">
+		<Scripts>
+			<OnUpdate function="VendorerFramerateWatcher_OnUpdate"/>
+		</Scripts>
+	</Frame>
+	
 	<Button name="VendorerPanelButtonTemplate" inherits="UIPanelButtonTemplate" virtual="true">
 		<NormalFont style="VendorerButtonFont"/>
 		<HighlightFont style="VendorerButtonFontHighlight"/>
