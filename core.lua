@@ -188,7 +188,7 @@ function VendorerFramerateWatcher_OnUpdate(self, elapsed)
 		if(not MerchantFrame:IsVisible()) then return end
 		
 		if(GetTime() - Addon.UpdatedFilteringTime < 5.0) then
-			if(diff < 0 and math.abs(diff) >= self.averageFPS * 0.25 or framerate <= 7) then
+			if(diff < 0 and math.abs(diff) >= self.averageFPS * 0.3 and framerate <= 11) then
 				if(not StaticPopup_Visible("VENDORER_FILTERING_PERFORMANCE_ALERT")) then
 					StaticPopup_Show("VENDORER_FILTERING_PERFORMANCE_ALERT");
 				end

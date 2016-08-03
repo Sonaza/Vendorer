@@ -1,3 +1,6 @@
+## 2.3.3
+* Tweaked the popup threshold to be less frequent if there was no real problem.
+
 ## 2.3.2
 * Fixed paging error when switching frame extension.
 * Added a popup suggesting disabling tooltip text filtering if it is causing significant framerate drops.
