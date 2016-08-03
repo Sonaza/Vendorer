@@ -437,6 +437,8 @@ function Addon:ResetAllFilters()
 end
 
 function Vendorer_OnSearchTextChanged(self)
+	Addon.UpdatedFilteringTime = GetTime();
+	
 	SearchBoxTemplate_OnTextChanged(self);
 	Addon:RefreshFilter();
 end
