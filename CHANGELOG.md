@@ -1,5 +1,6 @@
 ## 2.3.4
 * Fixed paging error (again) caused by the previous fix.
+* Fixed GetMerchantItemInfo errors happening upon login.
 
 ## 2.3.3
 * Tweaked the popup alert threshold to prevent alerts if there was no real problem.

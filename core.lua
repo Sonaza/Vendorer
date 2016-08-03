@@ -427,12 +427,15 @@ end
 function Addon:SetMerchantItemsPerPage(items)
 	MERCHANT_ITEMS_PER_PAGE = items or 10;
 	
-	if(MerchantFrame.page < 1) then MerchantFrame.page = 1 end
-	local maxPages = math.ceil(Addon:GetUnfilteredMerchantNumItems() / MERCHANT_ITEMS_PER_PAGE);
-	if(MerchantFrame.page > maxPages) then MerchantFrame.page = maxPages end
-	
-	if(MerchantFrame.selectedTab == 1) then
-		MerchantFrame_UpdateMerchantInfo();
+	local merchantIsOpen = MerchantFrame:IsVisible();
+	if(merchantIsOpen) then
+		if(MerchantFrame.page < 1) then MerchantFrame.page = 1 end
+		local maxPages = math.ceil(Addon:GetUnfilteredMerchantNumItems() / MERCHANT_ITEMS_PER_PAGE);
+		if(MerchantFrame.page > maxPages) then MerchantFrame.page = maxPages end
+		
+		if(MerchantFrame.selectedTab == 1) then
+			MerchantFrame_UpdateMerchantInfo();
+		end
 	end
 end
 
