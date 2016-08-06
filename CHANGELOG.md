@@ -1,3 +1,8 @@
+## 2.3.5
+* Added additional filter options:
+	* Prefixing a query word or a phrase will now perform an exact search. Vendorer will attempt to match a compared value exactly and discard all other results.
+	* Range searching by item rarity e.g. >=rare will find all rare or better items.
+
 ## 2.3.4
 * Fixed paging error (again) caused by the previous fix.
 * Fixed GetMerchantItemInfo errors happening upon login.

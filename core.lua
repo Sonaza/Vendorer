@@ -41,6 +41,8 @@ VENDORER_USE_SMART_REPAIR_HINT_TEXT = "|cffffffffWhen doing automatic repair all
 VENDORER_CONTRACT_BUTTON_TITLE_TEXT = "Collapse Frame";
 VENDORER_EXPAND_BUTTON_TITLE_TEXT = "Expand Frame";
 
+VENDORER_FILTERING_BUTTON_TUTORIAL_TEXT = "You can now click here to quickly filter items.|n|nHover to see filtering tips. New filters are marked with |TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:12:12:0:0:|t";
+
 local CLASS_ARMOR_TYPES = {
 	WARRIOR     = LOCALIZED_PLATE,
 	PALADIN     = LOCALIZED_PLATE,
@@ -187,7 +189,7 @@ function VendorerFramerateWatcher_OnUpdate(self, elapsed)
 		
 		if(not MerchantFrame:IsVisible()) then return end
 		
-		if(GetTime() - Addon.UpdatedFilteringTime < 5.0) then
+		if((GetTime() - Addon.UpdatedFilteringTime) < 5.0) then
 			if(diff < 0 and math.abs(diff) >= self.averageFPS * 0.3 and framerate <= 11) then
 				if(not StaticPopup_Visible("VENDORER_FILTERING_PERFORMANCE_ALERT")) then
 					StaticPopup_Show("VENDORER_FILTERING_PERFORMANCE_ALERT");
@@ -215,7 +217,7 @@ VENDORER_EXTENSION_NONE     = 1;
 VENDORER_EXTENSION_NARROW   = 2;
 VENDORER_EXTENSION_WIDE     = 3;
 
-VENDORER_EXPANSION_TUTORIAL_TEXT = "You can now switch between default, narrow and wide frame.";
+VENDORER_EXPANSION_TUTORIAL_TEXT = "You can now switch between default, narrow and wide frame. Be sure to also check filtering tips.";
 
 function Addon:OnInitialize()
 	local defaults = {
@@ -245,6 +247,7 @@ function Addon:OnInitialize()
 			ShowTransmogAsterisk = true,
 			
 			ExpandTutorialShown = false,
+			FilteringButtonAlertShown = false,
 		},
 	};
 	
@@ -1165,6 +1168,14 @@ function Addon:MERCHANT_SHOW()
 	if(self.db.global.AutoRepair) then
 		Addon:DoAutoRepair(false);
 	end
+	
+	if(not Addon.db.global.FilteringButtonAlertShown) then
+		VendorerFilteringButtonAlert:Show();
+	end
+end
+
+function VendorerFilteringButtonAlertCloseButton_OnClick()
+	Addon.db.global.FilteringButtonAlertShown = true;
 end
 
 function Addon:MERCHANT_CLOSED()
@@ -1191,8 +1202,12 @@ function Addon:MERCHANT_CLOSED()
 end
 
 function Addon:TRANSMOG_COLLECTION_UPDATED()
-	if(MerchantFrame:IsVisible() and Addon.db.global.ShowTransmogAsterisk) then
-		MerchantFrame_UpdateMerchantInfo();
+	if(MerchantFrame:IsVisible()) then
+		if(Addon.FilterText ~= "") then
+			Addon:RefreshFilter(true);
+		elseif(Addon.db.global.ShowTransmogAsterisk) then
+			MerchantFrame_UpdateMerchantInfo();
+		end
 	end
 end
 
