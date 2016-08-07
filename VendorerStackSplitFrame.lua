@@ -498,27 +498,7 @@ function VendorerStackSplitMixin:Open(merchantItemIndex, parent, anchor)
 	local isUnique = select(8, Addon:GetItemTooltipInfo(itemLink));
 	if(isUnique) then return end
 	
-	local canAfford = MAX_STACK_SIZE;
-	if (price and price > 0) then
-		canAfford = floor(GetMoney() / (price / stackCount));
-	end
-	if(extendedCost) then
-		local extendedCanAfford = MAX_STACK_SIZE;
-		local currencyCount = GetMerchantItemCostInfo(merchantItemIndex);
-		for index = 1, currencyCount do
-			local itemTexture, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
-			if(currencyItemLink) then
-				local ownedCurrencyItems = Addon:GetProperItemCount(currencyItemLink);
-				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyItems / requiredCurrency));
-			elseif(currencyName) then
-				local currencyID = cachedCurrencies[currencyName];
-				local name, ownedCurrencyAmount = GetCurrencyInfo(currencyID);
-				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyAmount / requiredCurrency));
-			end
-		end
-		
-		canAfford = min(canAfford, extendedCanAfford);
-	end
+	local _, canAfford = Addon:CanAffordMerchantItem(merchantItemIndex, false);
 	if(canAfford == 0) then return end
 
 	parent.hasStackSplit = 1;
@@ -631,4 +611,45 @@ function Addon:GetFreeBagSlotsForItem(item)
 	end
 	
 	return freeSlots;
+end
+
+function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
+	if(not merchantItemIndex) then return false end
+	
+	local GetMerchantItemInfo     = GetMerchantItemInfo;
+	local GetMerchantItemCostItem = GetMerchantItemCostItem;
+	local GetMerchantItemCostInfo = GetMerchantItemCostInfo;
+	
+	if(unfiltered) then
+		GetMerchantItemInfo     = Addon.BlizzFunctions.GetMerchantItemInfo;
+		GetMerchantItemCostItem = Addon.BlizzFunctions.GetMerchantItemCostItem;
+		GetMerchantItemCostInfo = Addon.BlizzFunctions.GetMerchantItemCostInfo;
+	end
+	
+	local name, _, price, stackCount, numAvailable, _, hasExtendedCost = GetMerchantItemInfo(merchantItemIndex);
+	if(not name) then return false end
+	
+	if (price and price > 0) then
+		numCanAfford = floor(GetMoney() / (price / stackCount));
+	end
+	
+	if(hasExtendedCost) then
+		local extendedCanAfford = MAX_STACK_SIZE;
+		local currencyCount = GetMerchantItemCostInfo(merchantItemIndex);
+		for index = 1, currencyCount do
+			local itemTexture, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
+			if(currencyItemLink) then
+				local ownedCurrencyItems = Addon:GetProperItemCount(currencyItemLink);
+				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyItems / requiredCurrency));
+			elseif(currencyName) then
+				local currencyID = cachedCurrencies[currencyName];
+				local name, ownedCurrencyAmount = GetCurrencyInfo(currencyID);
+				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyAmount / requiredCurrency));
+			end
+		end
+		
+		numCanAfford = min(numCanAfford, extendedCanAfford);
+	end
+	
+	return numCanAfford > 0, numCanAfford, hasExtendedCost;
 end

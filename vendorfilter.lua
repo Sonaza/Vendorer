@@ -9,6 +9,20 @@ local _;
 
 local FilteredMerchantItems = nil;
 
+Addon.BlizzFunctions = {
+	BuyMerchantItem                 = _G.BuyMerchantItem,
+	PickupMerchantItem              = _G.PickupMerchantItem,
+	ShowMerchantSellCursor          = _G.ShowMerchantSellCursor,
+	GetMerchantItemCostInfo         = _G.GetMerchantItemCostInfo,
+	GetMerchantItemCostItem         = _G.GetMerchantItemCostItem,
+	GetMerchantItemInfo             = _G.GetMerchantItemInfo,
+	GetMerchantItemLink             = _G.GetMerchantItemLink,
+	GetMerchantItemMaxStack         = _G.GetMerchantItemMaxStack,
+	GetMerchantNumItems             = _G.GetMerchantNumItems,
+	GameTooltip_SetMerchantItem     = GameTooltip.SetMerchantItem,
+	GameTooltip_SetMerchantCostItem = GameTooltip.SetMerchantCostItem,
+};
+
 local _BuyMerchantItem 			= _G.BuyMerchantItem;
 local _PickupMerchantItem		= _G.PickupMerchantItem;
 local _ShowMerchantSellCursor	= _G.ShowMerchantSellCursor;
@@ -378,13 +392,12 @@ function Addon:FilterItem(index)
 		return ITEM_FILTER_CACHED[itemLink][Addon.FilterText];
 	end
 	
-	local itemLinkTypeID, itemID, itemLinkType = Addon:GetItemLinkInfo(itemLink);
+	local filter = true;
 	
+	local itemLinkTypeID, itemID, itemLinkType = Addon:GetItemLinkInfo(itemLink);
 	local itemName, texture, price, quantity, numAvailable, isUsable, extendedCost = _GetMerchantItemInfo(index);
 	local equippable = IsEquippableItem(itemLink);
-	
 	local _, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(itemLink);
-	
 	local qualityText = string.lower(_G["ITEM_QUALITY" .. (itemRarity or 1) .. "_DESC"]);
 	
 	local equipSlot = nil;
@@ -392,11 +405,12 @@ function Addon:FilterItem(index)
 		equipSlot = string.lower(_G[itemEquipLoc]);
 	end
 	
-	if(price == 0 and extendedCost) then
-		price = nil;
-	end
+	if(price == 0 and extendedCost) then price = nil; end
 	
-	local filter = true;
+	local canAfford, numCanAfford = Addon:CanAffordMerchantItem(index, true);
+	
+	local isItemKnown = Addon:IsItemKnown(itemLink);
+	local transmogable, isKnownTransmog, transmogForAnotherCharacter = Addon:GetKnownTransmogInfo(itemLink);
 	
 	local tokens = Addon:GenerateTokens(Addon.FilterText);
 	for _, tokenData in pairs(tokens) do
@@ -412,16 +426,14 @@ function Addon:FilterItem(index)
 		result = result or (token == "unequippable" and not equippable);
 		result = result or (token == "available" and numAvailable ~= 0);
 		
-		if(not result) then
-			local known = Addon:IsItemKnown(itemLink);
-			result = result or (token == "known" and known);
-			result = result or (token == "unknown" and not known);
-		end
+		result = result or (token == "canafford" and canAfford);
+		
+		result = result or (token == "known" and isItemKnown);
+		result = result or (token == "unknown" and not isItemKnown);
 		
 		if(not result and CanIMogIt) then
-			local transmogable, isKnown, anotherCharacter = Addon:GetKnownTransmogInfo(itemLink);
 			result = result or (token == "transmogable" and transmogable);
-			result = result or (token == "unknowntransmog" and transmogable and not isKnown and not anotherCharacter);
+			result = result or (token == "unknowntransmog" and transmogable and not isKnownTransmog and not transmogForAnotherCharacter);
 		end
 		
 		if(not result) then
@@ -533,6 +545,14 @@ function Addon:ResetFilter(prefill)
 	Addon:RefreshFilter();
 end
 
+function Addon:SetFilter(text)
+	if(IsControlKeyDown()) then
+		Addon:ResetFilter(strtrim(VendorerFilterEditBox:GetText() .. " " .. text));
+	else
+		Addon:ResetFilter(text);
+	end
+end
+
 function Addon:ResetAllFilters()
 	Addon.FilterText = "";
 	FilteredMerchantItems = nil;
@@ -623,14 +643,12 @@ function VendorerFilteringButton_OnEnter()
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "By prefixing a word or a phrase with |cffffffff+ (a plus)|r you can search for exact matches.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine("In addition to that you can search by other criteria.");
-	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "|cffffffffMagic words|r");
 	
+	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "|cffffffffMagic words|r");
 	if(not CanIMogIt) then
-		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, unknown, available|r. Additional transmog filters exist if the dependency |cffffffffCan I Mog It|r is installed.", nil, nil, nil, true);
+		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, unknown, available, canafford|r. Additional transmog filters exist if the dependency |cffffffffCan I Mog It|r is installed.", nil, nil, nil, true);
 	else
-		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, unknown, available, transmogable, unknowntransmog|r.", nil, nil, nil, true);
+		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, unknown, available, canafford, transmogable, unknowntransmog|r.", nil, nil, nil, true);
 	end
 	
 	VendorerHintTooltip:AddLine(" ");
@@ -702,6 +720,7 @@ function Addon:GetQualityString(quality)
 	return string.format("|c%s%s|r", color, _G["ITEM_QUALITY" .. (quality or 1) .. "_DESC"]);
 end
 
+
 function Addon:GetQuickFiltersMenuData()
 	local data = {
 		{
@@ -719,7 +738,7 @@ function Addon:GetQuickFiltersMenuData()
 					text = "Usable",
 					notCheckable = true,
 					func = function(self)
-						Addon:ResetFilter(string.lower(self.value));
+						Addon:SetFilter(string.lower(self.value));
 						CloseMenus();
 					end,
 				},
@@ -727,7 +746,7 @@ function Addon:GetQuickFiltersMenuData()
 					text = "Unusable",
 					notCheckable = true,
 					func = function(self)
-						Addon:ResetFilter(string.lower(self.value));
+						Addon:SetFilter(string.lower(self.value));
 						CloseMenus();
 					end,
 				},
@@ -735,7 +754,7 @@ function Addon:GetQuickFiltersMenuData()
 					text = "Equippable",
 					notCheckable = true,
 					func = function(self)
-						Addon:ResetFilter(string.lower(self.value));
+						Addon:SetFilter(string.lower(self.value));
 						CloseMenus();
 					end,
 				},
@@ -743,7 +762,7 @@ function Addon:GetQuickFiltersMenuData()
 					text = "Unequippable",
 					notCheckable = true,
 					func = function(self)
-						Addon:ResetFilter(string.lower(self.value));
+						Addon:SetFilter(string.lower(self.value));
 						CloseMenus();
 					end,
 				},
@@ -751,7 +770,7 @@ function Addon:GetQuickFiltersMenuData()
 					text = "Unknown",
 					notCheckable = true,
 					func = function(self)
-						Addon:ResetFilter(string.lower(self.value));
+						Addon:SetFilter(string.lower(self.value));
 						CloseMenus();
 					end,
 				},
@@ -759,7 +778,7 @@ function Addon:GetQuickFiltersMenuData()
 					text = "Known",
 					notCheckable = true,
 					func = function(self)
-						Addon:ResetFilter(string.lower(self.value));
+						Addon:SetFilter(string.lower(self.value));
 						CloseMenus();
 					end,
 				},
@@ -767,15 +786,26 @@ function Addon:GetQuickFiltersMenuData()
 					text = "Available",
 					notCheckable = true,
 					func = function(self)
-						Addon:ResetFilter(string.lower(self.value));
+						Addon:SetFilter(string.lower(self.value));
 						CloseMenus();
 					end,
+				},
+				{
+					text = "Can Afford",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter("canafford");
+						CloseMenus();
+					end,
+				},
+				{
+					text = " ", isTitle = true, notCheckable = true,
 				},
 				{
 					text = "Transmogable",
 					notCheckable = true,
 					func = function(self)
-						Addon:ResetFilter(string.lower(self.value));
+						Addon:SetFilter(string.lower(self.value));
 						CloseMenus();
 					end,
 					tooltipTitle = not CanIMogIt and "Requires dependency |cfffffd00Can I Mog It|r",
@@ -787,7 +817,7 @@ function Addon:GetQuickFiltersMenuData()
 					text = "Unknown Transmog",
 					notCheckable = true,
 					func = function(self)
-						Addon:ResetFilter("unknowntransmog");
+						Addon:SetFilter("unknowntransmog");
 						CloseMenus();
 					end,
 					tooltipTitle = not CanIMogIt and "Requires dependency |cfffffd00Can I Mog It|r",
@@ -810,7 +840,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY5_DESC"]);
-						Addon:ResetFilter(string.format("+%s", value));
+						Addon:SetFilter(string.format("+%s", value));
 						CloseMenus();
 					end,
 				},
@@ -819,7 +849,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY4_DESC"]);
-						Addon:ResetFilter(string.format("+%s", value));
+						Addon:SetFilter(string.format("+%s", value));
 						CloseMenus();
 					end,
 				},
@@ -828,7 +858,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY3_DESC"]);
-						Addon:ResetFilter(string.format("+%s", value));
+						Addon:SetFilter(string.format("+%s", value));
 						CloseMenus();
 					end,
 				},
@@ -837,7 +867,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY2_DESC"]);
-						Addon:ResetFilter(string.format("+%s", value));
+						Addon:SetFilter(string.format("+%s", value));
 						CloseMenus();
 					end,
 				},
@@ -846,7 +876,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY1_DESC"]);
-						Addon:ResetFilter(string.format("+%s", value));
+						Addon:SetFilter(string.format("+%s", value));
 						CloseMenus();
 					end,
 				},
@@ -855,7 +885,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY7_DESC"]);
-						Addon:ResetFilter(string.format("+%s", value));
+						Addon:SetFilter(string.format("+%s", value));
 						CloseMenus();
 					end,
 				},
@@ -874,7 +904,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY5_DESC"]);
-						Addon:ResetFilter(string.format(">=%s", value));
+						Addon:SetFilter(string.format(">=%s", value));
 						CloseMenus();
 					end,
 				},
@@ -883,7 +913,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY4_DESC"]);
-						Addon:ResetFilter(string.format(">=%s", value));
+						Addon:SetFilter(string.format(">=%s", value));
 						CloseMenus();
 					end,
 				},
@@ -892,7 +922,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY3_DESC"]);
-						Addon:ResetFilter(string.format(">=%s", value));
+						Addon:SetFilter(string.format(">=%s", value));
 						CloseMenus();
 					end,
 				},
@@ -901,7 +931,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY2_DESC"]);
-						Addon:ResetFilter(string.format(">=%s", value));
+						Addon:SetFilter(string.format(">=%s", value));
 						CloseMenus();
 					end,
 				},
@@ -910,7 +940,7 @@ function Addon:GetQuickFiltersMenuData()
 					notCheckable = true,
 					func = function(self)
 						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY1_DESC"]);
-						Addon:ResetFilter(string.format(">=%s", value));
+						Addon:SetFilter(string.format(">=%s", value));
 						CloseMenus();
 					end,
 				},
@@ -922,201 +952,182 @@ function Addon:GetQuickFiltersMenuData()
 			hasArrow = true,
 			menuList = {
 				{
-					text = "Item Slot", isTitle = true, notCheckable = true,
+					text = "Weapons and Off-Hand", isTitle = true, notCheckable = true,
 				},
 				{
-					text = "Weapons and Off-Hand",
+					text = INVTYPE_WEAPON,
 					notCheckable = true,
-					hasArrow = true,
-					menuList = {
-						{
-							text = "Weapons and Off-Hand", isTitle = true, notCheckable = true,
-						},
-						{
-							text = INVTYPE_WEAPON,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_2HWEAPON,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_WEAPONMAINHAND,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_WEAPONOFFHAND,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_RANGED,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_HOLDABLE,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-					},
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
 				},
 				{
-					text = "Armor",
+					text = INVTYPE_2HWEAPON,
 					notCheckable = true,
-					hasArrow = true,
-					menuList = {
-						{
-							text = "Armor", isTitle = true, notCheckable = true,
-						},
-						{
-							text = INVTYPE_HEAD,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_SHOULDER,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_BACK,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_CHEST,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_WRIST,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_HAND,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_WAIST,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_LEGS,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_FEET,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-					},
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
 				},
 				{
-					text = "Accessories",
+					text = INVTYPE_WEAPONMAINHAND,
 					notCheckable = true,
-					hasArrow = true,
-					menuList = {
-						{
-							text = "Accessories", isTitle = true, notCheckable = true,
-						},
-						{
-							text = INVTYPE_NECK,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_FINGER,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-						{
-							text = INVTYPE_TRINKET,
-							notCheckable = true,
-							func = function(self)
-								local value = Addon:WrapMultipleWords(self.value);
-								Addon:ResetFilter(string.format("+%s", value));
-								CloseMenus();
-							end,
-						},
-					},
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_WEAPONOFFHAND,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_HOLDABLE,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = " ", isTitle = true, notCheckable = true,
+				},
+				{
+					text = "Armor", isTitle = true, notCheckable = true,
+				},
+				{
+					text = INVTYPE_HEAD,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_SHOULDER,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_BACK,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_CHEST,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_WRIST,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_HAND,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_WAIST,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_LEGS,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_FEET,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = " ", isTitle = true, notCheckable = true,
+				},
+				{
+					text = "Accessories", isTitle = true, notCheckable = true,
+				},
+				{
+					text = INVTYPE_NECK,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_FINGER,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_TRINKET,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
 				},
 			},
+		},
+		{
+			text = " ", isTitle = true, notCheckable = true,
+		},
+		{
+			text = "|cff00ff00Tip: |cfffffffCtrl click to append.|r",
+			disabled = true,
+			notCheckable = true,
 		},
 	};
 	

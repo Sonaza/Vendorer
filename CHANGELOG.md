@@ -1,7 +1,9 @@
-## 2.3.5
+## 2.4.0
 * Added additional filter options:
 	* Prefixing a query word or a phrase will now perform an exact search. Vendorer will attempt to match a compared value exactly and discard all other results.
 	* Range searching by item rarity e.g. >=rare will find all rare or better items.
+* Added a filters menu where you can choose common filtering options quickly.
+* Attempted minor performance optimizations by caching filtering results temporarily. It may or may not help.
 
 ## 2.3.4
 * Fixed paging error (again) caused by the previous fix.

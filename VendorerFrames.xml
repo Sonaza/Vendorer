@@ -435,7 +435,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						self:SetScale(0.85);
+						self:SetScale(0.8);
 					</OnLoad>
 					<OnEnter function="VendorerFilteringButton_OnEnter"/>
 					<OnLeave function="VendorerFilteringButton_OnLeave"/>
