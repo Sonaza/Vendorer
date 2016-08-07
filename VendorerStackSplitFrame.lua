@@ -629,6 +629,8 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 	local name, _, price, stackCount, numAvailable, _, hasExtendedCost = GetMerchantItemInfo(merchantItemIndex);
 	if(not name) then return false end
 	
+	local numCanAfford = MAX_STACK_SIZE;
+	
 	if (price and price > 0) then
 		numCanAfford = floor(GetMoney() / (price / stackCount));
 	end
