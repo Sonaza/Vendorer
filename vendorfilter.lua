@@ -1125,7 +1125,7 @@ function Addon:GetQuickFiltersMenuData()
 			text = " ", isTitle = true, notCheckable = true,
 		},
 		{
-			text = "|cff00ff00Tip: |cfffffffCtrl click to append.|r",
+			text = "|cff00ff00Tip: |cffffffffCtrl click to append.|r",
 			disabled = true,
 			notCheckable = true,
 		},
