@@ -41,6 +41,7 @@ VENDORER_USE_SMART_REPAIR_HINT_TEXT = "|cffffffffWhen doing automatic repair all
 VENDORER_CONTRACT_BUTTON_TITLE_TEXT = "Collapse Frame";
 VENDORER_EXPAND_BUTTON_TITLE_TEXT = "Expand Frame";
 
+VENDORER_EXPANSION_TUTORIAL_TEXT = "You can now switch between default, narrow and wide frame.";
 VENDORER_FILTERING_BUTTON_TUTORIAL_TEXT = "You can now click here to quickly filter items.|n|nHover to see filtering tips. New filters are marked with |TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:12:12:0:0:|t";
 
 local CLASS_ARMOR_TYPES = {
@@ -216,8 +217,6 @@ local PLAYER_RACE_READABLE = UnitRace("player");
 VENDORER_EXTENSION_NONE     = 1;
 VENDORER_EXTENSION_NARROW   = 2;
 VENDORER_EXTENSION_WIDE     = 3;
-
-VENDORER_EXPANSION_TUTORIAL_TEXT = "You can now switch between default, narrow and wide frame. Be sure to also check filtering tips.";
 
 function Addon:OnInitialize()
 	local defaults = {
