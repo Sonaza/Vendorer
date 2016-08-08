@@ -63,6 +63,8 @@ _G.BuyMerchantItem = function(index, amount)
 	if(not index) then return end
 	
 	if(not FilteredMerchantItems[index]) then Addon:RefreshFilteredItems(); end
+	if(#FilteredMerchantItems == 0) then return end
+	
 	return _BuyMerchantItem(FilteredMerchantItems[index], amount);
 end
 
@@ -92,6 +94,8 @@ _G.GetMerchantItemCostInfo = function(index)
 	if(not index) then return end
 	
 	if(not FilteredMerchantItems[index]) then Addon:RefreshFilteredItems(); end
+	if(#FilteredMerchantItems == 0) then return end
+	
 	return _GetMerchantItemCostInfo(FilteredMerchantItems[index]);
 end
 
@@ -99,6 +103,8 @@ _G.GetMerchantItemCostItem = function(index, itemIndex)
 	if(not index) then return end
 	
 	if(not FilteredMerchantItems[index]) then Addon:RefreshFilteredItems(); end
+	if(#FilteredMerchantItems == 0) then return end
+	
 	return _GetMerchantItemCostItem(FilteredMerchantItems[index], itemIndex);
 end
 
@@ -106,6 +112,8 @@ _G.GetMerchantItemInfo = function(index)
 	if(not index) then return end
 	
 	if(not FilteredMerchantItems[index]) then Addon:RefreshFilteredItems(); end
+	if(#FilteredMerchantItems == 0) then return end
+	
 	return _GetMerchantItemInfo(FilteredMerchantItems[index]);
 end
 
@@ -122,6 +130,8 @@ _G.GetMerchantItemMaxStack = function(index)
 	if(not index) then return end
 	
 	if(not FilteredMerchantItems[index]) then Addon:RefreshFilteredItems(); end
+	if(#FilteredMerchantItems == 0) then return end
+	
 	return _GetMerchantItemMaxStack(FilteredMerchantItems[index]);
 end
 

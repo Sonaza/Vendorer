@@ -435,9 +435,9 @@ function Addon:SetMerchantItemsPerPage(items)
 	
 	local merchantIsOpen = MerchantFrame:IsVisible();
 	if(merchantIsOpen) then
-		if(MerchantFrame.page < 1) then MerchantFrame.page = 1 end
 		local maxPages = math.ceil(Addon:GetUnfilteredMerchantNumItems() / MERCHANT_ITEMS_PER_PAGE);
 		if(MerchantFrame.page > maxPages) then MerchantFrame.page = maxPages end
+		if(MerchantFrame.page < 1) then MerchantFrame.page = 1 end
 		
 		if(MerchantFrame.selectedTab == 1) then
 			MerchantFrame_UpdateMerchantInfo();
@@ -1248,89 +1248,91 @@ function Addon:UpdateMerchantInfo()
 		MerchantItem12:Hide();
 	end
 	
-	for i=1, MERCHANT_ITEMS_PER_PAGE, 1 do
-		local index = ((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i;
-		local itemButton = _G["MerchantItem"..i.."ItemButton"];
-		local merchantButton = _G["MerchantItem"..i];
-		
-		local rarityBorder = _G["VendorerMerchantItem"..i.."Rarity"];
-		if(rarityBorder) then
-			rarityBorder:Hide();
-			rarityBorder.transmogrifyAsterisk:Hide();
-		end
-		
-		if(not itemButton.rarityBorder) then
-			itemButton.rarityBorder = rarityBorder;
+	if(numMerchantItems > 0) then
+		for i=1, MERCHANT_ITEMS_PER_PAGE, 1 do
+			local index = ((MerchantFrame.page - 1) * MERCHANT_ITEMS_PER_PAGE) + i;
+			local itemButton = _G["MerchantItem"..i.."ItemButton"];
+			local merchantButton = _G["MerchantItem"..i];
 			
-			itemButton:HookScript("OnEnter", function(self)
-				self.rarityBorder.highlight:Show();
-			end)
+			local rarityBorder = _G["VendorerMerchantItem"..i.."Rarity"];
+			if(rarityBorder) then
+				rarityBorder:Hide();
+				rarityBorder.transmogrifyAsterisk:Hide();
+			end
 			
-			itemButton:HookScript("OnLeave", function(self)
-				self.rarityBorder.highlight:Hide();
-			end);
-		end
-		
-		if(index <= numMerchantItems) then
-			local itemLink = GetMerchantItemLink(index);
-			if(itemLink) then
-				local _, _, _, _, _, isUsable = GetMerchantItemInfo(index);
-				local _, _, rarity, _, _, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(itemLink);
+			if(not itemButton.rarityBorder) then
+				itemButton.rarityBorder = rarityBorder;
 				
-				if(rarityBorder and rarity and rarity >= 1) then
-					local r, g, b = GetItemQualityColor(rarity);
-					local a = 0.9;
-					if(rarity == 1) then a = 0.75 end
-					rarityBorder.border:SetVertexColor(r, g, b, a);
-					rarityBorder.highlight:SetVertexColor(r, g, b);
-					rarityBorder:Show();
-				end
+				itemButton:HookScript("OnEnter", function(self)
+					self.rarityBorder.highlight:Show();
+				end)
 				
-				-- Optional dependency for transmogs
-				if(Addon.db.global.ShowTransmogAsterisk and CanIMogIt) then
-					local isTransmogable, isKnown, anotherCharacter = Addon:GetKnownTransmogInfo(itemLink);
+				itemButton:HookScript("OnLeave", function(self)
+					self.rarityBorder.highlight:Hide();
+				end);
+			end
+			
+			if(index <= numMerchantItems) then
+				local itemLink = GetMerchantItemLink(index);
+				if(itemLink) then
+					local _, _, _, _, _, isUsable = GetMerchantItemInfo(index);
+					local _, _, rarity, _, _, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(itemLink);
 					
-					if(isTransmogable) then
-						if(not isKnown) then
-							rarityBorder.transmogrifyAsterisk:Show();
-							
-							if(not anotherCharacter) then
-								rarityBorder.transmogrifyAsterisk.iconSelf:Show();
-								rarityBorder.transmogrifyAsterisk.iconOther:Hide();
-							else
-								rarityBorder.transmogrifyAsterisk.iconOther:Show();
-								rarityBorder.transmogrifyAsterisk.iconSelf:Hide();
+					if(rarityBorder and rarity and rarity >= 1) then
+						local r, g, b = GetItemQualityColor(rarity);
+						local a = 0.9;
+						if(rarity == 1) then a = 0.75 end
+						rarityBorder.border:SetVertexColor(r, g, b, a);
+						rarityBorder.highlight:SetVertexColor(r, g, b);
+						rarityBorder:Show();
+					end
+					
+					-- Optional dependency for transmogs
+					if(Addon.db.global.ShowTransmogAsterisk and CanIMogIt) then
+						local isTransmogable, isKnown, anotherCharacter = Addon:GetKnownTransmogInfo(itemLink);
+						
+						if(isTransmogable) then
+							if(not isKnown) then
+								rarityBorder.transmogrifyAsterisk:Show();
+								
+								if(not anotherCharacter) then
+									rarityBorder.transmogrifyAsterisk.iconSelf:Show();
+									rarityBorder.transmogrifyAsterisk.iconOther:Hide();
+								else
+									rarityBorder.transmogrifyAsterisk.iconOther:Show();
+									rarityBorder.transmogrifyAsterisk.iconSelf:Hide();
+								end
 							end
 						end
 					end
-				end
-				
-				local shouldColorize = false;
-				local color = { 0.6, 0.0, 0.0 };
-				
-				if(Addon.db.global.PaintArmorTypes) then
-					if(isUsable and itemType == LOCALIZED_ARMOR and Addon:IsArmorItemSlot(itemEquipLoc)) then
-						if(itemSubType ~= LOCALIZED_COSMETIC and not Addon:IsValidClassArmorType(itemSubType)) then
-							shouldColorize = true;
+					
+					local shouldColorize = false;
+					local color = { 0.6, 0.0, 0.0 };
+					
+					if(Addon.db.global.PaintArmorTypes) then
+						if(isUsable and itemType == LOCALIZED_ARMOR and Addon:IsArmorItemSlot(itemEquipLoc)) then
+							if(itemSubType ~= LOCALIZED_COSMETIC and not Addon:IsValidClassArmorType(itemSubType)) then
+								shouldColorize = true;
+							end
 						end
 					end
-				end
-				
-				if(Addon.db.global.PaintKnownItems and Addon:IsItemKnown(itemLink)) then
-					shouldColorize = true;
-					color = {
-						Addon.db.global.PaintColor.r,
-						Addon.db.global.PaintColor.g,
-						Addon.db.global.PaintColor.b
-					};
-				end
-				
-				if(shouldColorize) then
-					local r, g, b = unpack(color);
-					SetItemButtonNameFrameVertexColor(merchantButton, r, g, b);
-					SetItemButtonSlotVertexColor(merchantButton, r, g, b);
-					SetItemButtonTextureVertexColor(itemButton, r, g, b);
-					SetItemButtonNormalTextureVertexColor(itemButton, r, g, b);
+					
+					if(Addon.db.global.PaintKnownItems and Addon:IsItemKnown(itemLink)) then
+						shouldColorize = true;
+						color = {
+							Addon.db.global.PaintColor.r,
+							Addon.db.global.PaintColor.g,
+							Addon.db.global.PaintColor.b
+						};
+					end
+					
+					if(shouldColorize) then
+						local r, g, b = unpack(color);
+						SetItemButtonNameFrameVertexColor(merchantButton, r, g, b);
+						SetItemButtonSlotVertexColor(merchantButton, r, g, b);
+						SetItemButtonTextureVertexColor(itemButton, r, g, b);
+						SetItemButtonNormalTextureVertexColor(itemButton, r, g, b);
+					end
 				end
 			end
 		end

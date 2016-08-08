@@ -1,3 +1,6 @@
+## 2.4.1
+* Fixed bugs with frame update if merchant had no items for sale.
+
 ## 2.4.0
 * Added additional filter options:
 	* Prefixing a query word or a phrase with a + (a plus) will now perform an exact search. Vendorer will attempt to match a compared value exactly and discard all other results.
