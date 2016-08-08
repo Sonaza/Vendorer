@@ -439,7 +439,7 @@ function Addon:FilterItem(index)
 				result = result or (token == "unknowntransmog" and transmogable and not isKnownTransmog and not transmogForAnotherCharacter);
 			else
 				result = result or (token == "unknowntransmog" and transmogable and isKnownTransmog and not transmogForAnotherCharacter);
-				negated = false;
+				if(result) then negated = false end
 			end
 		end
 		
