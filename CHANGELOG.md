@@ -1,5 +1,6 @@
 ## 2.4.1
 * Fixed bugs with frame update if merchant had no items for sale.
+* Fixed error related to query negation.
 
 ## 2.4.0
 * Added additional filter options:
