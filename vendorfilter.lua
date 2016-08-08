@@ -1119,6 +1119,30 @@ function Addon:GetQuickFiltersMenuData()
 						CloseMenus();
 					end,
 				},
+				{
+					text = " ", isTitle = true, notCheckable = true,
+				},
+				{
+					text = "Other", isTitle = true, notCheckable = true,
+				},
+				{
+					text = INVTYPE_BODY,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_TABARD,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
 			},
 		},
 		{
