@@ -175,9 +175,13 @@ StaticPopupDialogs["VENDORER_FILTERING_PERFORMANCE_ALERT"] = {
 	hideOnEscape = 1,
 };
 
+Addon.MerchantWindowOpeningTime = 0;
 Addon.UpdatedFilteringTime = 0;
 function VendorerFramerateWatcher_OnUpdate(self, elapsed)
 	if(not Addon.db.global.UseTooltipSearch) then return end
+	
+	-- Merchant window opening may lag a bit so don't display popup for that
+	if((GetTime() - Addon.MerchantWindowOpeningTime) < 2.5) then return end
 	
 	self.elapsed = (self.elapsed or 0) + elapsed;
 	if(self.elapsed < 0.5) then return end
@@ -1171,6 +1175,8 @@ function Addon:MERCHANT_SHOW()
 	if(not Addon.db.global.FilteringButtonAlertShown) then
 		VendorerFilteringButtonAlert:Show();
 	end
+	
+	Addon.MerchantWindowOpeningTime = GetTime();
 end
 
 function VendorerFilteringButtonAlertCloseButton_OnClick()
