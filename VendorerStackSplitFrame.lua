@@ -644,6 +644,8 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 				local ownedCurrencyItems = Addon:GetProperItemCount(currencyItemLink);
 				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyItems / requiredCurrency));
 			elseif(currencyName) then
+				CacheCurrencies();
+				
 				local currencyID = cachedCurrencies[currencyName];
 				local name, ownedCurrencyAmount = GetCurrencyInfo(currencyID);
 				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyAmount / requiredCurrency));

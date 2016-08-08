@@ -415,6 +415,7 @@ function Addon:FilterItem(index)
 	local tokens = Addon:GenerateTokens(Addon.FilterText);
 	for _, tokenData in pairs(tokens) do
 		local token = tokenData.token;
+		local negated = tokenData.negated;
 		
 		local matchFound = false;
 		local result = false;
@@ -433,7 +434,13 @@ function Addon:FilterItem(index)
 		
 		if(not result and CanIMogIt) then
 			result = result or (token == "transmogable" and transmogable);
-			result = result or (token == "unknowntransmog" and transmogable and not isKnownTransmog and not transmogForAnotherCharacter);
+			
+			if(not negated) then
+				result = result or (token == "unknowntransmog" and transmogable and not isKnownTransmog and not transmogForAnotherCharacter);
+			else
+				result = result or (token == "unknowntransmog" and transmogable and isKnownTransmog and not transmogForAnotherCharacter);
+				negated = false;
+			end
 		end
 		
 		if(not result) then
@@ -506,7 +513,7 @@ function Addon:FilterItem(index)
 			end
 		end
 		
-		if(not tokenData.negated) then
+		if(not negated) then
 			filter = filter and result;
 		else
 			filter = filter and not result;
@@ -836,6 +843,15 @@ function Addon:GetQuickFiltersMenuData()
 					text = "Quality (exact)", isTitle = true, notCheckable = true,
 				},
 				{
+					text = Addon:GetQualityString(6),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY6_DESC"]);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
 					text = Addon:GetQualityString(5),
 					notCheckable = true,
 					func = function(self)
@@ -898,6 +914,15 @@ function Addon:GetQuickFiltersMenuData()
 			menuList = {
 				{
 					text = "Quality (minimum)", isTitle = true, notCheckable = true,
+				},
+				{
+					text = Addon:GetQualityString(6),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY6_DESC"]);
+						Addon:SetFilter(string.format(">=%s", value));
+						CloseMenus();
+					end,
 				},
 				{
 					text = Addon:GetQualityString(5),
