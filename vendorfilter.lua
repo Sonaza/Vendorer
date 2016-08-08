@@ -9,6 +9,20 @@ local _;
 
 local FilteredMerchantItems = nil;
 
+Addon.BlizzFunctions = {
+	BuyMerchantItem                 = _G.BuyMerchantItem,
+	PickupMerchantItem              = _G.PickupMerchantItem,
+	ShowMerchantSellCursor          = _G.ShowMerchantSellCursor,
+	GetMerchantItemCostInfo         = _G.GetMerchantItemCostInfo,
+	GetMerchantItemCostItem         = _G.GetMerchantItemCostItem,
+	GetMerchantItemInfo             = _G.GetMerchantItemInfo,
+	GetMerchantItemLink             = _G.GetMerchantItemLink,
+	GetMerchantItemMaxStack         = _G.GetMerchantItemMaxStack,
+	GetMerchantNumItems             = _G.GetMerchantNumItems,
+	GameTooltip_SetMerchantItem     = GameTooltip.SetMerchantItem,
+	GameTooltip_SetMerchantCostItem = GameTooltip.SetMerchantCostItem,
+};
+
 local _BuyMerchantItem 			= _G.BuyMerchantItem;
 local _PickupMerchantItem		= _G.PickupMerchantItem;
 local _ShowMerchantSellCursor	= _G.ShowMerchantSellCursor;
@@ -219,6 +233,19 @@ local VALUE_FILTERS = {
 	{ type = VALUE_TYPE_MONEY, pattern = MONEY_EQ_PATTERN,  func = COMPARISONS.EQ },
 };
 
+function Addon:GetQualityIndex(token)
+	local token = string.lower(token);
+	
+	for quality = 0, 7 do
+		local qualityString = string.lower(_G["ITEM_QUALITY" .. quality .. "_DESC"]);
+		if(token == qualityString) then
+			return quality;
+		end
+	end
+	
+	return nil;
+end
+
 local cachedStrings = {};
 function Addon:MakeTooltipString(itemLink)
 	if(not itemLink) then return "" end
@@ -248,41 +275,112 @@ function Addon:MakeTooltipString(itemLink)
 	return cachedStrings[itemLink];
 end
 
+local TOKEN_OPERATORS = {
+	{
+		key = "gte",
+		pattern = "^(" .. GTE_PATTERN .. ")(.*)",
+		func = COMPARISONS.GTE,
+	},
+	{
+		key = "gt",
+		pattern = "^(" .. GT_PATTERN .. ")(.*)",
+		func = COMPARISONS.GT,
+	},
+	{
+		key = "lte",
+		pattern = "^(" .. LTE_PATTERN .. ")(.*)",
+		func = COMPARISONS.LTE,
+	},
+	{
+		key = "lt",
+		pattern = "^(" .. LT_PATTERN .. ")(.*)",
+		func = COMPARISONS.LT,
+	},
+	{
+		key = "exact",
+		pattern = "^(%+)(.*)",
+	},
+	{
+		key = "negated",
+		pattern = "^(%!)(.*)",
+	},
+	{
+		key = "negated",
+		pattern = "^(%-)(.*)",
+	},
+};
+
 function Addon:GenerateTokens(text)
 	local tokens = {};
 	
 	local openQuote = false;
-	for _, token in pairs({ strsplit(" ", text) }) do
-		local isNegated = (string.sub(token, 1, 1) == "-" or string.sub(token, 1, 1) == "!");
-		local token = isNegated and string.sub(token, 2) or token;
+	for _, rawtoken in pairs({ strsplit(" ", text) }) do
+		local operator, token, tokendata;
+		for _, data in ipairs(TOKEN_OPERATORS) do
+			operator, token = string.match(rawtoken, data.pattern);
+			if(operator and token) then
+				tokendata = data;
+				break;
+			end
+		end
 		
-		if(not openQuote and string.match(token, "%b\"\"")) then
-			tinsert(tokens, {
-				negated = isNegated,
-				token = string.sub(token, 2, -2),
-			});
-		elseif(not openQuote and string.sub(token, 1, 1) == "\"") then
-			openQuote = true;
-			tinsert(tokens, {
-				negated = isNegated,
-				token = string.sub(token, 2),
-			});
-		elseif(openQuote and string.sub(token, -1) == "\"") then
-			openQuote = false;
-			tokens[#tokens].token = tokens[#tokens].token .. " " .. string.sub(token, 0, -2);
-		elseif(openQuote) then
-			tokens[#tokens].token = tokens[#tokens].token .. " " .. token;
-		else
-			tinsert(tokens, {
-				negated = isNegated,
-				token = token,
-			});
+		if(not tokendata) then
+			token = rawtoken;
+		end
+		
+		if(token and token ~= "") then
+			if(not openQuote and string.match(token, "%b\"\"")) then
+				tinsert(tokens, {
+					token = string.sub(token, 2, -2),
+				});
+			elseif(not openQuote and string.sub(token, 1, 1) == "\"") then
+				openQuote = true;
+				tinsert(tokens, {
+					token = string.sub(token, 2),
+				});
+			elseif(openQuote and string.sub(token, -1) == "\"") then
+				openQuote = false;
+				tokens[#tokens].token = tokens[#tokens].token .. " " .. string.sub(token, 0, -2);
+			elseif(openQuote) then
+				tokens[#tokens].token = tokens[#tokens].token .. " " .. token;
+			else
+				tinsert(tokens, {
+					token = token,
+				});
+			end
+			
+			if(tokendata) then
+				tokens[#tokens].operator = operator;
+				
+				tokens[#tokens].pattern = tokendata.key;
+				tokens[#tokens][tokendata.key] = true;
+				
+				if(tokendata.func) then
+					tokens[#tokens].func = tokendata.func;
+				end
+			end
 		end
 	end
 	
 	return tokens;
 end
 
+function Addon:StringFind(str, search, exact)
+	if(not str or not search) then return end
+	
+	local str = string.lower(str);
+	local search = string.lower(search);
+	
+	if(exact) then
+		return str == search;
+	end
+	
+	-- Escape the search token so it doesn't do regex queries
+	search = string.gsub(search, "[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1");
+	return strfind(str, search) ~= nil;
+end
+
+local ITEM_FILTER_CACHED = {};
 Addon.FilterText = "";
 function Addon:FilterItem(index)
 	if(Addon.FilterText == "") then return true end
@@ -290,13 +388,16 @@ function Addon:FilterItem(index)
 	local itemLink = _GetMerchantItemLink(index);
 	if(not itemLink) then return true end
 	
-	local itemLinkTypeID, itemID, itemLinkType = Addon:GetItemLinkInfo(itemLink);
+	if(ITEM_FILTER_CACHED[itemLink] and ITEM_FILTER_CACHED[itemLink][Addon.FilterText] ~= nil) then
+		return ITEM_FILTER_CACHED[itemLink][Addon.FilterText];
+	end
 	
+	local filter = true;
+	
+	local itemLinkTypeID, itemID, itemLinkType = Addon:GetItemLinkInfo(itemLink);
 	local itemName, texture, price, quantity, numAvailable, isUsable, extendedCost = _GetMerchantItemInfo(index);
 	local equippable = IsEquippableItem(itemLink);
-	
 	local _, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(itemLink);
-	
 	local qualityText = string.lower(_G["ITEM_QUALITY" .. (itemRarity or 1) .. "_DESC"]);
 	
 	local equipSlot = nil;
@@ -304,16 +405,17 @@ function Addon:FilterItem(index)
 		equipSlot = string.lower(_G[itemEquipLoc]);
 	end
 	
-	if(price == 0 and extendedCost) then
-		price = nil;
-	end
+	if(price == 0 and extendedCost) then price = nil; end
 	
-	local filter = true;
+	local canAfford, numCanAfford = Addon:CanAffordMerchantItem(index, true);
+	
+	local isItemKnown = Addon:IsItemKnown(itemLink);
+	local transmogable, isKnownTransmog, transmogForAnotherCharacter = Addon:GetKnownTransmogInfo(itemLink);
 	
 	local tokens = Addon:GenerateTokens(Addon.FilterText);
 	for _, tokenData in pairs(tokens) do
-		-- Escape the search token so it doesn't do regex queries
-		local token = string.gsub(tokenData.token, "[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1");
+		local token = tokenData.token;
+		local negated = tokenData.negated;
 		
 		local matchFound = false;
 		local result = false;
@@ -325,16 +427,26 @@ function Addon:FilterItem(index)
 		result = result or (token == "unequippable" and not equippable);
 		result = result or (token == "available" and numAvailable ~= 0);
 		
-		if(not result) then
-			local known = Addon:IsItemKnown(itemLink);
-			result = result or (token == "known" and known);
-			result = result or (token == "unknown" and not known);
+		result = result or (token == "canafford" and canAfford);
+		
+		result = result or (token == "known" and isItemKnown);
+		result = result or (token == "unknown" and not isItemKnown);
+		
+		if(not result and CanIMogIt) then
+			result = result or (token == "transmogable" and transmogable);
+			
+			if(not negated) then
+				result = result or (token == "unknowntransmog" and transmogable and not isKnownTransmog and not transmogForAnotherCharacter);
+			else
+				result = result or (token == "unknowntransmog" and transmogable and isKnownTransmog and not transmogForAnotherCharacter);
+				negated = false;
+			end
 		end
 		
 		if(not result) then
 			local totalCoppers = Addon:ParseGoldString(token);
 			for _, comparison in ipairs(VALUE_FILTERS) do
-				local value = strmatch(token, comparison.pattern);
+				local value = string.match((tokenData.operator or "") .. token, comparison.pattern);
 				if(value ~= nil) then
 					value = tonumber(value);
 					
@@ -364,41 +476,52 @@ function Addon:FilterItem(index)
 			end
 			
 			if(not matchFound) then
-				result = strfind(string.lower(itemName), token) ~= nil;
-				result = result or strfind(qualityText, token) ~= nil;
+				local quality = Addon:GetQualityIndex(token);
+				if(quality and tokenData.func) then
+					result = tokenData.func(itemRarity, quality);
+					matchFound = true;
+				end
+			end
 				
-				result = result or (itemLinkType and strfind(string.lower(itemLinkType), token) ~= nil);
+			if(not matchFound) then
+				result = Addon:StringFind(itemName, token, tokenData.exact);
+				result = result or Addon:StringFind(qualityText, token, tokenData.exact);
 				
-				result = result or (itemType and strfind(string.lower(itemType), token) ~= nil);
-				result = result or (itemSubType and strfind(string.lower(itemSubType), token) ~= nil);
-				result = result or (equipSlot and strfind(equipSlot, token) ~= nil);
+				result = result or Addon:StringFind(itemLinkType, token, tokenData.exact);
+				
+				result = result or Addon:StringFind(itemType, token, tokenData.exact);
+				result = result or Addon:StringFind(itemSubType, token, tokenData.exact);
+				result = result or Addon:StringFind(equipSlot, token, tokenData.exact);
 				
 				if(not result and extendedCost) then
 					local numCostItems = _GetMerchantItemCostInfo(index);
 					for costItemIndex = 1, numCostItems do
 						local _, costItemValue, costItemLink, currencyName = _GetMerchantItemCostItem(index, costItemIndex);
 						if(costItemLink) then
-							result = result or strfind(string.lower(costItemLink), token) ~= nil;
+							result = result or Addon:StringFind(costItemLink, token, tokenData.exact);
 						elseif(currencyName) then
-							result = result or strfind(string.lower(currencyName), token) ~= nil;
+							result = result or Addon:StringFind(currencyName, token, tokenData.exact);
 						end
 					end
 				end
 				
 				-- Tooltip search only if nothing has been matched yet
-				if(not result and Addon.db.global.UseTooltipSearch) then
+				if(not result and Addon.db.global.UseTooltipSearch and not tokenData.exact) then
 					local tooltipString = Addon:MakeTooltipString(itemLink);
-					result = strfind(string.lower(tooltipString), token) ~= nil;
+					result = Addon:StringFind(tooltipString, token);
 				end
 			end
 		end
 		
-		if(not tokenData.negated) then
+		if(not negated) then
 			filter = filter and result;
 		else
 			filter = filter and not result;
 		end
 	end
+	
+	ITEM_FILTER_CACHED[itemLink] = ITEM_FILTER_CACHED[itemLink] or {};
+	ITEM_FILTER_CACHED[itemLink][Addon.FilterText] = filter;
 	
 	return filter;
 end
@@ -423,12 +546,18 @@ function Addon:UpdateMerchantItems()
 	MerchantFrame_Update();
 end
 
-function Addon:ResetFilter()
-	Addon.FilterText = "";
-	VendorerFilterEditBox:SetText("");
+function Addon:ResetFilter(prefill)
+	VendorerFilterEditBox:SetText(prefill or "");
 	SearchBoxTemplate_OnTextChanged(VendorerFilterEditBox);
-	
-	Addon:UpdateMerchantItems();
+	Addon:RefreshFilter();
+end
+
+function Addon:SetFilter(text)
+	if(IsControlKeyDown()) then
+		Addon:ResetFilter(strtrim(VendorerFilterEditBox:GetText() .. " " .. text));
+	else
+		Addon:ResetFilter(text);
+	end
 end
 
 function Addon:ResetAllFilters()
@@ -437,19 +566,28 @@ function Addon:ResetAllFilters()
 end
 
 function Vendorer_OnSearchTextChanged(self)
-	Addon.UpdatedFilteringTime = GetTime();
-	
 	SearchBoxTemplate_OnTextChanged(self);
 	Addon:RefreshFilter();
 end
 
-function Addon:RefreshFilter()
+function Addon:RefreshFilter(purge_cache)
+	if(purge_cache) then
+		ITEM_FILTER_CACHED = {};
+		collectgarbage("collect");
+	end
+	
 	if(VendorerStackSplitFrame:IsPurchasing()) then
 		VendorerStackSplitFrame:CancelPurchase();
 		Addon:AddMessage("Pending bulk purchase canceled due to filtering change.");
 	end
 	
+	local oldfilter = Addon.FilterText;
 	Addon.FilterText = string.trim(string.lower(VendorerFilterEditBox:GetText()));
+	
+	if(Addon.FilterText ~= "" or oldfilter ~= "") then
+		Addon.UpdatedFilteringTime = GetTime();
+	end
+	
 	MerchantFrame.page = 1;
 	Addon:UpdateMerchantItems();
 end
@@ -491,14 +629,15 @@ function VendorerFilterEditBox_OnLeave(self)
 end
 
 local NEW_FEATURE_ICON = "|TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:12:12:0:0:|t";
-function VendorerFilterTipsButton_OnEnter()
+function VendorerFilteringButton_OnEnter()
+	if(DropDownList1:IsVisible()) then return end
+	
 	VendorerHintTooltip:ClearLines();
 	
-	VendorerHintTooltip:SetPoint("TOPLEFT", VendorerFilterTipsButton, "TOPRIGHT", -7, 50);
-	VendorerHintTooltip:SetOwner(VendorerFilterTipsButton, "ANCHOR_PRESERVE");
+	VendorerHintTooltip:SetPoint("TOPLEFT", VendorerFilteringButton, "TOPRIGHT", -7, 70);
+	VendorerHintTooltip:SetOwner(VendorerFilteringButton, "ANCHOR_PRESERVE");
 	
 	VendorerHintTooltip:AddLine("|cffffffffVendorer Filtering Tips|r");
-	VendorerHintTooltip:AddLine(" ");
 	if(Addon.db.global.UseTooltipSearch) then
 		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot, required currency or " .. NEW_FEATURE_ICON .. "tooltip text.", nil, nil, nil, true);
 	else
@@ -509,10 +648,16 @@ function VendorerFilterTipsButton_OnEnter()
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "Any and all filters can also be negated by prefixing the query word or phrase with |cffffffff! (an exclamation mark)|r.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine("In addition to that you can search by other criteria.");
+	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "By prefixing a word or a phrase with |cffffffff+ (a plus)|r you can search for exact matches.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
+	
 	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "|cffffffffMagic words|r");
-	VendorerHintTooltip:AddLine("Predefined magic words: |cffffffffusable, unusable, equippable, unequippable, known, unknown, available|r.", nil, nil, nil, true);
+	if(not CanIMogIt) then
+		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, unknown, available, canafford|r. Additional transmog filters exist if the dependency |cffffffffCan I Mog It|r is installed.", nil, nil, nil, true);
+	else
+		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, unknown, available, canafford, transmogable, unknowntransmog|r.", nil, nil, nil, true);
+	end
+	
 	VendorerHintTooltip:AddLine(" ");
 	VendorerHintTooltip:AddLine("|cffffffffBy Item ID|r");
 	VendorerHintTooltip:AddLine("Prefix a number with letters |cffffffffid|r. For example |cffffffffid|cfff361946948|r.", nil, nil, nil, true); 
@@ -529,16 +674,511 @@ function VendorerFilterTipsButton_OnEnter()
 	VendorerHintTooltip:AddLine("|cffffffffSearching for Ranges of Values|r");
 	VendorerHintTooltip:AddLine("Search values can be prefixed with |cffffffff>, >=, <|r and |cffffffff<=|r to search for ranges of values.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine("For example |cffffffff>=r|cfff3619490|r will find all items that require level higher than or equal to 90.", nil, nil, nil, true);
+	VendorerHintTooltip:AddLine("|cffffffffFiltering Examples|r");
+	VendorerHintTooltip:AddLine("|cffffffff>=r|cfff3619490|r would find all items that require level higher than or equal to 90.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine("Another example |cffffffff>=|cfff36194250g|r |cffffffff<=|cfff36194500g|r will find all items that cost between 250 and 500 gold.", nil, nil, nil, true);
+	VendorerHintTooltip:AddLine("|cffffffff>=|cfff36194250g|r |cffffffff<=|cfff36194500g|r would find all items that cost between 250 and 500 gold.", nil, nil, nil, true);
+	VendorerHintTooltip:AddLine(" ");
+	VendorerHintTooltip:AddLine("|cffffffff>=|cfff36194rare|r would find all items that are rare or better.", nil, nil, nil, true);
 	
-	VendorerHintTooltip:SetMinimumWidth(250);
-	VendorerHintTooltip:SetWidth(250);
+	VendorerHintTooltip:SetClampedToScreen(true);
+	VendorerHintTooltip:SetMinimumWidth(270);
+	VendorerHintTooltip:SetWidth(270);
 	VendorerHintTooltip:SetScale(0.9);
 	VendorerHintTooltip:Show();
 end
 
-function VendorerFilterTipsButton_OnLeave()
+function VendorerFilteringButton_OnLeave()
 	VendorerHintTooltip:Hide();
+end
+
+function VendorerFilteringButton_OnClick(self, button)
+	VendorerHintTooltip:Hide();
+	Addon:OpenQuickFiltersMenu(self);
+	
+	VendorerFilteringButtonAlert:Hide();
+	Addon.db.global.FilteringButtonAlertShown = true;
+end
+
+local QuickFiltersMenuFrame;
+function Addon:OpenQuickFiltersMenu(anchor)
+	if(not QuickFiltersMenuFrame) then
+		QuickFiltersMenuFrame = CreateFrame("Frame", "VendorerQuickFiltersContextMenuFrame", anchor, "UIDropDownMenuTemplate");
+	end
+	
+	QuickFiltersMenuFrame:SetPoint("BOTTOM", anchor, "CENTER", 0, 5);
+	EasyMenu(Addon:GetQuickFiltersMenuData(), QuickFiltersMenuFrame, "cursor", 0, 0, "MENU", 2.5);
+	
+	DropDownList1:ClearAllPoints();
+	DropDownList1:SetPoint("TOPLEFT", anchor, "TOPRIGHT", -10, -10);
+	DropDownList1:SetClampedToScreen(true);
+end
+
+function Addon:WrapMultipleWords(words)
+	if(#({strsplit(" ", words)}) > 1) then
+		return "\"" .. words .. "\"";
+	end
+	
+	return words;
+end
+
+function Addon:GetQualityString(quality)
+	local color = select(4, GetItemQualityColor(quality));
+	return string.format("|c%s%s|r", color, _G["ITEM_QUALITY" .. (quality or 1) .. "_DESC"]);
+end
+
+
+function Addon:GetQuickFiltersMenuData()
+	local data = {
+		{
+			text = "Vendorer Quick Filters", isTitle = true, notCheckable = true,
+		},
+		{
+			text = "Magic Words",
+			notCheckable = true,
+			hasArrow = true,
+			menuList = {
+				{
+					text = "Magic Words", isTitle = true, notCheckable = true,
+				},
+				{
+					text = "Usable",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter(string.lower(self.value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = "Unusable",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter(string.lower(self.value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = "Equippable",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter(string.lower(self.value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = "Unequippable",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter(string.lower(self.value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = "Unknown",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter(string.lower(self.value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = "Known",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter(string.lower(self.value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = "Available",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter(string.lower(self.value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = "Can Afford",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter("canafford");
+						CloseMenus();
+					end,
+				},
+				{
+					text = " ", isTitle = true, notCheckable = true,
+				},
+				{
+					text = "Transmogable",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter(string.lower(self.value));
+						CloseMenus();
+					end,
+					tooltipTitle = not CanIMogIt and "Requires dependency |cfffffd00Can I Mog It|r",
+					tooltipOnButton = 1,
+					tooltipWhileDisabled = true,
+					disabled = (CanIMogIt == nil),
+				},
+				{
+					text = "Unknown Transmog",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter("unknowntransmog");
+						CloseMenus();
+					end,
+					tooltipTitle = not CanIMogIt and "Requires dependency |cfffffd00Can I Mog It|r",
+					tooltipOnButton = 1,
+					tooltipWhileDisabled = true,
+					disabled = (CanIMogIt == nil),
+				},
+			},
+		},
+		{
+			text = "Quality (exact)",
+			notCheckable = true,
+			hasArrow = true,
+			menuList = {
+				{
+					text = "Quality (exact)", isTitle = true, notCheckable = true,
+				},
+				{
+					text = Addon:GetQualityString(6),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY6_DESC"]);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(5),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY5_DESC"]);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(4),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY4_DESC"]);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(3),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY3_DESC"]);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(2),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY2_DESC"]);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(1),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY1_DESC"]);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(7),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY7_DESC"]);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+			},
+		},
+		{
+			text = "Quality (minimum)",
+			notCheckable = true,
+			hasArrow = true,
+			menuList = {
+				{
+					text = "Quality (minimum)", isTitle = true, notCheckable = true,
+				},
+				{
+					text = Addon:GetQualityString(6),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY6_DESC"]);
+						Addon:SetFilter(string.format(">=%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(5),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY5_DESC"]);
+						Addon:SetFilter(string.format(">=%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(4),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY4_DESC"]);
+						Addon:SetFilter(string.format(">=%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(3),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY3_DESC"]);
+						Addon:SetFilter(string.format(">=%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(2),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY2_DESC"]);
+						Addon:SetFilter(string.format(">=%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = Addon:GetQualityString(1),
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(_G["ITEM_QUALITY1_DESC"]);
+						Addon:SetFilter(string.format(">=%s", value));
+						CloseMenus();
+					end,
+				},
+			},
+		},
+		{
+			text = "Item Slot",
+			notCheckable = true,
+			hasArrow = true,
+			menuList = {
+				{
+					text = "Weapons and Off-Hand", isTitle = true, notCheckable = true,
+				},
+				{
+					text = INVTYPE_WEAPON,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_2HWEAPON,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_WEAPONMAINHAND,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_WEAPONOFFHAND,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_HOLDABLE,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = " ", isTitle = true, notCheckable = true,
+				},
+				{
+					text = "Armor", isTitle = true, notCheckable = true,
+				},
+				{
+					text = INVTYPE_HEAD,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_SHOULDER,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_BACK,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_CHEST,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_WRIST,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_HAND,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_WAIST,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_LEGS,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_FEET,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = " ", isTitle = true, notCheckable = true,
+				},
+				{
+					text = "Accessories", isTitle = true, notCheckable = true,
+				},
+				{
+					text = INVTYPE_NECK,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_FINGER,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_TRINKET,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = " ", isTitle = true, notCheckable = true,
+				},
+				{
+					text = "Other", isTitle = true, notCheckable = true,
+				},
+				{
+					text = INVTYPE_BODY,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = INVTYPE_TABARD,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+			},
+		},
+		{
+			text = " ", isTitle = true, notCheckable = true,
+		},
+		{
+			text = "|cff00ff00Tip: |cffffffffCtrl click to append.|r",
+			disabled = true,
+			notCheckable = true,
+		},
+	};
+	
+	return data;
 end

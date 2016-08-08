@@ -75,7 +75,7 @@ end
 local DropDownMenuFrame;
 function Addon:OpenSettingsMenu(anchor)
 	if(not DropDownMenuFrame) then
-		DropDownMenuFrame = CreateFrame("Frame", "FlashTalentContextMenuFrame", anchor, "UIDropDownMenuTemplate");
+		DropDownMenuFrame = CreateFrame("Frame", "VendorerSettingsContextMenuFrame", anchor, "UIDropDownMenuTemplate");
 	end
 	
 	DropDownMenuFrame:SetPoint("BOTTOM", anchor, "CENTER", 0, 5);

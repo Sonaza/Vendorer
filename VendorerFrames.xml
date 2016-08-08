@@ -359,6 +359,46 @@
 		</Scripts>
 	</Frame>
 	
+	<Button name="VendorerFilteringButtonTemplate" virtual="true">
+		<Size x="64" y="64"/>
+		<HitRectInsets>
+			<AbsInset left="20" right="20" top="20" bottom="20"/>
+		</HitRectInsets>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="icon" file="Interface\AddOns\!Vendorer\media\FilteringButton">
+					<Size x="46" y="46"/>
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture parentKey="Ring" file="Interface\Minimap\MiniMap-TrackingBorder">
+					<Size x="64" y="64"/>
+					<Anchors>
+						<Anchor point="CENTER" x="12" y="-13"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnMouseDown>
+				self.icon:SetPoint("CENTER", 1, -1);
+			</OnMouseDown>
+			<OnMouseUp>
+				PlaySound("igMainMenuOptionCheckBoxOn");
+				self.icon:SetPoint("CENTER", 0, 0);
+			</OnMouseUp>
+		</Scripts>
+		<HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight">
+			<Size x="46" y="46"/>
+			<Anchors>
+				<Anchor point="CENTER" x="-1" y="1"/>
+			</Anchors>
+		</HighlightTexture>
+	</Button>
+	
 	<Frame name="VendorerExtensionFrameItems" parent="MerchantFrame">
 		<Size x="160" y="355"/>
 		<Anchors>
@@ -381,7 +421,6 @@
 					<OnLeave function="Vendorer_HideHint"/>
 					<OnTextChanged function="Vendorer_OnSearchTextChanged"/>
 					<OnEscapePressed>
-						-- self:SetText("");
 						self:ClearFocus();
 						Vendorer_OnSearchTextChanged(self);
 					</OnEscapePressed>
@@ -389,19 +428,21 @@
 					<OnLeave function="VendorerFilterEditBox_OnLeave"/>
 				</Scripts>
 			</EditBox>
-			<Button name="VendorerFilterTipsButton" inherits="MainHelpPlateButton">
+			
+			<Button name="VendorerFilteringButton" inherits="VendorerFilteringButtonTemplate">
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="VendorerFilterEditBox" x="-20" y="-2"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						self:SetScale(0.75);
+						self:SetScale(0.8);
 					</OnLoad>
-					<OnEnter function="VendorerFilterTipsButton_OnEnter"/>
-					<OnLeave function="VendorerFilterTipsButton_OnLeave"/>
-					<OnClick></OnClick>
+					<OnEnter function="VendorerFilteringButton_OnEnter"/>
+					<OnLeave function="VendorerFilteringButton_OnLeave"/>
+					<OnClick function="VendorerFilteringButton_OnClick"/>
 				</Scripts>
 			</Button>
+			
 			<Button name="VendorerSellJunkButton" inherits="VendorerPanelButtonTemplate" text="VENDORER_SELL_JUNK_ITEMS_TEXT">
 				<Size x="144" y="26"/>
 				<Anchors>
@@ -563,6 +604,51 @@
 		<Scripts>
 			<OnShow>
 				self:SetFrameLevel(MerchantFrame:GetFrameLevel()+3);
+			</OnShow>
+		</Scripts>
+	</Frame>
+	
+	<Frame name="VendorerFilteringButtonAlert" parent="MerchantFrame" inherits="GlowBoxTemplate" enableMouse="true" frameStrata="DIALOG" hidden="true">
+		<Size x="220" y="100"/>
+		<Anchors>
+			<Anchor point="LEFT" relativeTo="VendorerFilteringButton" relativePoint="RIGHT" x="14" y="0"/>
+		</Anchors>
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString parentKey="Text" inherits="GameFontHighlightLeft" justifyV="TOP" text="VENDORER_FILTERING_BUTTON_TUTORIAL_TEXT">
+					<Size x="188" y="0"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="16" y="-24"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Button parentKey="CloseButton" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPRIGHT" x="6" y="6"/>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						self:GetParent():Hide();
+						VendorerFilteringButtonAlertCloseButton_OnClick(self);
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Frame parentKey="Arrow" inherits="GlowBoxArrowTemplate">
+				<Anchors>
+					<Anchor point="RIGHT" relativePoint="LEFT" x="34" y="16"/>
+				</Anchors>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad>
+				SetClampedTextureRotation(self.Arrow.Arrow, 90);
+				SetClampedTextureRotation(self.Arrow.Glow, 90);
+				self.Arrow.Glow:Hide();
+			</OnLoad>
+			<OnShow>
+				self:SetHeight(self.Text:GetHeight()+42);
 			</OnShow>
 		</Scripts>
 	</Frame>
