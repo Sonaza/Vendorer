@@ -1,3 +1,10 @@
+## 2.5.0
+* Added an option to auto destroy unusable and unsellable soulbound equipment. Just be careful of what you are destroying. The option is disabled by default.
+* Added an option to use character's personal ignore and junk item lists. By default the global lists are enabled.
+* Added ranged type to quick filter list.
+* Fixed localization independence error with recipe items.
+* Made vendor frame movable only with left mouse button.
+
 ## 2.4.1
 * Fixed bugs with frame update if merchant had no items for sale.
 * Fixed error related to query negation.

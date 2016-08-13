@@ -1027,6 +1027,15 @@ function Addon:GetQuickFiltersMenuData()
 					end,
 				},
 				{
+					text = INVTYPE_RANGED,
+					notCheckable = true,
+					func = function(self)
+						local value = Addon:WrapMultipleWords(self.value);
+						Addon:SetFilter(string.format("+%s", value));
+						CloseMenus();
+					end,
+				},
+				{
 					text = INVTYPE_HOLDABLE,
 					notCheckable = true,
 					func = function(self)

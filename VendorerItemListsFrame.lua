@@ -126,9 +126,10 @@ function VendorerItemListsFrame_ReindexItems()
 	VendorerItemListsFrame.itemList = indexedItems;
 end
 
-function Addon:OpenVendorerItemListsFrame(title, items)
+function Addon:OpenVendorerItemListsFrame(index, title, items)
 	if(VendorerItemListsFrame:IsVisible()) then HideUIPanel(VendorerItemListsFrame) end
-
+	
+	VendorerItemListsFrame.index = index;
 	VendorerItemListsFrame.titleText = title;
 	
 	VendorerItemListsFrame.itemListOriginal = items;

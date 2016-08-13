@@ -102,7 +102,12 @@
 				</FontString>
 				<FontString name="$parentDescription" parentKey="description" inherits="GameFontHighlight" text="Insert description here.">
 					<Anchors>
-						<Anchor point="TOP" relativeTo="$parent" relativePoint="TOP" x="10" y="-34"/>
+						<Anchor point="TOP" relativeTo="$parent" relativePoint="TOP" x="10" y="-29"/>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentListDescription" parentKey="description" inherits="GameFontHighlight" text="Insert description here.">
+					<Anchors>
+						<Anchor point="TOP" relativeTo="$parent" relativePoint="TOP" x="10" y="-43"/>
 					</Anchors>
 				</FontString>
 				<FontString name="$parentHelp" parentKey="help" inherits="GameFontNormal" text="Drag and drop an item to add it to the list.">

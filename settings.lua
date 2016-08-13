@@ -111,7 +111,7 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
-			text = NEW_FEATURE_ICON .. " Paint known items",
+			text = "Paint known items",
 			func = function()
 				self.db.global.PaintKnownItems = not self.db.global.PaintKnownItems;
 				MerchantFrame_UpdateMerchantInfo();
@@ -143,7 +143,7 @@ function Addon:GetMenuData()
 			b = self.db.global.PaintColor.b,
 		},
 		{
-			text = NEW_FEATURE_ICON .. " Enable search from tooltip text",
+			text = "Enable search from tooltip text",
 			func = function()
 				self.db.global.UseTooltipSearch = not self.db.global.UseTooltipSearch;
 				Addon:RefreshFilter();
@@ -156,7 +156,7 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
-			text = NEW_FEATURE_ICON .. " Show icon for missing transmogs" .. (not CanIMogIt and " (disabled)" or ""),
+			text = "Show icon for missing transmogs" .. (not CanIMogIt and " (disabled)" or ""),
 			func = function()
 				self.db.global.ShowTransmogAsterisk = not self.db.global.ShowTransmogAsterisk;
 				MerchantFrame_UpdateMerchantInfo();
@@ -174,7 +174,7 @@ function Addon:GetMenuData()
 			text = " ", isTitle = true, notCheckable = true,
 		},
 		{
-			text = NEW_FEATURE_ICON .. " Use improved stack purchasing",
+			text = "Use improved stack purchasing",
 			func = function()
 				self.db.global.UseImprovedStackSplit = not self.db.global.UseImprovedStackSplit;
 				-- Close both split frames just in case
@@ -197,6 +197,75 @@ function Addon:GetMenuData()
 			isNotRadio = true,
 			tooltipTitle = "Throttle purchases to a safe interval",
 			tooltipText = "If you encounter errors when trying to purchase items more than one stack at a time try enabling this option. Vendorer will throttle item purchases to a slower rate.",
+			tooltipOnButton = 1,
+			keepShownOnClick = 1,
+		},
+		{
+			text = " ", isTitle = true, notCheckable = true,
+		},
+		{
+			text = NEW_FEATURE_ICON .. " Also destroy unsellable unusable items",
+			func = function()
+				self.db.global.DestroyUnusables = not self.db.global.DestroyUnusables;
+			end,
+			checked = function() return self.db.global.DestroyUnusables; end,
+			isNotRadio = true,
+			tooltipTitle = "Also destroy unsellable unusable items",
+			tooltipText = "When enabled pressing the Sell Unusables button will also destroy all unusable valueless items.|n|n" ..
+			              "|cffff1111DANGER ALERT!|r Always double check what items will be destroyed and if you do not wish item to be destroyed add it to the ignore list instead.",
+			tooltipOnButton = 1,
+			keepShownOnClick = 1,
+		},
+		{
+			text = " ", isTitle = true, notCheckable = true,
+		},
+		{
+			text = NEW_FEATURE_ICON .. " Use global ignore list on " .. UnitName("player"),
+			func = function()
+				self.db.char.UsingPersonalIgnoreList = not self.db.char.UsingPersonalIgnoreList;
+				
+				if(self.db.char.UsingPersonalIgnoreList and self.db.char.ItemIgnoreList == nil) then
+					Addon:AddMessage("Missing ignore list for %s. Copying the global list.", UnitName("player"));
+					
+					self.db.char.ItemIgnoreList = {};
+					for item, _ in pairs(self.db.global.ItemIgnoreList) do
+						self.db.char.ItemIgnoreList[item] = true;
+					end
+				end
+				
+				if(VendorerItemListsFrame:IsVisible() and VendorerItemListsFrame.index == 1) then
+					Addon:OpenIgnoredItemsListsFrame();
+				end
+			end,
+			checked = function() return not self.db.char.UsingPersonalIgnoreList; end,
+			isNotRadio = true,
+			tooltipTitle = "Use global ignore list",
+			tooltipText = "You may disable this setting to use character's personal ignore list instead.",
+			tooltipOnButton = 1,
+			keepShownOnClick = 1,
+		},
+		{
+			text = NEW_FEATURE_ICON .. " Use global junk list on " .. UnitName("player"),
+			func = function()
+				self.db.char.UsingPersonalJunkList = not self.db.char.UsingPersonalJunkList;
+				
+				if(self.db.char.UsingPersonalJunkList and self.db.char.ItemJunkList == nil) then
+					Addon:AddMessage("Missing junk list for %s. Copying the global list.", UnitName("player"));
+					
+					self.db.char.ItemJunkList = {};
+					for item, _ in pairs(self.db.global.ItemJunkList) do
+						self.db.char.ItemJunkList[item] = true;
+					end
+				end
+				
+				if(VendorerItemListsFrame:IsVisible() and VendorerItemListsFrame.index == 2) then
+					Addon:OpenJunkItemsListsFrame();
+				end
+			end,
+			checked = function() return not self.db.char.UsingPersonalJunkList; end,
+			isNotRadio = true,
+			tooltipTitle = "Use global junk list",
+			tooltipText = "You may disable this setting to use character's personal junk list instead.",
 			tooltipOnButton = 1,
 			keepShownOnClick = 1,
 		},
