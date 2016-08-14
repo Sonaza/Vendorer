@@ -156,6 +156,18 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
+			text = NEW_FEATURE_ICON .. " Show on tooltip if item is ignored or junked",
+			func = function()
+				self.db.global.ShowTooltipInfo = not self.db.global.ShowTooltipInfo;
+			end,
+			checked = function() return self.db.global.ShowTooltipInfo; end,
+			isNotRadio = true,
+			tooltipTitle = "Show on tooltip if item is ignored or junked",
+			tooltipText = "Adds a line on item tooltips to display whether the item is on ignore or junk lists.",
+			tooltipOnButton = 1,
+			keepShownOnClick = 1,
+		},
+		{
 			text = "Show icon for missing transmogs" .. (not CanIMogIt and " (disabled)" or ""),
 			func = function()
 				self.db.global.ShowTransmogAsterisk = not self.db.global.ShowTransmogAsterisk;
@@ -204,14 +216,16 @@ function Addon:GetMenuData()
 			text = " ", isTitle = true, notCheckable = true,
 		},
 		{
-			text = NEW_FEATURE_ICON .. " Also destroy unsellable unusable items",
+			text = NEW_FEATURE_ICON .. " Also destroy unsellable items",
 			func = function()
-				self.db.global.DestroyUnusables = not self.db.global.DestroyUnusables;
+				self.db.global.DestroyUnsellables = not self.db.global.DestroyUnsellables;
 			end,
-			checked = function() return self.db.global.DestroyUnusables; end,
+			checked = function() return self.db.global.DestroyUnsellables; end,
 			isNotRadio = true,
-			tooltipTitle = "Also destroy unsellable unusable items",
-			tooltipText = "When enabled pressing the Sell Unusables button will also destroy all unusable valueless items.|n|n" ..
+			tooltipTitle = "Also destroy unsellable items",
+			tooltipText = "When enabled pressing the sell buttons will also destroy all unsellable valueless items related to button. Auto sell |cffff1111will not|r destroy anything.|n|n" ..
+			              "Sell Junk Items button will destroy unsellable poor quality items or items marked as junk.|n|n"..
+			              "Sell Unusables will destroy unusable unsellable soulbound equipment or tokens.|n|n" ..
 			              "|cffff1111DANGER ALERT!|r Always double check what items will be destroyed and if you do not wish item to be destroyed add it to the ignore list instead.",
 			tooltipOnButton = 1,
 			keepShownOnClick = 1,

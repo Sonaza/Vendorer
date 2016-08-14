@@ -58,7 +58,7 @@
 		<Color r="1" g="1" b="1"/>
 	</Font>
 	
-	<Font name="VendorerMenuFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
+	<Font name="VendorerCheckButtonFont" font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" outline="NORMAL" virtual="true">
 		<Shadow>
 			<Offset>
 				<AbsDimension x="0" y="-1"/>

@@ -1,6 +1,10 @@
 ## 2.5.0
-* Added an option to auto destroy unusable and unsellable soulbound equipment. Just be careful of what you are destroying. The option is disabled by default.
+* Added an option to destroy unsellable items.
+	* Sell Junk Items button will destroy unsellable poor quality items or items marked as junk.
+	* Sell Unusables will destroy unusable unsellable soulbound equipment or tokens.
+	* **The option is disabled by default.** Just be careful of what you are destroying.
 * Added an option to use character's personal ignore and junk item lists. By default the global lists are enabled.
+* Added option to display on item tooltip if item is ignored or marked as junk.
 * Added ranged type to quick filter list.
 * Fixed localization independence error with recipe items.
 * Made vendor frame movable only with left mouse button.

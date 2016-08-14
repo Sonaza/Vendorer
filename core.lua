@@ -25,13 +25,13 @@ VENDORER_IGNORE_ITEMS_BUTTON_TEXT = "Ignore Items";
 VENDORER_ADD_JUNK_BUTTON_TEXT = "Add Junk Items";
 VENDORER_SETTINGS_BUTTON_TEXT = "|TInterface\\Scenarios\\ScenarioIcon-Interact:14:14:0:0|t Settings";
 
-VENDORER_SELL_JUNK_ITEMS_TEXT = "Sell Junk Items";
-VENDORER_SELL_UNUSABLE_ITEMS_TEXT = "Sell Unusables";
+VENDORER_SELL_JUNK_ITEMS_TEXT = "Sell & Destroy Junk";
+VENDORER_SELL_UNUSABLE_ITEMS_TEXT = "Sell & Destroy Unusables";
 
 VENDORER_BIG_DRAG_ITEM_HERE_TEXT = "|cffffd200Drag item here to|nadd it to the list|r";
 
 VENDORER_AUTO_SELL_JUNK_TITLE_TEXT = "Auto Sell Junk";
-VENDORER_AUTO_SELL_JUNK_HINT_TEXT = "|cffffffffToggle automatic selling of junk when visiting vendors.";
+VENDORER_AUTO_SELL_JUNK_HINT_TEXT = "|cffffffffToggle automatic selling of junk when visiting vendors. Auto sell will not destroy any items.";
 
 VENDORER_AUTO_REPAIR_TITLE_TEXT = "Auto Repair";
 VENDORER_AUTO_REPAIR_HINT_TEXT = "|cffffffffRepair all gear automatically if possible.";
@@ -128,8 +128,31 @@ StaticPopupDialogs["VENDORER_CONFIRM_SELL_UNUSABLES"] = {
 	OnAccept = function(self)
 		Addon:ConfirmSellUnusables();
 	end,
+	OnShow = function()
+		if(StaticPopup_Visible("VENDORER_CONFIRM_DESTROY_JUNK")) then
+			StaticPopup_Hide("VENDORER_CONFIRM_DESTROY_JUNK");
+		end
+	end,
 	timeout = 0,
 	whileDead = 1,
+	hideOnEscape = 1,
+};
+
+StaticPopupDialogs["VENDORER_CONFIRM_DESTROY_JUNK"] = {
+	text = "|cffff1111Warning! Confirming this action will also destroy|n%d item%s and the items destroyed cannot be restored.|r|n|nAre you sure you want to continue?",
+	button1 = YES,
+	button2 = NO,
+	OnAccept = function(self)
+		Addon:ConfirmSellJunk();
+	end,
+	OnShow = function()
+		if(StaticPopup_Visible("VENDORER_CONFIRM_SELL_UNUSABLES")) then
+			StaticPopup_Hide("VENDORER_CONFIRM_SELL_UNUSABLES");
+		end
+	end,
+	timeout = 0,
+	whileDead = 1,
+	showAlert = 1,
 	hideOnEscape = 1,
 };
 
@@ -252,6 +275,8 @@ function Addon:OnInitialize()
 				b = 0.0,	
 			},
 			
+			ShowTooltipInfo = true,
+			
 			UseImprovedStackSplit = true,
 			UseSafePurchase = false,
 			
@@ -263,7 +288,7 @@ function Addon:OnInitialize()
 			ItemIgnoreList = DEFAULT_IGNORE_LIST_ITEMS,
 			ItemJunkList = {},
 			
-			DestroyUnusables = false,
+			DestroyUnsellables = false,
 			
 			ShowTransmogAsterisk = true,
 			
@@ -316,6 +341,48 @@ function Addon:OnEnable()
 	end
 	
 	Addon:MakeFrameMovable();
+	
+	Addon:RegisterTooltip(GameTooltip);
+	Addon:RegisterTooltip(ItemRefTooltip);
+end
+
+function Addon:RegisterTooltip(tooltip)
+	local modified = false;
+	
+	tooltip:HookScript('OnTooltipCleared', function(self)
+		modified = false;
+	end)
+
+	tooltip:HookScript('OnTooltipSetItem', function(self)
+		if(modified) then return end
+		modified = true;
+		
+		local name, link = self:GetItem();
+		if(link and GetItemInfo(link)) then
+			Addon:AddTooltipInfo(self, link);
+		end
+	end);
+end
+
+function Addon:AddTooltipInfo(tooltip, link)
+	if(not Addon.db.global.ShowTooltipInfo) then return end
+	
+	local itemID = Addon:GetItemID(link);
+	
+	local junkList, isJunkListPersonal = Addon:GetCurrentItemJunkList();
+	local ignoreList, isIgnoreListPersonal = Addon:GetCurrentItemIgnoreList();
+	
+	if(junkList[itemID] and not ignoreList[itemID]) then
+		tooltip:AddDoubleLine("|cffe8608fVendorer|r", string.format("|cffe8608fMarked as junk (%s list)|r", isJunkListPersonal and "personal" or "global"));
+	elseif(junkList[itemID] and ignoreList[itemID]) then
+		tooltip:AddDoubleLine("|cffe8608fVendorer|r", string.format("|cffe8608fMarked as junk but ignored (%s list)|r", isJunkListPersonal and "personal" or "global"));
+	end
+	
+	if(not junkList[itemID] and ignoreList[itemID]) then
+		tooltip:AddDoubleLine("|cffe8608fVendorer|r", string.format("|cffe8608fIgnored (%s list)|r", isIgnoreListPersonal and "personal" or "global"));
+	end
+	
+	tooltip:Show();
 end
 
 function Addon:MakeFrameMovable()
@@ -543,7 +610,7 @@ function VendorerCheckButtonTemplate_OnLoad(self)
 			text:SetText("Highlight " .. Addon:GetClassArmorType());
 		end
 		
-		text:SetFontObject("VendorerMenuFont");
+		text:SetFontObject("VendorerCheckButtonFont");
 	end
 end
 
@@ -622,9 +689,27 @@ local function FilterJunkItems(bagIndex, slotIndex)
 		if(not itemName) then return false end
 		
 		local itemID = Addon:GetItemID(itemLink);
-		return itemName and (quality == 0 or Addon:IsItemJunked(itemID)) and itemSellPrice > 0, {
-			itemLink = itemLink,
+		local itemIsJunked = Addon:IsItemJunked(itemID);
+		
+		local shouldSell = itemSellPrice > 0 and (quality == 0 or itemIsJunked);
+		local shouldDestroy = Addon.db.global.DestroyUnsellables and itemSellPrice == 0 and (quality == 0 or itemIsJunked);
+		
+		local reasonText;
+		if(shouldDestroy) then
+			if(itemIsJunked) then
+				reasonText = "Marked as junk";
+			elseif(itemSellPrice == 0) then
+				reasonText = "No sell value";
+			end
+		
+			reasonText = string.format("%s |cffff1111(will be destroyed)|r", reasonText);
+		end
+		
+		return shouldSell or shouldDestroy, {
+			itemLink      = itemLink,
 			itemSellPrice = itemSellPrice * itemCount,
+			reasonText    = reasonText,
+			shouldDestroy = shouldDestroy,
 		};
 	end
 	
@@ -782,11 +867,11 @@ local function FilterUnusableItems(bagIndex, slotIndex)
 		
 		if(not itemName) then return false end
 		if(itemType == LOCALIZED_RECIPE) then return false end
-		if(itemRarity > 4 or (itemSellPrice == 0 and not Addon.db.global.DestroyUnusables)) then return false end
+		if(itemRarity > 4 or (itemSellPrice == 0 and not Addon.db.global.DestroyUnsellables)) then return false end
 		
 		local bindType, isUsable, isClassArmorType, notUsableReason, tooltipItemSlot, tooltipItemType, itemSubType = Addon:GetItemTooltipInfo(itemLink);
 		
-		local shouldDestroy = Addon.db.global.DestroyUnusables and itemSellPrice == 0 and not isUsable;
+		local shouldDestroy = Addon.db.global.DestroyUnsellables and itemSellPrice == 0 and not isUsable;
 		
 		-- If it's not soulbound then call quits here
 		if(bindType ~= BT_BIND_ON_PICKUP) then return false end
@@ -1109,15 +1194,43 @@ end
 
 ----------------------------------------------------------------------
 
-function Addon:SellJunk(skip_limit)
+function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 	local maxSell = 12;
 	local items = Addon:ScanContainers(FilterJunkItems);
 	if(#items == 0) then return end
 	
+	local itemsToSell = {};
+	
+	local itemsDestroyed = 0;
+	for index, slotInfo in ipairs(items) do
+		if(slotInfo.data.shouldDestroy and not dont_destroy) then
+			local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
+			local itemMessage = string.format("Destroying %s", itemLink);
+			if(itemCount > 1) then
+				itemMessage = string.format("%s x%d", itemMessage, itemCount);
+			end
+			
+			Addon:AddMessage(itemMessage);
+			
+			ClearCursor();
+			PickupContainerItem(slotInfo.bag, slotInfo.slot);
+			DeleteCursorItem();
+			
+			itemsDestroyed = itemsDestroyed + 1;
+		elseif(not slotInfo.data.shouldDestroy) then
+			tinsert(itemsToSell, slotInfo);
+		end
+	end
+	
+	if(itemsDestroyed > 0) then
+		Addon:AddMessage("All unsellable junk items destroyed!");
+	end
+	
 	local skipped = false;
 	
-	for index, slotinfo in pairs(items) do
-		local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotinfo.bag, slotinfo.slot);
+	local itemsSold = 0;
+	for index, slotInfo in ipairs(itemsToSell) do
+		local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
 		local itemMessage = string.format("Selling %s", itemLink);
 		if(itemCount > 1) then
 			itemMessage = string.format("%s x%d", itemMessage, itemCount);
@@ -1125,7 +1238,8 @@ function Addon:SellJunk(skip_limit)
 		
 		Addon:AddMessage(itemMessage);
 		
-		UseContainerItem(slotinfo.bag, slotinfo.slot);
+		UseContainerItem(slotInfo.bag, slotInfo.slot);
+		itemsSold = itemsSold + 1;
 		
 		if(not skip_limit and index == maxSell and index ~= #items) then
 			Addon:AddMessage("Sold %d items (%d more to sell)", index, #items - index);
@@ -1134,7 +1248,7 @@ function Addon:SellJunk(skip_limit)
 		end
 	end
 	
-	if(skip_limit or not skipped) then
+	if((skip_limit or not skipped) and itemsSold > 0) then
 		Addon:AddMessage("All junk items sold!");
 	end
 end
@@ -1147,9 +1261,9 @@ function Addon:ConfirmSellUnusables()
 	local itemsToSell = {};
 	
 	local itemsDestroyed = 0;
-	for index, slotinfo in ipairs(items) do
-		if(slotinfo.data.shouldDestroy) then
-			local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotinfo.bag, slotinfo.slot);
+	for index, slotInfo in ipairs(items) do
+		if(slotInfo.data.shouldDestroy) then
+			local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
 			local itemMessage = string.format("Destroying %s", itemLink);
 			if(itemCount > 1) then
 				itemMessage = string.format("%s x%d", itemMessage, itemCount);
@@ -1158,12 +1272,12 @@ function Addon:ConfirmSellUnusables()
 			Addon:AddMessage(itemMessage);
 			
 			ClearCursor();
-			PickupContainerItem(slotinfo.bag, slotinfo.slot);
+			PickupContainerItem(slotInfo.bag, slotInfo.slot);
 			DeleteCursorItem();
 			
 			itemsDestroyed = itemsDestroyed + 1;
 		else
-			tinsert(itemsToSell, slotinfo);
+			tinsert(itemsToSell, slotInfo);
 		end
 	end
 	
@@ -1171,9 +1285,11 @@ function Addon:ConfirmSellUnusables()
 		Addon:AddMessage("All unsellable unusable items destroyed!");
 	end
 	
+	local skipped = false;
+	
 	local itemsSold = 0;
-	for index, slotinfo in ipairs(itemsToSell) do
-		local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotinfo.bag, slotinfo.slot);
+	for index, slotInfo in ipairs(itemsToSell) do
+		local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
 		local itemMessage = string.format("Selling %s", itemLink);
 		if(itemCount > 1) then
 			itemMessage = string.format("%s x%d", itemMessage, itemCount);
@@ -1181,7 +1297,7 @@ function Addon:ConfirmSellUnusables()
 		
 		Addon:AddMessage(itemMessage);
 		
-		UseContainerItem(slotinfo.bag, slotinfo.slot);
+		UseContainerItem(slotInfo.bag, slotInfo.slot);
 		itemsSold = itemsSold + 1;
 		
 		if(index == maxSell and index ~= #items) then
@@ -1218,7 +1334,7 @@ end
 function VendorerSellJunkButton_OnEnter(self)
 	local items = Addon:ScanContainers(FilterJunkItems);
 	local sellPrice = 0;
-	for _, slotInfo in pairs(items) do
+	for _, slotInfo in ipairs(items) do
 		sellPrice = sellPrice + slotInfo.data.itemSellPrice;
 	end
 	
@@ -1227,9 +1343,32 @@ function VendorerSellJunkButton_OnEnter(self)
 	GameTooltip:SetPoint("BOTTOMLEFT", self, "RIGHT", 0, -15);
 	
 	GameTooltip:AddLine("Sell Junk");
-	GameTooltip:AddLine("|cffffffffSell all poor quality items.");
+	GameTooltip:AddLine("|cffffffffSell all poor quality items or items marked as junk.");
 	GameTooltip:AddLine(" ");
+	if(Addon.db.global.DestroyUnsellables) then
+		GameTooltip:AddLine("|cffff1111Unsellable junk items will be destroyed.|r");
+		GameTooltip:AddLine(" ");
+	end
 	GameTooltip:AddDoubleLine("Estimated Income", string.format("|cffffffff%d items  %s  ", #items, GetCoinTextureString(sellPrice)));
+	
+	if(#items > 0) then
+		local hasTitle = false;
+		for index, slotInfo in ipairs(items) do
+			if(slotInfo.data.shouldDestroy) then
+				if(not hasTitle) then
+					GameTooltip:AddLine(" ");
+					GameTooltip:AddDoubleLine("Items", "Reason");
+					hasTitle = true;
+				end
+				
+				local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
+					itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(slotInfo.data.itemLink);
+				
+				GameTooltip:AddDoubleLine(slotInfo.data.itemLink, string.format("%s", slotInfo.data.reasonText or "--"), 1, 1, 1, 1, 1, 1);
+			end
+		end
+	end
+	
 	GameTooltip:Show();
 	
 	Addon.UpdateTooltip = 1;
@@ -1237,13 +1376,35 @@ function VendorerSellJunkButton_OnEnter(self)
 end
 
 function VendorerSellJunkButton_OnClick(self, button)
-	Addon:SellJunk();
+	if(not Addon.db.global.DestroyUnsellables) then
+		Addon:ConfirmSellJunk();
+		return;
+	end
+	
+	local items = Addon:ScanContainers(FilterJunkItems);
+	if(#items == 0) then return end
+	
+	local itemsToDestroy = 0;
+	
+	if(Addon.db.global.DestroyUnsellables) then
+		for index, slotinfo in ipairs(items) do
+			if(slotinfo.data.shouldDestroy) then
+				itemsToDestroy = itemsToDestroy + 1;
+			end
+		end
+	end
+	
+	if(itemsToDestroy > 0) then
+		StaticPopup_Show("VENDORER_CONFIRM_DESTROY_JUNK", itemsToDestroy, itemsToDestroy == 1 and "" or "s");
+	else
+		Addon:ConfirmSellJunk();
+	end
 end
 
 function VendorerSellUnusablesButton_OnEnter(self, button)
 	local items = Addon:ScanContainers(FilterUnusableItems);
 	local sellPrice = 0;
-	for _, slotInfo in pairs(items) do
+	for _, slotInfo in ipairs(items) do
 		sellPrice = sellPrice + slotInfo.data.itemSellPrice;
 	end
 	
@@ -1254,8 +1415,8 @@ function VendorerSellUnusablesButton_OnEnter(self, button)
 	GameTooltip:AddLine("Sell Unusables");
 	GameTooltip:AddLine("|cffffffffSell all soulbound equipment and tokens that you cannot use.");
 	GameTooltip:AddLine(" ");
-	if(Addon.db.global.DestroyUnusables) then
-		GameTooltip:AddLine("|cffff1111Unsellable unusable items will be destroyed as well.|r");
+	if(Addon.db.global.DestroyUnsellables) then
+		GameTooltip:AddLine("|cffff1111Unsellable unusable items will be destroyed.|r");
 		GameTooltip:AddLine(" ");
 	end
 	GameTooltip:AddDoubleLine("Estimated Income", string.format("|cffffffff%d items  %s  ", #items, GetCoinTextureString(sellPrice)));
@@ -1264,14 +1425,26 @@ function VendorerSellUnusablesButton_OnEnter(self, button)
 		GameTooltip:AddLine(" ");
 		GameTooltip:AddDoubleLine("Items", "Reason");
 		
-		for index, slotInfo in pairs(items) do
+		local itemsToSell = {};
+		
+		for index, slotInfo in ipairs(items) do
+			if(slotInfo.data.shouldDestroy) then
+				local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
+					itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(slotInfo.data.itemLink);
+				
+				GameTooltip:AddDoubleLine(slotInfo.data.itemLink, string.format("%s", slotInfo.data.reasonText or "--"), 1, 1, 1, 1, 1, 1);
+			else
+				tinsert(itemsToSell, slotInfo);
+			end
+		end
+		
+		for index, slotInfo in ipairs(itemsToSell) do
 			local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
 				itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(slotInfo.data.itemLink);
 			
-			local equipSlotName = itemEquipLoc ~= "" and _G[itemEquipLoc] or "";
 			GameTooltip:AddDoubleLine(slotInfo.data.itemLink, string.format("%s", slotInfo.data.reasonText or "--"), 1, 1, 1, 1, 1, 1);
 			
-			if(index == 12 and #items > 12) then
+			if(index == 12 and #itemsToSell > 12) then
 				GameTooltip:AddLine(" ");
 				GameTooltip:AddLine("Items after this sold on next click");
 			end
@@ -1290,7 +1463,7 @@ function VendorerSellUnusablesButton_OnClick(self, button)
 	
 	local itemsToDestroy = 0;
 	
-	if(Addon.db.global.DestroyUnusables) then
+	if(Addon.db.global.DestroyUnsellables) then
 		for index, slotinfo in ipairs(items) do
 			if(slotinfo.data.shouldDestroy) then
 				itemsToDestroy = itemsToDestroy + 1;
@@ -1300,7 +1473,7 @@ function VendorerSellUnusablesButton_OnClick(self, button)
 	
 	local destroyWarning = "";
 	if(itemsToDestroy > 0) then
-		destroyWarning = string.format("|n|n|cffff1111Warning! Confirming this action will also destroy %d items and they cannot be restored.", itemsToDestroy);
+		destroyWarning = string.format("|n|n|cffff1111Warning! Confirming this action will also destroy %d item%s and the items destroyed cannot be restored.", itemsToDestroy, itemsToDestroy == 1 and "" or "s");
 	end
 	
 	StaticPopupDialogs["VENDORER_CONFIRM_SELL_UNUSABLES"].showAlert = (itemsToDestroy > 0 and 1 or 0);
@@ -1325,7 +1498,7 @@ function Addon:MERCHANT_SHOW()
 	Addon.PlayerMoney = GetMoney();
 	
 	if(self.db.global.AutoSellJunk) then
-		Addon:SellJunk(true);
+		Addon:ConfirmSellJunk(true, true);
 	end
 	
 	if(self.db.global.AutoRepair) then
@@ -1344,6 +1517,14 @@ function VendorerFilteringButtonAlertCloseButton_OnClick()
 end
 
 function Addon:MERCHANT_CLOSED()
+	if(StaticPopup_Visible("VENDORER_CONFIRM_SELL_UNUSABLES")) then
+		StaticPopup_Hide("VENDORER_CONFIRM_SELL_UNUSABLES");
+	end
+	
+	if(StaticPopup_Visible("VENDORER_CONFIRM_DESTROY_JUNK")) then
+		StaticPopup_Hide("VENDORER_CONFIRM_DESTROY_JUNK");
+	end
+	
 	local diff = tonumber(GetMoney() - Addon.PlayerMoney);
 	local moneystring = GetCoinTextureString(math.abs(diff));
 	
