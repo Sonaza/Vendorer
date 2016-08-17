@@ -25,18 +25,20 @@ VENDORER_IGNORE_ITEMS_BUTTON_TEXT = "Ignore Items";
 VENDORER_ADD_JUNK_BUTTON_TEXT = "Add Junk Items";
 VENDORER_SETTINGS_BUTTON_TEXT = "|TInterface\\Scenarios\\ScenarioIcon-Interact:14:14:0:0|t Settings";
 
-VENDORER_SELL_JUNK_ITEMS_TEXT = "Sell & Destroy Junk";
-VENDORER_SELL_UNUSABLE_ITEMS_TEXT = "Sell & Destroy Unusables";
+VENDORER_SELL_JUNK_ITEMS_TEXT = "Sell Junk";
+VENDORER_SELL_UNUSABLE_ITEMS_TEXT = "Sell Unusable";
+VENDORER_SELL_JUNK_ITEMS_TEXT2 = "Sell / Destroy Junk";
+VENDORER_SELL_UNUSABLE_ITEMS_TEXT2 = "Sell / Destroy Unusable";
 
 VENDORER_BIG_DRAG_ITEM_HERE_TEXT = "|cffffd200Drag item here to|nadd it to the list|r";
 
-VENDORER_AUTO_SELL_JUNK_TITLE_TEXT = "Auto Sell Junk";
+VENDORER_AUTO_SELL_JUNK_TITLE_TEXT = "Auto sell junk";
 VENDORER_AUTO_SELL_JUNK_HINT_TEXT = "|cffffffffToggle automatic selling of junk when visiting vendors. Auto sell will not destroy any items.";
 
-VENDORER_AUTO_REPAIR_TITLE_TEXT = "Auto Repair";
+VENDORER_AUTO_REPAIR_TITLE_TEXT = "Auto repair";
 VENDORER_AUTO_REPAIR_HINT_TEXT = "|cffffffffRepair all gear automatically if possible.";
 
-VENDORER_USE_SMART_REPAIR_TITLE_TEXT = "Use Smart Repair";
+VENDORER_USE_SMART_REPAIR_TITLE_TEXT = "Use smart repair";
 VENDORER_USE_SMART_REPAIR_HINT_TEXT = "|cffffffffWhen doing automatic repair allow Vendorer to try and spend full guild repair allowance first.|n|n|cff00c6ffNote:|cffffffff this option only applies to auto repair!|n|nProbably not recommended if you have unlimited repair funds.";
 
 VENDORER_CONTRACT_BUTTON_TITLE_TEXT = "Collapse Frame";
@@ -419,6 +421,14 @@ function Addon:RestoreSavedSettings()
 	VendorerAutoSellJunkButton:SetChecked(self.db.global.AutoSellJunk);
 	VendorerAutoRepairButton:SetChecked(self.db.global.AutoRepair);
 	VendorerAutoSmartRepairButton:SetChecked(self.db.global.SmartAutoRepair);
+	
+	if(not self.db.global.DestroyUnsellables) then
+		VendorerSellJunkButton:SetText(_G["VENDORER_SELL_JUNK_ITEMS_TEXT"]);
+		VendorerSellUnusablesButton:SetText(_G["VENDORER_SELL_UNUSABLE_ITEMS_TEXT"]);
+	else
+		VendorerSellJunkButton:SetText(_G["VENDORER_SELL_JUNK_ITEMS_TEXT2"]);
+		VendorerSellUnusablesButton:SetText(_G["VENDORER_SELL_UNUSABLE_ITEMS_TEXT2"]);
+	end
 end
 
 function Addon:ToggleCursorHighlights(toggle)

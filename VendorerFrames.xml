@@ -6,16 +6,16 @@
 			<Font font="Interface\AddOns\!Vendorer\media\DORISPP.TTF" height="10" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="korean">
-			<Font font="Fonts\2002.TTF" height="11" outline="NORMAL"/>
+			<Font font="Fonts\2002.TTF" height="10" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="simplifiedchinese">
-			<Font font="Fonts\ARKai_C.ttf" height="13" outline="NORMAL"/>
+			<Font font="Fonts\ARKai_C.ttf" height="11" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="traditionalchinese">
-			<Font font="Fonts\bHEI01B.TTF" height="13" outline="NORMAL"/>
+			<Font font="Fonts\bHEI01B.TTF" height="11" outline="NORMAL"/>
 		</Member>
 		<Member alphabet="russian">
-			<Font font="Fonts\FRIZQT___CYR.TTF" height="11" outline="NORMAL"/>
+			<Font font="Fonts\FRIZQT___CYR.TTF" height="10" outline="NORMAL"/>
 		</Member>
 	</FontFamily>
 

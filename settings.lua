@@ -219,12 +219,19 @@ function Addon:GetMenuData()
 			text = NEW_FEATURE_ICON .. " Also destroy unsellable items",
 			func = function()
 				self.db.global.DestroyUnsellables = not self.db.global.DestroyUnsellables;
+				if(not self.db.global.DestroyUnsellables) then
+					VendorerSellJunkButton:SetText(_G["VENDORER_SELL_JUNK_ITEMS_TEXT"]);
+					VendorerSellUnusablesButton:SetText(_G["VENDORER_SELL_UNUSABLE_ITEMS_TEXT"]);
+				else
+					VendorerSellJunkButton:SetText(_G["VENDORER_SELL_JUNK_ITEMS_TEXT2"]);
+					VendorerSellUnusablesButton:SetText(_G["VENDORER_SELL_UNUSABLE_ITEMS_TEXT2"]);
+				end
 			end,
 			checked = function() return self.db.global.DestroyUnsellables; end,
 			isNotRadio = true,
 			tooltipTitle = "Also destroy unsellable items",
-			tooltipText = "When enabled pressing the sell buttons will also destroy all unsellable valueless items related to button. Auto sell |cffff1111will not|r destroy anything.|n|n" ..
-			              "Sell Junk Items button will destroy unsellable poor quality items or items marked as junk.|n|n"..
+			tooltipText = "When enabled pressing the sell buttons will also destroy all unsellable valueless items related to button.|n|n" ..
+			              "Sell Junk Items button will destroy unsellable poor quality items or items marked as junk. Auto selling junk |cffff1111will not|r destroy anything.|n|n" ..
 			              "Sell Unusables will destroy unusable unsellable soulbound equipment or tokens.|n|n" ..
 			              "|cffff1111DANGER ALERT!|r Always double check what items will be destroyed and if you do not wish item to be destroyed add it to the ignore list instead.",
 			tooltipOnButton = 1,
