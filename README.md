@@ -23,7 +23,7 @@ Any and all filters can also be negated by prefixing the query word or phrase wi
 
 Vendorer improves ability to bulk purchase. You can buy several stacks at a time and the window will also display total cost of your purchase. If the default setting causes problems, you can throttle purchases to slower rate in the settings.
 
-The addon also includes buttons to sell junk and unusable soulbound items. Selling junk items can optionally be done automatically always when visiting vendors.
+The addon also includes buttons to sell junk and unusable soulbound items. Selling junk items can optionally be done automatically always when visiting vendors. Via settings you can also enable the buttons to destroy unsellable junk or unusable items. **If toggled on be careful of what you are destroying**. You can always ignore the item as well. No items are automatically destroyed when auto junk sell is enabled.
 
 Automatic smart repair feature will make it easy to repair your gear when visiting a vendor that can do repairs. Smart repair will try to spend the maximal guild repair allowance if possible. However, the automatic spending of guild funds can be optionally disabled.
 
