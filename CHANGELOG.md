@@ -7,6 +7,7 @@
 * Added option to display on item tooltip if item is ignored or marked as junk.
 * Added ranged type to quick filter list.
 * Fixed localization independence error with recipe items.
+* Fixed stack buying text on tooltip for items that are stackable.
 * Made vendor frame movable only with left mouse button.
 
 ## 2.4.1

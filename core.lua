@@ -1344,8 +1344,12 @@ end
 function VendorerSellJunkButton_OnEnter(self)
 	local items = Addon:ScanContainers(FilterJunkItems);
 	local sellPrice = 0;
+	local numItemsToDestroy = 0;
 	for _, slotInfo in ipairs(items) do
 		sellPrice = sellPrice + slotInfo.data.itemSellPrice;
+		if(slotInfo.data.shouldDestroy) then
+			numItemsToDestroy = numItemsToDestroy + 1;
+		end
 	end
 	
 	GameTooltip:ClearAllPoints();
@@ -1356,7 +1360,11 @@ function VendorerSellJunkButton_OnEnter(self)
 	GameTooltip:AddLine("|cffffffffSell all poor quality items or items marked as junk.");
 	GameTooltip:AddLine(" ");
 	if(Addon.db.global.DestroyUnsellables) then
-		GameTooltip:AddLine("|cffff1111Unsellable junk items will be destroyed.|r");
+		if(numItemsToDestroy > 0) then
+			GameTooltip:AddLine(string.format("|cffff1111%d unsellable junk item%s will be destroyed.|r", numItemsToDestroy, numItemsToDestroy == 1 and "" or "s"));
+		else
+			GameTooltip:AddLine("|cffffa800No unsellable junk item to destroy.|r");
+		end
 		GameTooltip:AddLine(" ");
 	end
 	GameTooltip:AddDoubleLine("Estimated Income", string.format("|cffffffff%d items  %s  ", #items, GetCoinTextureString(sellPrice)));
@@ -1414,8 +1422,12 @@ end
 function VendorerSellUnusablesButton_OnEnter(self, button)
 	local items = Addon:ScanContainers(FilterUnusableItems);
 	local sellPrice = 0;
+	local numItemsToDestroy = 0;
 	for _, slotInfo in ipairs(items) do
 		sellPrice = sellPrice + slotInfo.data.itemSellPrice;
+		if(slotInfo.data.shouldDestroy) then
+			numItemsToDestroy = numItemsToDestroy + 1;
+		end
 	end
 	
 	GameTooltip:ClearAllPoints();
@@ -1426,7 +1438,11 @@ function VendorerSellUnusablesButton_OnEnter(self, button)
 	GameTooltip:AddLine("|cffffffffSell all soulbound equipment and tokens that you cannot use.");
 	GameTooltip:AddLine(" ");
 	if(Addon.db.global.DestroyUnsellables) then
-		GameTooltip:AddLine("|cffff1111Unsellable unusable items will be destroyed.|r");
+		if(numItemsToDestroy > 0) then
+			GameTooltip:AddLine(string.format("|cffff1111%d unsellable unusable item%s will be destroyed.|r", numItemsToDestroy, numItemsToDestroy == 1 and "" or "s"));
+		else
+			GameTooltip:AddLine("|cffffa800No unsellable unusable items to destroy.|r");
+		end
 		GameTooltip:AddLine(" ");
 	end
 	GameTooltip:AddDoubleLine("Estimated Income", string.format("|cffffffff%d items  %s  ", #items, GetCoinTextureString(sellPrice)));
