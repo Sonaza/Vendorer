@@ -1,3 +1,7 @@
+## 2.5.1
+* Added Starlight Rosedust to default ignore list since despite being a grey item it is used for a herbalist quest and shouldn't be sold.
+* Fixed an error where items that were on the default ignore list couldn't be removed from the list.
+
 ## 2.5.0
 * Added an option to destroy unsellable items.
 	* Sell Junk Items button will destroy unsellable poor quality items or items marked as junk.

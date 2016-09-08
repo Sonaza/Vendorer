@@ -20,6 +20,8 @@ function Addon:HandleConsole(params, action, ...)
 			local _, itemLink = GetItemInfo(item);
 			if(itemLink) then
 				Addon:AddItemToIgnoreList(itemLink);
+			else
+				Addon:AddMessage("Unable to find item \"%s\".", item);
 			end
 		else
 			Addon:OpenIgnoredItemsListsFrame();
@@ -30,6 +32,8 @@ function Addon:HandleConsole(params, action, ...)
 			local _, itemLink = GetItemInfo(item);
 			if(itemLink) then
 				Addon:AddItemToJunkList(itemLink);
+			else
+				Addon:AddMessage("Unable to find item \"%s\".", item);
 			end
 		else
 			Addon:OpenJunkItemsListsFrame();
@@ -91,6 +95,8 @@ function Addon:GetMenuData()
 	local transmogTooltipText = "Adds an asterisk to the item icon if you are missing the item skin.";
 	if(not CanIMogIt) then
 		transmogTooltipText = transmogTooltipText .. "|n|nTo enable this feature install the optional dependency |cffffffffCan I Mog It|r first.";
+	else
+		transmogTooltipText = transmogTooltipText .. "|n|nNote: enabling this option will hide the default icons provided by |cffffffffCan I Mog It|r.";
 	end
 	
 	local data = {
@@ -243,14 +249,18 @@ function Addon:GetMenuData()
 		{
 			text = NEW_FEATURE_ICON .. " Use global ignore list on " .. UnitName("player"),
 			func = function()
-				self.db.char.UsingPersonalIgnoreList = not self.db.char.UsingPersonalIgnoreList;
+				self.db.char.UsingPersonalIgnoreList = not self.db.char.UsingPersonalIgnoreList or IsControlKeyDown();
 				
-				if(self.db.char.UsingPersonalIgnoreList and self.db.char.ItemIgnoreList == nil) then
-					Addon:AddMessage("Missing ignore list for %s. Copying the global list.", UnitName("player"));
+				if(self.db.char.UsingPersonalIgnoreList and (self.db.char.ItemIgnoreList == nil or IsControlKeyDown())) then
+					if(not IsControlKeyDown() or self.db.char.ItemIgnoreList == nil) then
+						Addon:AddMessage("Missing ignore list for %s. Copying the global list.", UnitName("player"));
+					else
+						Addon:AddMessage("Re-copying the global ignore list for %s.", UnitName("player"));
+					end
 					
 					self.db.char.ItemIgnoreList = {};
-					for item, _ in pairs(self.db.global.ItemIgnoreList) do
-						self.db.char.ItemIgnoreList[item] = true;
+					for itemID, status in pairs(self.db.global.ItemIgnoreList) do
+						self.db.char.ItemIgnoreList[itemID] = status;
 					end
 				end
 				
@@ -261,17 +271,21 @@ function Addon:GetMenuData()
 			checked = function() return not self.db.char.UsingPersonalIgnoreList; end,
 			isNotRadio = true,
 			tooltipTitle = "Use global ignore list",
-			tooltipText = "You may disable this setting to use character's personal ignore list instead.",
+			tooltipText = "You may disable this setting to use character's personal ignore list instead.|n|nIf you wish to re-copy global list to personal list hold down ctrl when clicking this option.",
 			tooltipOnButton = 1,
 			keepShownOnClick = 1,
 		},
 		{
 			text = NEW_FEATURE_ICON .. " Use global junk list on " .. UnitName("player"),
 			func = function()
-				self.db.char.UsingPersonalJunkList = not self.db.char.UsingPersonalJunkList;
+				self.db.char.UsingPersonalJunkList = not self.db.char.UsingPersonalJunkList or IsControlKeyDown();
 				
-				if(self.db.char.UsingPersonalJunkList and self.db.char.ItemJunkList == nil) then
-					Addon:AddMessage("Missing junk list for %s. Copying the global list.", UnitName("player"));
+				if(self.db.char.UsingPersonalJunkList and (self.db.char.ItemJunkList == nil or IsControlKeyDown())) then
+					if(not IsControlKeyDown() or self.db.char.ItemJunkList == nil) then
+						Addon:AddMessage("Missing junk list for %s. Copying the global list.", UnitName("player"));
+					else
+						Addon:AddMessage("Re-copying the global junk list for %s.", UnitName("player"));
+					end
 					
 					self.db.char.ItemJunkList = {};
 					for item, _ in pairs(self.db.global.ItemJunkList) do
@@ -286,7 +300,7 @@ function Addon:GetMenuData()
 			checked = function() return not self.db.char.UsingPersonalJunkList; end,
 			isNotRadio = true,
 			tooltipTitle = "Use global junk list",
-			tooltipText = "You may disable this setting to use character's personal junk list instead.",
+			tooltipText = "You may disable this setting to use character's personal junk list instead.|n|nIf you wish to re-copy global list to personal list hold down ctrl when clicking this option.",
 			tooltipOnButton = 1,
 			keepShownOnClick = 1,
 		},

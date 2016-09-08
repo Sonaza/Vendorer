@@ -117,10 +117,12 @@ function VendorerItemListsFrame_ReindexItems()
 	if(not VendorerItemListsFrame.itemListOriginal) then return end
 	
 	local indexedItems = {};
-	for itemID, _ in pairs(VendorerItemListsFrame.itemListOriginal) do
+	for itemID, status in pairs(VendorerItemListsFrame.itemListOriginal) do
 		local name = GetItemInfo(itemID);
 		if(name) then -- only add found items
-			tinsert(indexedItems, itemID)
+			if((type(status) == "number" and status > 0) or (type(status) == "boolean" and status == true)) then
+				tinsert(indexedItems, itemID)
+			end
 		end
 	end
 	VendorerItemListsFrame.itemList = indexedItems;
@@ -151,7 +153,12 @@ end
 
 function VendorerItemListItemButtonRemove_OnClick(itembutton)
 	local itemID = VendorerItemListsFrame.itemList[itembutton.index];
-	VendorerItemListsFrame.itemListOriginal[itemID] = nil;
+	
+	if(VendorerItemListsFrame.index == 1) then
+		VendorerItemListsFrame.itemListOriginal[itemID] = 0;
+	else
+		VendorerItemListsFrame.itemListOriginal[itemID] = nil;
+	end
 	
 	local _, itemLink = GetItemInfo(itemID);
 	Addon:AddMessage(string.format("%s removed from the list.", itemLink));

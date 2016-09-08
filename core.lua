@@ -107,21 +107,31 @@ local STAT_SLOTS = {
 	["INVTYPE_WRIST"]			= true,
 };
 
+local ITEMIGNORE_DELETED            = 0;
+local ITEMIGNORE_DEFAULT_IGNORE     = 1;
+local ITEMIGNORE_USER_IGNORE        = 2;
+
 local DEFAULT_IGNORE_LIST_ITEMS = {
-	[33820]     = true, -- Weather-Beaten Fishing Hat
-	[2901]      = true, -- Mining Pick
-	[44731]     = true, -- Bouquet of Ebon Roses
-	[19970]     = true, -- Arcanite Fishing Pole
-	[116913]    = true, -- Peon's Mining Pick
-	[116916]    = true, -- Gorepetal's Gentle Grasp
-	[84661]     = true, -- Dragon Fishing Pole
-	[103678]    = true, -- Time-Lost Artifact
-	[86566]     = true, -- Forager's Gloves
-	[63207]     = true, -- Wrap of Unity
-	[63353]     = true, -- Shroud of Cooperation
-	[63206]     = true, -- Wrap of Unity
-	[65274]     = true, -- Cloak of Coordination
+	[33820]     = ITEMIGNORE_DEFAULT_IGNORE, -- Weather-Beaten Fishing Hat
+	[2901]      = ITEMIGNORE_DEFAULT_IGNORE, -- Mining Pick
+	[44731]     = ITEMIGNORE_DEFAULT_IGNORE, -- Bouquet of Ebon Roses
+	[19970]     = ITEMIGNORE_DEFAULT_IGNORE, -- Arcanite Fishing Pole
+	[116913]    = ITEMIGNORE_DEFAULT_IGNORE, -- Peon's Mining Pick
+	[116916]    = ITEMIGNORE_DEFAULT_IGNORE, -- Gorepetal's Gentle Grasp
+	[84661]     = ITEMIGNORE_DEFAULT_IGNORE, -- Dragon Fishing Pole
+	[103678]    = ITEMIGNORE_DEFAULT_IGNORE, -- Time-Lost Artifact
+	[86566]     = ITEMIGNORE_DEFAULT_IGNORE, -- Forager's Gloves
+	[63207]     = ITEMIGNORE_DEFAULT_IGNORE, -- Wrap of Unity
+	[63353]     = ITEMIGNORE_DEFAULT_IGNORE, -- Shroud of Cooperation
+	[63206]     = ITEMIGNORE_DEFAULT_IGNORE, -- Wrap of Unity
+	[65274]     = ITEMIGNORE_DEFAULT_IGNORE, -- Cloak of Coordination
+	[129158]    = ITEMIGNORE_DEFAULT_IGNORE, -- Starlight Rosedust
 };
+
+local PATCHED_IGNORE_LIST_ITEMS = {
+	[129158]    = true, -- Starlight Rosedust
+};
+local PATCHED_IGNORE_LIST_REVISION = 1;
 
 StaticPopupDialogs["VENDORER_CONFIRM_SELL_UNUSABLES"] = {
 	text = "Are you sure you want to sell unusable items? You can still buy them back after.%s",
@@ -300,6 +310,9 @@ function Addon:OnInitialize()
 	};
 	
 	self.db = AceDB:New("VendorerDB", defaults);
+	
+	Addon:ConvertIgnoreLists();
+	Addon:PatchIgnoreList();
 	
 	if(type(self.db.global.MerchantFrameExtended) == "boolean") then
 		if(self.db.global.MerchantFrameExtended) then
@@ -650,9 +663,57 @@ function VendorerCheckButtonTemplate_OnClick(self, button)
 	end
 end
 
+function Addon:ConvertIgnoreList(targetList)
+	if(not targetList) then return end
+	
+	for itemID, status in pairs(targetList) do
+		if(DEFAULT_IGNORE_LIST_ITEMS[itemID]) then
+			targetList[itemID] = ITEMIGNORE_DEFAULT_IGNORE;
+		else
+			targetList[itemID] = ITEMIGNORE_USER_IGNORE;
+		end
+	end
+end
+
+function Addon:ConvertIgnoreLists()
+	if(not self.db.char.ItemIgnoreListConverted) then
+		self.db.char.ItemIgnoreListConverted = true;
+		Addon:ConvertIgnoreList(Addon.db.char.ItemIgnoreList);
+	end
+	
+	if(not self.db.global.ItemIgnoreListConverted) then
+		self.db.global.ItemIgnoreListConverted = true;
+		Addon:ConvertIgnoreList(Addon.db.global.ItemIgnoreList);
+	end
+end
+
+function Addon:PatchIgnoreListItems(targetList)
+	if(not targetList) then return end
+	
+	for itemID, status in pairs(PATCHED_IGNORE_LIST_ITEMS) do
+		if(status == true and not targetList[itemID]) then
+			targetList[itemID] = ITEMIGNORE_DEFAULT_IGNORE;
+		elseif(status == false and targetList[itemID]) then
+			targetList[itemID] = ITEMIGNORE_DEFAULT_DELETED;
+		end
+	end
+end
+
+function Addon:PatchIgnoreList()
+	-- Patch character list since it is not updated automagically, only update items once
+	if(not self.db.char.ItemIgnoreRevision or self.db.char.ItemIgnoreRevision < PATCHED_IGNORE_LIST_REVISION) then
+		self.db.char.ItemIgnoreRevision = PATCHED_IGNORE_LIST_REVISION;
+		Addon:PatchIgnoreListItems(Addon.db.char.ItemIgnoreList);
+	end
+	-- if(not self.db.global.ItemIgnoreRevision or self.db.global.ItemIgnoreRevision < PATCHED_IGNORE_LIST_REVISION) then
+	-- 	self.db.global.ItemIgnoreRevision = PATCHED_IGNORE_LIST_REVISION;
+	-- 	Addon:PatchIgnoreListItems(Addon.db.global.ItemIgnoreList);
+	-- end
+end
+
 function Addon:IsItemIgnored(itemID)
 	local ignoreList = Addon:GetCurrentItemIgnoreList();
-	return ignoreList[itemID];
+	return ignoreList[itemID] and ignoreList[itemID] > 0;
 end
 
 function Addon:IsItemJunked(itemID)
@@ -949,6 +1010,14 @@ function Addon:GetCurrentItemIgnoreList()
 	return list, Addon.db.char.UsingPersonalIgnoreList;
 end
 
+function Addon:DeleteItemFromIgnoreList(ignoreList, itemID)
+	if(DEFAULT_IGNORE_LIST_ITEMS[itemID]) then
+		ignoreList[itemID] = ITEMIGNORE_DELETED;
+	else
+		ignoreList[itemID] = nil;
+	end
+end
+
 function Addon:AddItemToIgnoreList(itemLink)
 	if(not itemLink) then return end
 	local itemID = Addon:GetItemID(itemLink);
@@ -961,15 +1030,15 @@ function Addon:AddItemToIgnoreList(itemLink)
 		Addon:AddMessage("%s removed from junk sell list.", itemLink, isJunkListPersonal and "personal" or "global");
 	end
 	
-	if(not ignoreList[itemID]) then
-		ignoreList[itemID] = true;
+	if(not Addon:IsItemIgnored(itemID)) then
+		ignoreList[itemID] = ITEMIGNORE_USER_IGNORE;
 		Addon:AddMessage("%s added to %s ignore list.", itemLink, isIgnoreListPersonal and "personal" or "global");
 	else
-		ignoreList[itemID] = nil;
+		Addon:DeleteItemFromIgnoreList(ignoreList, itemID);
 		Addon:AddMessage("%s removed from %s ignore list.", itemLink, isIgnoreListPersonal and "personal" or "global");
 	end
 	
-	if(not isJunkListPersonal and isJunkListPersonal ~= isIgnoreListPersonal and junkList[itemID] and ignoreList[itemID]) then
+	if(not isJunkListPersonal and isJunkListPersonal ~= isIgnoreListPersonal and junkList[itemID] and Addon:IsItemIgnored(itemID)) then
 		Addon:AddMessage("The item remains on the global junk list but will not be sold.");
 	end
 	
@@ -1004,8 +1073,8 @@ function Addon:AddItemToJunkList(itemLink)
 	local junkList, isJunkListPersonal = Addon:GetCurrentItemJunkList();
 	local ignoreList, isIgnoreListPersonal = Addon:GetCurrentItemIgnoreList();
 	
-	if(isJunkListPersonal == isIgnoreListPersonal and ignoreList[itemID]) then
-		ignoreList[itemID] = nil;
+	if(isJunkListPersonal == isIgnoreListPersonal and Addon:IsItemIgnored(itemID)) then
+		Addon:DeleteItemFromIgnoreList(ignoreList, itemID);
 		Addon:AddMessage("%s removed from %s ignore list.", itemLink, isIgnoreListPersonal and "personal" or "global");
 	end
 	
@@ -1017,7 +1086,7 @@ function Addon:AddItemToJunkList(itemLink)
 		Addon:AddMessage("%s removed from %s junk sell list.", itemLink, isJunkListPersonal and "personal" or "global");
 	end
 	
-	if(isJunkListPersonal ~= isIgnoreListPersonal and ignoreList[itemID] and junkList[itemID]) then
+	if(isJunkListPersonal ~= isIgnoreListPersonal and Addon:IsItemIgnored(itemID) and junkList[itemID]) then
 		Addon:AddMessage("The item remains on the %s ignore list and will not be sold.", isIgnoreListPersonal and "personal" or "global");
 	end
 	
@@ -1670,6 +1739,14 @@ function Addon:UpdateMerchantInfo()
 									rarityBorder.transmogrifyAsterisk.iconSelf:Hide();
 								end
 							end
+						end
+			
+						if(itemButton.CanIMogItIcon) then
+							itemButton.CanIMogItIcon:Hide()
+						end
+					elseif(CanIMogIt) then
+						if(itemButton.CanIMogItIcon) then
+							itemButton.CanIMogItIcon:Show()
 						end
 					end
 					
