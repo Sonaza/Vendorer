@@ -1589,7 +1589,8 @@ function VendorerAutoSmartRepairButton_OnClick(self)
 end
 
 function Addon:MERCHANT_SHOW()
-	Addon:ResetFilter()
+	Addon:ResetFilteredItems();
+	Addon:ResetFilter();
 	Addon.PlayerMoney = GetMoney();
 	
 	if(self.db.global.AutoSellJunk) then
@@ -1612,6 +1613,8 @@ function VendorerFilteringButtonAlertCloseButton_OnClick()
 end
 
 function Addon:MERCHANT_CLOSED()
+	Addon:ResetFilteredItems();
+	
 	if(StaticPopup_Visible("VENDORER_CONFIRM_SELL_UNUSABLES")) then
 		StaticPopup_Hide("VENDORER_CONFIRM_SELL_UNUSABLES");
 	end

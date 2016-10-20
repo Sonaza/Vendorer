@@ -8,11 +8,13 @@ local ADDON_NAME, Addon = ...;
 local _;
 
 function Addon:GetGuildAllowance(triggeredByUser)
-	if(not triggeredByUser and not Addon.db.global.SmartAutoRepair) then
+	if(not CanGuildBankRepair() or not GetGuildInfo("player")) then
 		return 0;
 	end
 	
-	if(not GetGuildInfo("player")) then return 0 end
+	if(not triggeredByUser and not Addon.db.global.SmartAutoRepair) then
+		return 0;
+	end
 	
 	local amount = GetGuildBankWithdrawMoney();
 	return amount;

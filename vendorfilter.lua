@@ -7,7 +7,7 @@
 local ADDON_NAME, Addon = ...;
 local _;
 
-local FilteredMerchantItems = nil;
+local FilteredMerchantItems = {};
 
 Addon.BlizzFunctions = {
 	BuyMerchantItem                 = _G.BuyMerchantItem,
@@ -544,8 +544,12 @@ function Addon:GetUnfilteredMerchantNumItems()
 	return _GetMerchantNumItems();
 end
 
-function Addon:RefreshFilteredItems()
+function Addon:ResetFilteredItems()
 	FilteredMerchantItems = {};
+end
+
+function Addon:RefreshFilteredItems()
+	Addon:ResetFilteredItems();
 	
 	local merchantItems = Addon:GetUnfilteredMerchantNumItems();
 	for index = 1, merchantItems do 

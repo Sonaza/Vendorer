@@ -1,6 +1,11 @@
+## 2.5.2
+* Disabled automatic guild repair if character is not allowed to use guild funds for repair.
+* Fixed a bug that caused overwritten merchant functions throw errors if called before merchant frames are opened. This should fix a compability error with FreeRefills addon.
+
 ## 2.5.1
 * Added Starlight Rosedust to default ignore list since despite being a grey item it is used for a herbalist quest and shouldn't be sold.
 * Fixed an error where items that were on the default ignore list couldn't be removed from the list.
+* Transmog asterisk option now hides the icon added by Can I Mog It. The addon doesn't support extended item list by Vendorer. If you wish you can still display the other icons by disabling the Vendorer's asterisks from the settings.
 
 ## 2.5.0
 * Added an option to destroy unsellable items.
