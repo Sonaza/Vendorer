@@ -1744,12 +1744,14 @@ function Addon:UpdateMerchantInfo()
 							end
 						end
 			
-						if(itemButton.CanIMogItIcon) then
-							itemButton.CanIMogItIcon:Hide()
+						local cimiIcon = _G["CIMIOverlayFrame_MerchantItem" .. i .. "ItemButton"];
+						if(cimiIcon) then
+							cimiIcon:Hide();
 						end
 					elseif(CanIMogIt) then
-						if(itemButton.CanIMogItIcon) then
-							itemButton.CanIMogItIcon:Show()
+						local cimiIcon = _G["CIMIOverlayFrame_MerchantItem" .. i .. "ItemButton"];
+						if(cimiIcon) then
+							cimiIcon:Show();
 						end
 					end
 					

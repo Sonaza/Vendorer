@@ -1,3 +1,7 @@
+## 2.5.3
+* Re-hid the Can I Mog It-overlay icons after the frame name changed.
+* TOC bump for 7.1.0.
+
 ## 2.5.2
 * Disabled automatic guild repair if character is not allowed to use guild funds for repair.
 * Fixed a bug that caused overwritten merchant functions throw errors if called before merchant frames are opened. This should fix a compability error with FreeRefills addon.
