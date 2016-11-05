@@ -162,7 +162,7 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
-			text = NEW_FEATURE_ICON .. " Show on tooltip if item is ignored or junked",
+			text = "Show on tooltip if item is ignored or junked",
 			func = function()
 				self.db.global.ShowTooltipInfo = not self.db.global.ShowTooltipInfo;
 			end,
@@ -187,6 +187,17 @@ function Addon:GetMenuData()
 			tooltipWhileDisabled = true,
 			disabled = (CanIMogIt == nil),
 			keepShownOnClick = 1,
+		},
+		{
+			text = NEW_FEATURE_ICON .. " Verbose chat output",
+			func = function()
+				self.db.global.VerboseChat = not self.db.global.VerboseChat;
+			end,
+			checked = function() return self.db.global.VerboseChat; end,
+			isNotRadio = true,
+			tooltipTitle = "Verbose chat output",
+			tooltipText = "If disabled chat output will be kept minimal, only listing gold changes and repair costs.",
+			tooltipOnButton = 1,
 		},
 		{
 			text = " ", isTitle = true, notCheckable = true,
@@ -222,7 +233,7 @@ function Addon:GetMenuData()
 			text = " ", isTitle = true, notCheckable = true,
 		},
 		{
-			text = NEW_FEATURE_ICON .. " Also destroy unsellable items",
+			text = "Also destroy unsellable items",
 			func = function()
 				self.db.global.DestroyUnsellables = not self.db.global.DestroyUnsellables;
 				if(not self.db.global.DestroyUnsellables) then
@@ -247,7 +258,7 @@ function Addon:GetMenuData()
 			text = " ", isTitle = true, notCheckable = true,
 		},
 		{
-			text = NEW_FEATURE_ICON .. " Use global ignore list on " .. UnitName("player"),
+			text = "Use global ignore list on " .. UnitName("player"),
 			func = function()
 				self.db.char.UsingPersonalIgnoreList = not self.db.char.UsingPersonalIgnoreList or IsControlKeyDown();
 				
@@ -276,7 +287,7 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
-			text = NEW_FEATURE_ICON .. " Use global junk list on " .. UnitName("player"),
+			text = "Use global junk list on " .. UnitName("player"),
 			func = function()
 				self.db.char.UsingPersonalJunkList = not self.db.char.UsingPersonalJunkList or IsControlKeyDown();
 				

@@ -1,3 +1,6 @@
+## 2.5.4
+* Added toggle option for verbose mode which is enabled by default. If disabled chat output will be kept minimal, only listing gold changes and repair costs.
+
 ## 2.5.3
 * Re-hid the Can I Mog It-overlay icons after the frame name changed.
 * TOC bump for 7.1.0.

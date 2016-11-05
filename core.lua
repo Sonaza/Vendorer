@@ -306,6 +306,8 @@ function Addon:OnInitialize()
 			
 			ExpandTutorialShown = false,
 			FilteringButtonAlertShown = false,
+			
+			VerboseChat = true,
 		},
 	};
 	
@@ -1289,7 +1291,9 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 				itemMessage = string.format("%s x%d", itemMessage, itemCount);
 			end
 			
-			Addon:AddMessage(itemMessage);
+			if(Addon.db.global.VerboseChat) then
+				Addon:AddMessage(itemMessage);
+			end
 			
 			ClearCursor();
 			PickupContainerItem(slotInfo.bag, slotInfo.slot);
@@ -1301,7 +1305,7 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 		end
 	end
 	
-	if(itemsDestroyed > 0) then
+	if(itemsDestroyed > 0 and Addon.db.global.VerboseChat) then
 		Addon:AddMessage("All unsellable junk items destroyed!");
 	end
 	
@@ -1315,7 +1319,9 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 			itemMessage = string.format("%s x%d", itemMessage, itemCount);
 		end
 		
-		Addon:AddMessage(itemMessage);
+		if(Addon.db.global.VerboseChat) then
+			Addon:AddMessage(itemMessage);
+		end
 		
 		UseContainerItem(slotInfo.bag, slotInfo.slot);
 		itemsSold = itemsSold + 1;
@@ -1327,7 +1333,7 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 		end
 	end
 	
-	if((skip_limit or not skipped) and itemsSold > 0) then
+	if((skip_limit or not skipped) and itemsSold > 0 and Addon.db.global.VerboseChat) then
 		Addon:AddMessage("All junk items sold!");
 	end
 end
@@ -1348,7 +1354,9 @@ function Addon:ConfirmSellUnusables()
 				itemMessage = string.format("%s x%d", itemMessage, itemCount);
 			end
 			
-			Addon:AddMessage(itemMessage);
+			if(Addon.db.global.VerboseChat) then
+				Addon:AddMessage(itemMessage);
+			end
 			
 			ClearCursor();
 			PickupContainerItem(slotInfo.bag, slotInfo.slot);
@@ -1360,7 +1368,7 @@ function Addon:ConfirmSellUnusables()
 		end
 	end
 	
-	if(itemsDestroyed > 0) then
+	if(itemsDestroyed > 0 and Addon.db.global.VerboseChat) then
 		Addon:AddMessage("All unsellable unusable items destroyed!");
 	end
 	
@@ -1374,7 +1382,9 @@ function Addon:ConfirmSellUnusables()
 			itemMessage = string.format("%s x%d", itemMessage, itemCount);
 		end
 		
-		Addon:AddMessage(itemMessage);
+		if(Addon.db.global.VerboseChat) then
+			Addon:AddMessage(itemMessage);
+		end
 		
 		UseContainerItem(slotInfo.bag, slotInfo.slot);
 		itemsSold = itemsSold + 1;
@@ -1386,7 +1396,7 @@ function Addon:ConfirmSellUnusables()
 		end
 	end
 	
-	if(not skipped and itemsSold > 0) then
+	if(not skipped and itemsSold > 0 and Addon.db.global.VerboseChat) then
 		Addon:AddMessage("All unusable items sold!");
 	end
 end
