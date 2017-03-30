@@ -1,3 +1,6 @@
+## 2.5.5
+* TOC bump for 7.2.0.
+
 ## 2.5.4
 * Added toggle option for verbose mode which is enabled by default. If disabled chat output will be kept minimal, only listing gold changes and repair costs.
 
