@@ -1,3 +1,7 @@
+## 2.5.6
+* Fixed guild repairing trying to repair when guild bank has no money.
+* Fixed stack purchasing being weirdly borked.
+
 ## 2.5.5
 * TOC bump for 7.2.0.
 

@@ -497,7 +497,7 @@ function VendorerStackSplitMixin:Open(merchantItemIndex, parent, anchor)
 	
 	local isUnique = select(8, Addon:GetItemTooltipInfo(itemLink));
 	if(isUnique) then return end
-	
+		
 	local _, canAfford = Addon:CanAffordMerchantItem(merchantItemIndex, false);
 	if(canAfford == 0) then return end
 
@@ -604,7 +604,7 @@ function Addon:GetFreeBagSlotsForItem(item)
 		local bagItemLink = GetInventoryItemLink("player", 19 + bagID);
 		if(bagItemLink) then
 			local bagType = GetItemFamily(bagItemLink);
-			if(bagType == 0 or bagType == itemType or bit.band(itemType, bagType) == bagSubType) then
+			if(not bagType or bagType == 0 or bagType == itemType or bit.band(itemType, bagType) == bagSubType) then
 				freeSlots = freeSlots + GetContainerNumFreeSlots(bagID);
 			end
 		end
@@ -640,7 +640,7 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 		local currencyCount = GetMerchantItemCostInfo(merchantItemIndex);
 		for index = 1, currencyCount do
 			local itemTexture, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
-			if(currencyItemLink) then
+			if(currencyItemLink and strfind(currencyItemLink, "Hcurrency:") == nil) then
 				local ownedCurrencyItems = Addon:GetProperItemCount(currencyItemLink);
 				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyItems / requiredCurrency));
 			elseif(currencyName) then

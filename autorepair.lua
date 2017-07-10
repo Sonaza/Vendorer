@@ -16,8 +16,12 @@ function Addon:GetGuildAllowance(triggeredByUser)
 		return 0;
 	end
 	
-	local amount = GetGuildBankWithdrawMoney();
-	return amount;
+	local guildBankMoney = GetGuildBankMoney();
+	local withdrawMoney = GetGuildBankWithdrawMoney();
+	if(withdrawMoney == -1) then 
+		return guildBankMoney;
+	end
+	return math.min(guildBankMoney, withdrawMoney);
 end
 
 local repairableSlots = { 1, 3, 5, 6, 7, 8, 9, 10, 16, 17, }
