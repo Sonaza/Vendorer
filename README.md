@@ -11,7 +11,7 @@ Sometimes vendors sell so many items it's impossible to find the items you requi
 * **By Item Level** Prefix a number with the letter i. For example i200.
 * **By Price** Enter a price value formatted like 12g34s56c.
 * **Searching for Ranges of Values** Search values can be prefixed with <, <=, > and >= to search for ranges of values. For example >=r90 will find all items that require level higher than or equal to 90. Another example >=250g <=500g will find all items that cost between 250 and 500 gold.
-* **Magic words (predefined filters)** usable, unusable, equippable, unequippable, known, unknown, available, canafford, transmogable, unknowntransmog.
+* **Magic words (predefined filters)** usable, unusable, equippable, purchasable, unequippable, known, unknown, available, canafford, transmogable, unknowntransmog.
 
 You can also search for phrases by putting the words in quotes. The results will only include items with the words in the same order as the ones inside the quotes.
 

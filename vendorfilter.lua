@@ -408,7 +408,7 @@ function Addon:FilterItem(index)
 	local filter = true;
 	
 	local itemLinkTypeID, itemID, itemLinkType = Addon:GetItemLinkInfo(itemLink);
-	local itemName, texture, price, quantity, numAvailable, isUsable, extendedCost = _GetMerchantItemInfo(index);
+	local itemName, texture, price, quantity, numAvailable, isPurchasable, isUsable, extendedCost = _GetMerchantItemInfo(index);
 	local equippable = IsEquippableItem(itemLink);
 	local _, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(itemLink);
 	local qualityText = string.lower(_G["ITEM_QUALITY" .. (itemRarity or 1) .. "_DESC"]);
@@ -437,6 +437,7 @@ function Addon:FilterItem(index)
 		result = result or (token == "usable" and isUsable);
 		result = result or (token == "unusable" and not isUsable);
 		result = result or (token == "equippable" and equippable);
+		result = result or (token == "purchasable" and isPurchasable);
 		result = result or (token == "unequippable" and not equippable);
 		result = result or (token == "available" and numAvailable ~= 0);
 		
@@ -671,9 +672,9 @@ function VendorerFilteringButton_OnEnter()
 	
 	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "|cffffffffMagic words|r");
 	if(not CanIMogIt) then
-		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, unknown, available, canafford|r. Additional transmog filters exist if the dependency |cffffffffCan I Mog It|r is installed.", nil, nil, nil, true);
+		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, purchasable, unknown, available, canafford|r. Additional transmog filters exist if the dependency |cffffffffCan I Mog It|r is installed.", nil, nil, nil, true);
 	else
-		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, unknown, available, canafford, transmogable, unknowntransmog|r.", nil, nil, nil, true);
+		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, purchasable, unknown, available, canafford, transmogable, unknowntransmog|r.", nil, nil, nil, true);
 	end
 	
 	VendorerHintTooltip:AddLine(" ");
@@ -777,6 +778,14 @@ function Addon:GetQuickFiltersMenuData()
 				},
 				{
 					text = "Equippable",
+					notCheckable = true,
+					func = function(self)
+						Addon:SetFilter(string.lower(self.value));
+						CloseMenus();
+					end,
+				},
+				{
+					text = "Purchasable",
 					notCheckable = true,
 					func = function(self)
 						Addon:SetFilter(string.lower(self.value));

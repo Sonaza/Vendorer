@@ -1724,7 +1724,7 @@ function Addon:UpdateMerchantInfo()
 			if(index <= numMerchantItems) then
 				local itemLink = GetMerchantItemLink(index);
 				if(itemLink) then
-					local _, _, _, _, _, isUsable = GetMerchantItemInfo(index);
+					local _, _, _, _, _, _, isUsable = GetMerchantItemInfo(index);
 					local _, _, rarity, _, _, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(itemLink);
 					
 					if(rarityBorder and rarity and rarity >= 1) then

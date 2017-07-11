@@ -105,20 +105,20 @@ end
 
 function VendorerStackSplitMixin:Decrement()
 	if(self.purchasing) then return end
-	self.split = math.max(1, self.split - 1);
+	self.split = math.max(self.minSplit, self.split - self.minSplit);
 	self:Update();
 end
 
 function VendorerStackSplitMixin:Increment()
 	if(self.purchasing) then return end
-	self.split = math.min(self.maxPurchase, self.split + 1);
+	self.split = math.min(self.maxPurchase, self.split + self.minSplit);
 	self:Update();
 end
 
 function VendorerStackSplitMixin:Update()
-	self.split = math.max(1, math.min(self.maxPurchase, self.split));
+	self.split = math.max(self.minSplit, math.min(self.maxPurchase, self.split));
 	
-	if(self.split == 1) then
+	if(self.split == self.minSplit) then
 		self.leftButton:Disable();
 	else
 		self.leftButton:Enable();
@@ -153,9 +153,9 @@ function VendorerStackSplitMixin:GetTotalPriceString(index, quantity)
 	
 	local text = "";
 	
-	local _, _, price, stackCount, _, _, extendedCost = GetMerchantItemInfo(index);
+	local _, _, price, stackCount, _, _, _, extendedCost = GetMerchantItemInfo(index);
 	if(price and price > 0) then
-		local totalPrice = (price / stackCount) * quantity;
+		local totalPrice = math.ceil((price / stackCount) * quantity);
 		text = ("%s %s "):format(text, GetCoinTextureString(totalPrice, 12));
 	end
 	
@@ -384,9 +384,9 @@ function VendorerStackSplitMixin:Stack(button_or_delta, threshold)
 	threshold = math.max(1, math.min(self.maxStack, threshold or self.maxStack));
 	
 	if(button_or_delta == "LeftButton" or button_or_delta == 1) then
-		self.split = math.ceil((self.split+1) / threshold) * threshold;
+		self.split = math.ceil((self.split + self.minSplit) / threshold) * threshold;
 	elseif(button_or_delta == "RightButton" or button_or_delta == -1) then
-		self.split = math.floor((self.split-1) / threshold) * threshold;
+		self.split = math.floor((self.split - self.minSplit) / threshold) * threshold;
 	end
 	
 	self:Update();
@@ -450,13 +450,12 @@ end
 function VendorerStackSplitMixin:OnMouseWheel(delta)
 	if(self.purchasing) then return end
 	
-	local value = delta;
 	if(IsShiftKeyDown()) then
 		self:Stack(delta);
 	elseif(IsControlKeyDown()) then
 		self:Stack(delta, self.maxStack * 0.25);
 	else
-		self.split = self.split + delta;
+		self.split = self.split + delta * self.minSplit;
 		self:Update();
 	end
 end
@@ -490,8 +489,15 @@ function VendorerStackSplitMixin:Open(merchantItemIndex, parent, anchor)
 	self.split = 1;
 	
 	local maxStack = GetMerchantItemMaxStack(merchantItemIndex);
-	local _, _, price, stackCount, numAvailable, _, extendedCost = GetMerchantItemInfo(merchantItemIndex);
+	local _, _, price, stackCount, numAvailable, isPurchasable, _, extendedCost = GetMerchantItemInfo(merchantItemIndex);
+	if(not isPurchasable) then return end
+	
 	local itemLink = GetMerchantItemLink(merchantItemIndex);
+	
+	self.minSplit = Addon:GetMinimumSplitSize(merchantItemIndex);
+	print("minsplit", self.minSplit);
+	
+	self.split = stackCount or 1;
 	
 	if(numAvailable < 0) then numAvailable = MAX_STACK_SIZE end
 	
@@ -512,6 +518,7 @@ function VendorerStackSplitMixin:Open(merchantItemIndex, parent, anchor)
 	self.canFitItems    = self.canFitStacks * maxStack;
 	self.numAvailable   = numAvailable;
 	self.maxPurchase    = math.min(canAfford, self.canFitItems, numAvailable, MAX_STACK_SIZE);
+	self.maxPurchase    = self.maxPurchase - (self.maxPurchase % self.minSplit);
 	self.typing         = false;
 	
 	self.hasExtendedCost = extendedCost;
@@ -536,7 +543,7 @@ function MerchantItemButton_OnModifiedClick(self, button)
 			end
 			if(IsModifiedClick("SPLITSTACK")) then
 				local maxStack = GetMerchantItemMaxStack(merchantItemIndex);
-				local _, _, price, stackCount, _, _, extendedCost = GetMerchantItemInfo(merchantItemIndex);
+				local _, _, price, stackCount, _, _, _, extendedCost = GetMerchantItemInfo(merchantItemIndex);
 				
 				VendorerStackSplitFrame:Open(merchantItemIndex, self);
 				return;
@@ -626,8 +633,10 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 		GetMerchantItemCostInfo = Addon.BlizzFunctions.GetMerchantItemCostInfo;
 	end
 	
-	local name, _, price, stackCount, numAvailable, _, hasExtendedCost = GetMerchantItemInfo(merchantItemIndex);
+	local name, _, price, stackCount, numAvailable, isPurchasable, _, hasExtendedCost = GetMerchantItemInfo(merchantItemIndex);
 	if(not name) then return false end
+	
+	stackCount = stackCount or 1;
 	
 	local numCanAfford = MAX_STACK_SIZE;
 	
@@ -640,15 +649,22 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 		local currencyCount = GetMerchantItemCostInfo(merchantItemIndex);
 		for index = 1, currencyCount do
 			local itemTexture, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
-			if(currencyItemLink and strfind(currencyItemLink, "Hcurrency:") == nil) then
-				local ownedCurrencyItems = Addon:GetProperItemCount(currencyItemLink);
-				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyItems / requiredCurrency));
-			elseif(currencyName) then
+			local currencyPerUnit = requiredCurrency / stackCount;
+			
+			if(currencyName) then
 				CacheCurrencies();
-				
 				local currencyID = cachedCurrencies[currencyName];
 				local name, ownedCurrencyAmount = GetCurrencyInfo(currencyID);
-				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyAmount / requiredCurrency));
+				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyAmount / currencyPerUnit));
+			elseif(currencyItemLink) then
+				if(strfind(currencyItemLink, "Hcurrency:")) then
+					local currencyID = strmatch(currencyItemLink, "currency:(%d+)");
+					local name, ownedCurrencyAmount = GetCurrencyInfo(currencyID);
+					extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyAmount / currencyPerUnit));
+				else
+					local ownedCurrencyItems = Addon:GetProperItemCount(currencyItemLink);
+					extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyItems / currencyPerUnit));
+				end
 			end
 		end
 		
@@ -656,4 +672,41 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 	end
 	
 	return numCanAfford > 0, numCanAfford, hasExtendedCost;
+end
+
+function gcd(m, n)
+    while n ~= 0 do
+        local q = m;
+        m = n;
+        n = q % n;
+    end
+    return m;
+end
+
+function Addon:GetMinimumSplitSize(merchantItemIndex)
+	if(not merchantItemIndex) then return 1 end
+	
+	local GetMerchantItemInfo     = GetMerchantItemInfo;
+	local GetMerchantItemCostItem = GetMerchantItemCostItem;
+	local GetMerchantItemCostInfo = GetMerchantItemCostInfo;
+	
+	local name, _, price, stackCount, numAvailable, isPurchasable, _, hasExtendedCost = GetMerchantItemInfo(merchantItemIndex);
+	if(not name) then return 1 end
+	
+	stackCount = stackCount or 1;
+	if(stackCount <= 1) then return 1 end
+	
+	-- Items that only cost gold can be always split to 1 unit
+	if(not hasExtendedCost and price) then return 1 end
+	
+	local minimumCurrencyAmount = 1;
+	
+	local currencyCount = GetMerchantItemCostInfo(merchantItemIndex);
+	for index = 1, currencyCount do
+		local itemTexture, requiredCurrencyAmount, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
+		print(requiredCurrency, "x", currencyName or currencyItemLink);
+		minimumCurrencyAmount = math.max(minimumCurrencyAmount, requiredCurrency);
+	end
+	
+	return stackCount / gcd(stackCount, minimumCurrencyAmount);
 end
