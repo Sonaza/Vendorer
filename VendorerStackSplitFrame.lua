@@ -672,7 +672,7 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 	return numCanAfford > 0, numCanAfford, hasExtendedCost;
 end
 
-function gcd(m, n)
+local function gcd(m, n)
     while n ~= 0 do
         local q = m;
         m = n;
@@ -688,7 +688,7 @@ function Addon:GetMinimumSplitSize(merchantItemIndex)
 	local GetMerchantItemCostItem = GetMerchantItemCostItem;
 	local GetMerchantItemCostInfo = GetMerchantItemCostInfo;
 	
-	local name, _, price, stackCount, numAvailable, isPurchasable, _, hasExtendedCost = GetMerchantItemInfo(merchantItemIndex);
+	local name, _, price, stackCount, _, _, _, hasExtendedCost = GetMerchantItemInfo(merchantItemIndex);
 	if(not name) then return 1 end
 	
 	stackCount = stackCount or 1;
@@ -698,10 +698,9 @@ function Addon:GetMinimumSplitSize(merchantItemIndex)
 	if(not hasExtendedCost and price) then return 1 end
 	
 	local minimumCurrencyAmount = 1;
-	
 	local currencyCount = GetMerchantItemCostInfo(merchantItemIndex);
 	for index = 1, currencyCount do
-		local itemTexture, requiredCurrencyAmount, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
+		local itemTexture, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
 		minimumCurrencyAmount = math.max(minimumCurrencyAmount, requiredCurrency);
 	end
 	
