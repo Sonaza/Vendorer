@@ -495,8 +495,6 @@ function VendorerStackSplitMixin:Open(merchantItemIndex, parent, anchor)
 	local itemLink = GetMerchantItemLink(merchantItemIndex);
 	
 	self.minSplit = Addon:GetMinimumSplitSize(merchantItemIndex);
-	print("minsplit", self.minSplit);
-	
 	self.split = stackCount or 1;
 	
 	if(numAvailable < 0) then numAvailable = MAX_STACK_SIZE end
@@ -704,7 +702,6 @@ function Addon:GetMinimumSplitSize(merchantItemIndex)
 	local currencyCount = GetMerchantItemCostInfo(merchantItemIndex);
 	for index = 1, currencyCount do
 		local itemTexture, requiredCurrencyAmount, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
-		print(requiredCurrency, "x", currencyName or currencyItemLink);
 		minimumCurrencyAmount = math.max(minimumCurrencyAmount, requiredCurrency);
 	end
 	
