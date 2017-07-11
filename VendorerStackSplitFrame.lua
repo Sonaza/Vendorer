@@ -9,6 +9,11 @@ local _;
 
 local MAX_STACK_SIZE = 100000;
 
+-- Apparently some currencies can't be used to buy anything other than the specified stack size
+local CURRENCY_CANT_SPLIT = {
+	[1220] = true, -- Order Resources
+};
+
 local cachedCurrencies = nil;
 local function CacheCurrencies()
 	if(cachedCurrencies) then return end
@@ -618,6 +623,20 @@ function Addon:GetFreeBagSlotsForItem(item)
 	return freeSlots;
 end
 
+function Addon:GetCurrencyInfo(currencyItemLink, currencyName)
+	local currencyID = nil;
+	if(currencyName) then
+		CacheCurrencies();
+		currencyID = cachedCurrencies[currencyName];
+	elseif(currencyItemLink) then
+		currencyID = strmatch(currencyItemLink, "currency:(%d+)");
+	end
+	if(currencyID) then
+		return tonumber(currencyID), GetCurrencyInfo(currencyID);
+	end
+	return nil;
+end
+
 function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 	if(not merchantItemIndex) then return false end
 	
@@ -642,6 +661,7 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 		numCanAfford = floor(GetMoney() / (price / stackCount));
 	end
 	
+	local costsUnsplittable = false;
 	if(hasExtendedCost) then
 		local extendedCanAfford = MAX_STACK_SIZE;
 		local currencyCount = GetMerchantItemCostInfo(merchantItemIndex);
@@ -649,24 +669,21 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 			local itemTexture, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
 			local currencyPerUnit = requiredCurrency / stackCount;
 			
-			if(currencyName) then
-				CacheCurrencies();
-				local currencyID = cachedCurrencies[currencyName];
-				local name, ownedCurrencyAmount = GetCurrencyInfo(currencyID);
+			local currencyID, _, ownedCurrencyAmount = Addon:GetCurrencyInfo(currencyItemLink, currencyName);
+			if(currencyID and ownedCurrencyAmount) then
+				costsUnsplittable = CURRENCY_CANT_SPLIT[currencyID] == true;
 				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyAmount / currencyPerUnit));
-			elseif(currencyItemLink) then
-				if(strfind(currencyItemLink, "Hcurrency:")) then
-					local currencyID = strmatch(currencyItemLink, "currency:(%d+)");
-					local name, ownedCurrencyAmount = GetCurrencyInfo(currencyID);
-					extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyAmount / currencyPerUnit));
-				else
-					local ownedCurrencyItems = Addon:GetProperItemCount(currencyItemLink);
-					extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyItems / currencyPerUnit));
-				end
+			else
+				local ownedCurrencyItems = Addon:GetProperItemCount(currencyItemLink);
+				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyItems / currencyPerUnit));
 			end
 		end
 		
 		numCanAfford = min(numCanAfford, extendedCanAfford);
+	end
+	
+	if(costsUnsplittable) then
+		numCanAfford = numCanAfford - (numCanAfford % stackCount);
 	end
 	
 	return numCanAfford > 0, numCanAfford, hasExtendedCost;
@@ -680,11 +697,6 @@ local function gcd(m, n)
     end
     return m;
 end
-
--- Apparently some currencies can't be used to buy anything other than the specified stack size
-local CURRENCY_CANT_SPLIT = {
-	[1220] = true, -- Order Resources
-};
 
 function Addon:GetMinimumSplitSize(merchantItemIndex)
 	if(not merchantItemIndex) then return 1 end
@@ -707,17 +719,9 @@ function Addon:GetMinimumSplitSize(merchantItemIndex)
 	for index = 1, currencyCount do
 		local _, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
 		
-		if(currencyItemLink and strfind(currencyItemLink, "Hcurrency:")) then
-			local currencyID = tonumber(strmatch(currencyItemLink, "currency:(%d+)"));
-			if(currencyID and CURRENCY_CANT_SPLIT[currencyID]) then
-				return stackCount;
-			end
-		elseif(currencyName) then
-			CacheCurrencies();
-			local currencyID = tonumber(cachedCurrencies[currencyName]);
-			if(currencyID and CURRENCY_CANT_SPLIT[currencyID]) then
-				return stackCount;
-			end
+		local currencyID = Addon:GetCurrencyInfo(currencyItemLink, currencyName);
+		if(currencyID and CURRENCY_CANT_SPLIT[currencyID]) then
+			return stackCount;
 		end
 		
 		minimumCurrencyAmount = math.max(minimumCurrencyAmount, requiredCurrency);
