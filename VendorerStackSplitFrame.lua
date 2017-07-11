@@ -681,6 +681,11 @@ local function gcd(m, n)
     return m;
 end
 
+-- Apparently some currencies can't be used to buy anything other than the specified stack size
+local CURRENCY_CANT_SPLIT = {
+	[1220] = true, -- Order Resources
+};
+
 function Addon:GetMinimumSplitSize(merchantItemIndex)
 	if(not merchantItemIndex) then return 1 end
 	
@@ -700,7 +705,21 @@ function Addon:GetMinimumSplitSize(merchantItemIndex)
 	local minimumCurrencyAmount = 1;
 	local currencyCount = GetMerchantItemCostInfo(merchantItemIndex);
 	for index = 1, currencyCount do
-		local itemTexture, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
+		local _, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
+		
+		if(currencyItemLink and strfind(currencyItemLink, "Hcurrency:")) then
+			local currencyID = tonumber(strmatch(currencyItemLink, "currency:(%d+)"));
+			if(currencyID and CURRENCY_CANT_SPLIT[currencyID]) then
+				return stackCount;
+			end
+		elseif(currencyName) then
+			CacheCurrencies();
+			local currencyID = tonumber(cachedCurrencies[currencyName]);
+			if(currencyID and CURRENCY_CANT_SPLIT[currencyID]) then
+				return stackCount;
+			end
+		end
+		
 		minimumCurrencyAmount = math.max(minimumCurrencyAmount, requiredCurrency);
 	end
 	
