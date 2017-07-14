@@ -2,7 +2,7 @@
 ## Title: Vendorer
 ## Notes: Improved merchant frames
 ## Author: Sonaza
-## Version: 2.5.6
+## Version: 2.6.0
 ## OptionalDeps: Ace3, CanIMogIt
 ## SavedVariables: VendorerDB
 

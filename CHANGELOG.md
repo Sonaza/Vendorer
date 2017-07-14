@@ -1,4 +1,4 @@
-## 2.5.6
+## 2.6.0
 * Fixed errors caused by return value changes for GetMerchantItemInfo in patch 7.2.0. Blizz please, don't add return values in the middle of the sequence. PLEEEEEASE.
 * Fixed guild repairing trying to repair when guild bank has no money.
 * Fixed stack purchasing being weirdly borked.
