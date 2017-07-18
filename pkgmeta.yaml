@@ -1,4 +1,7 @@
-package-as: "!Vendorer"
+package-as: Vendorer
 enable-nolib-creation: no
+
+move-folders:
+  Vendorer: "!Vendorer"
   
 manual-changelog: CHANGELOG.md
