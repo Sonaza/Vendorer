@@ -7,7 +7,7 @@
 local ADDON_NAME, Addon = ...;
 local _;
 
-local MAX_STACK_SIZE = 100000;
+local MAX_STACK_SIZE = 1000000;
 
 -- Apparently some currencies can't be used to buy anything other than the specified stack size
 local CURRENCY_CANT_SPLIT = {
@@ -308,6 +308,7 @@ function VendorerStackSplitMixin:DoPurchase()
 		self:SetScript("OnKeyDown", nil);
 		
 		self:RegisterEvent("BAG_UPDATE_DELAYED");
+		self:RegisterEvent("CURRENCY_DISPLAY_UPDATE");
 		local remaining = self:PurchaseNext();
 	else
 		self:Cancel();
@@ -346,6 +347,7 @@ function VendorerStackSplitMixin:CancelPurchase()
 	self.purchasing = false;
 	self.purchaseInfo = nil;
 	self:UnregisterEvent("BAG_UPDATE_DELAYED");
+	self:UnregisterEvent("CURRENCY_DISPLAY_UPDATE");
 	self:Cancel();
 end
 
@@ -437,14 +439,18 @@ function VendorerStackSplitFrameSetMaxButton_OnEnter(self)
 	GameTooltip:AddLine("Set Max");
 	GameTooltip:AddLine("Quickly set the number of items to the maximum you can fit, afford or are available.", 1, 1, 1, true);
 	GameTooltip:AddLine(" ");
-	if(frame.maxPurchase == frame.canFitItems) then
-		GameTooltip:AddLine(("You can currently fit at most |cffffd200%s|r stacks or |cffffd200%s|r items."):format(frame.canFitStacks, BreakUpLargeNumbers(frame.canFitItems)), 1, 1, 1, true);
-	elseif(frame.maxPurchase == frame.canAfford) then
-		GameTooltip:AddLine(("You can currently afford at most |cffffd200%s|r items."):format(BreakUpLargeNumbers(frame.canAfford)), 1, 1, 1, true);
-	elseif(frame.maxPurchase == frame.numAvailable) then
-		GameTooltip:AddLine(("There is up to |cffffd200%s|r items available."):format(BreakUpLargeNumbers(frame.numAvailable)), 1, 1, 1, true);
+	if(frame.maxPurchase ~= MAX_STACK_SIZE) then
+		if(frame.maxPurchase == frame.canFitItems) then
+			GameTooltip:AddLine(("You can currently fit at most |cffffd200%s|r stacks or |cffffd200%s|r items."):format(frame.canFitStacks, BreakUpLargeNumbers(frame.canFitItems)), 1, 1, 1, true);
+		elseif(frame.maxPurchase == frame.canAfford) then
+			GameTooltip:AddLine(("You can currently afford at most |cffffd200%s|r items."):format(BreakUpLargeNumbers(frame.canAfford)), 1, 1, 1, true);
+		elseif(frame.maxPurchase == frame.numCanBuyMore) then
+			GameTooltip:AddLine(("You can currently hold at most |cffffd200%s|r items more."):format(BreakUpLargeNumbers(frame.numCanBuyMore)), 1, 1, 1, true);
+		elseif(frame.maxPurchase == frame.numAvailable) then
+			GameTooltip:AddLine(("There is up to |cffffd200%s|r items available."):format(BreakUpLargeNumbers(frame.numAvailable)), 1, 1, 1, true);
+		end
+		GameTooltip:AddLine(" ");
 	end
-	GameTooltip:AddLine(" ");
 	GameTooltip:AddLine("|cff00ff00Left-click|r  Set to maximum", 1, 1, 1, true);
 	GameTooltip:AddLine("|cff00ff00Ctrl Left-click|r  Set to half", 1, 1, 1, true);
 	GameTooltip:AddLine("|cff00ff00Right-click|r  Set to minimum", 1, 1, 1, true);
@@ -509,6 +515,19 @@ function VendorerStackSplitMixin:Open(merchantItemIndex, parent, anchor)
 		
 	local _, canAfford = Addon:CanAffordMerchantItem(merchantItemIndex, false);
 	if(canAfford == 0) then return end
+	
+	self.numCanBuyMore = MAX_STACK_SIZE;
+	
+	local itemlink = GetMerchantItemLink(merchantItemIndex);
+	if(Addon:IsCurrencyItem(itemlink)) then
+		local _, name, currentAmount, _, earnedThisWeek, weeklyMax, totalMax, isDiscovered, rarity = Addon:GetCurrencyInfo(itemlink);
+		if(name and totalMax > 0) then
+			self.numCanBuyMore = totalMax - currentAmount;
+		end
+		if(name and weeklyMax > 0) then
+			self.numCanBuyMore = math.min(self.numCanBuyMore, weeklyMax - earnedThisWeek);
+		end
+	end
 
 	parent.hasStackSplit = 1;
 	
@@ -520,7 +539,7 @@ function VendorerStackSplitMixin:Open(merchantItemIndex, parent, anchor)
 	self.canFitStacks   = Addon:GetFreeBagSlotsForItem(itemLink);
 	self.canFitItems    = self.canFitStacks * maxStack;
 	self.numAvailable   = numAvailable;
-	self.maxPurchase    = math.min(canAfford, self.canFitItems, numAvailable, MAX_STACK_SIZE);
+	self.maxPurchase    = math.min(canAfford, self.canFitItems, numAvailable, self.numCanBuyMore, MAX_STACK_SIZE);
 	self.maxPurchase    = self.maxPurchase - (self.maxPurchase % self.minSplit);
 	self.typing         = false;
 	
@@ -640,11 +659,13 @@ end
 function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 	if(not merchantItemIndex) then return false end
 	
+	local GetMerchantItemLink     = GetMerchantItemLink;
 	local GetMerchantItemInfo     = GetMerchantItemInfo;
 	local GetMerchantItemCostItem = GetMerchantItemCostItem;
 	local GetMerchantItemCostInfo = GetMerchantItemCostInfo;
 	
 	if(unfiltered) then
+		GetMerchantItemLink     = Addon.BlizzFunctions.GetMerchantItemLink;
 		GetMerchantItemInfo     = Addon.BlizzFunctions.GetMerchantItemInfo;
 		GetMerchantItemCostItem = Addon.BlizzFunctions.GetMerchantItemCostItem;
 		GetMerchantItemCostInfo = Addon.BlizzFunctions.GetMerchantItemCostInfo;

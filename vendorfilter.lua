@@ -44,8 +44,8 @@ GameTooltip.SetMerchantItem = function(self, index)
 		if(Addon.db.global.UseImprovedStackSplit) then
 			local itemLink = _GetMerchantItemLink(FilteredMerchantItems[index]);
 			if(itemLink) then
-				local _, _, _, _, _, _, _, stack = GetItemInfo(itemLink)
-				if(stack <= 1) then
+				local name, _, _, _, _, _, _, stack = GetItemInfo(itemLink)
+				if(name and stack <= 1 or Addon:IsCurrencyItem(itemLink)) then
 					GameTooltip:AddLine(ITEM_VENDOR_STACK_BUY, 0, 1, 0);
 				end
 			end

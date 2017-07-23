@@ -838,7 +838,14 @@ local cachedItemInfo = {};
 function Addon:GetItemTooltipInfo(item)
 	if(not item) then return end
 	
-	local _, itemLink, itemRarity, _, _, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(item);
+	local _, itemLink, itemRarity, _, _, itemType, itemSubType, _, itemEquipLoc;
+	
+	if(Addon:IsCurrencyItem(item)) then
+		itemLink = item;
+	else
+		_, itemLink, itemRarity, _, _, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(item);
+	end
+	if(not itemLink) then return end
 		
 	if(cachedItemInfo[itemLink]) then
 		return unpack(cachedItemInfo[itemLink]);
@@ -866,7 +873,12 @@ function Addon:GetItemTooltipInfo(item)
 	end
 	
 	VendorerTooltip:SetOwner(UIParent, "ANCHOR_NONE");
-	VendorerTooltip:SetHyperlink(itemLink);
+	if(Addon:IsCurrencyItem(itemLink)) then
+		local currencyID = Addon:GetCurrencyInfo(itemLink);
+		VendorerTooltip:SetCurrencyByID(currencyID);
+	else
+		VendorerTooltip:SetHyperlink(itemLink);
+	end
 	local numLines = VendorerTooltip:NumLines();
 	
 	for line = 2, numLines do
@@ -1668,6 +1680,10 @@ end
 hooksecurefunc("MerchantFrame_UpdateMerchantInfo", function() Addon:UpdateMerchantInfo() end);
 hooksecurefunc("MerchantFrame_UpdateBuybackInfo", function() Addon:UpdateBuybackInfo() end);
 
+function Addon:IsCurrencyItem(itemlink)
+	return strmatch(itemlink, "Hcurrency") ~= nil;
+end
+
 function Addon:UpdateMerchantInfo()
 	local numMerchantItems = GetMerchantNumItems();
 	local realNumMerchantItems = Addon:GetUnfilteredMerchantNumItems();
@@ -1727,13 +1743,23 @@ function Addon:UpdateMerchantInfo()
 					local _, _, _, _, _, _, isUsable = GetMerchantItemInfo(index);
 					local _, _, rarity, _, _, itemType, itemSubType, _, itemEquipLoc = GetItemInfo(itemLink);
 					
-					if(rarityBorder and rarity and rarity >= 1) then
-						local r, g, b = GetItemQualityColor(rarity);
-						local a = 0.9;
-						if(rarity == 1) then a = 0.75 end
-						rarityBorder.border:SetVertexColor(r, g, b, a);
-						rarityBorder.highlight:SetVertexColor(r, g, b);
-						rarityBorder:Show();
+					if(rarityBorder) then
+						if(rarity and rarity >= 1) then
+							local r, g, b = GetItemQualityColor(rarity);
+							local a = 0.9;
+							if(rarity == 1) then a = 0.75 end
+							rarityBorder.border:SetVertexColor(r, g, b, a);
+							rarityBorder.highlight:SetVertexColor(r, g, b);
+							rarityBorder:Show();
+						elseif(Addon:IsCurrencyItem(itemLink)) then
+							local rarity = select(9, Addon:GetCurrencyInfo(itemLink));
+							local r, g, b = GetItemQualityColor(rarity);
+							local a = 0.9;
+							if(rarity == 1) then a = 0.75 end
+							rarityBorder.border:SetVertexColor(r, g, b, a);
+							rarityBorder.highlight:SetVertexColor(r, g, b);
+							rarityBorder:Show();
+						end
 					end
 					
 					-- Optional dependency for transmogs
