@@ -1,3 +1,8 @@
+## 2.7.0
+* TOC bump for 7.3.5.
+* Marked all artifact power items as junk after character has completed the artifact retirement quest "The Power in Our Hands".
+* Optional choice to sell all Artifact Power items before completing the quest.
+
 ## 2.6.1
 * Fixed errors with currency items sold by vendors.
 

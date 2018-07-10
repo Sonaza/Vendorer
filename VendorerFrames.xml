@@ -492,6 +492,15 @@
 					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerAutoRepairButton" x="0" y="-25"/>
 				</Anchors>
 			</CheckButton>
+			<CheckButton name="VendorerSellArtifactPowerButton" inherits="VendorerCheckButtonTemplate" text="VENDORER_SELL_ARTIFACT_POWER_TITLE_TEXT">
+				<KeyValues>
+					<KeyValue key="tooltipTitle" value="VENDORER_SELL_ARTIFACT_POWER_TITLE_TEXT" type="string"/>
+					<KeyValue key="tooltipText" value="VENDORER_SELL_ARTIFACT_POWER_HINT_TEXT" type="string"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" relativeTo="VendorerAutoSmartRepairButton" x="0" y="-40"/>
+				</Anchors>
+			</CheckButton>
 			<Button name="VendorerIgnoreItemsButton">
 				<Size x="144" y="22"/>
 				<Anchors>
