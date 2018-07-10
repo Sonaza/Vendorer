@@ -764,7 +764,7 @@ local function FilterJunkItems(bagIndex, slotIndex)
 		local itemID = Addon:GetItemID(itemLink);
 		local itemIsJunked = Addon:IsItemJunked(itemID);
 		
-		local shouldSell = itemSellPrice > 0 and (quality == 0 or itemIsJunked);
+		local shouldSell = itemSellPrice > 0 and (quality == 0 or itemIsJunked or IsArtifactPowerItem(itemID));
 		local shouldDestroy = Addon.db.global.DestroyUnsellables and itemSellPrice == 0 and (quality == 0 or itemIsJunked);
 		
 		local reasonText;
