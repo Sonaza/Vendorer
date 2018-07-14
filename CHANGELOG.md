@@ -1,3 +1,7 @@
+## 3.0.0
+* Updated for Battle for Azeroth.
+* Removed artifact power junk selling since all old artifact power items have been removed from the game.
+
 ## 2.7.0
 * TOC bump for 7.3.5.
 * Marked all artifact power items as junk after character has completed the artifact retirement quest "The Power in Our Hands".

@@ -41,9 +41,6 @@ VENDORER_AUTO_REPAIR_HINT_TEXT = "|cffffffffRepair all gear automatically if pos
 VENDORER_USE_SMART_REPAIR_TITLE_TEXT = "Use smart repair";
 VENDORER_USE_SMART_REPAIR_HINT_TEXT = "|cffffffffWhen doing automatic repair allow Vendorer to try and spend full guild repair allowance first.|n|n|cff00c6ffNote:|cffffffff this option only applies to auto repair!|n|nProbably not recommended if you have unlimited repair funds.";
 
-VENDORER_SELL_ARTIFACT_POWER_TITLE_TEXT = "Sell Artifact Power";
-VENDORER_SELL_ARTIFACT_POWER_HINT_TEXT = "|cffffffffWill automatically sell and/or destroy all Artifact Power as it is no longer worth using.|n|nWill be automatically enabled when the quest is completed.";
-
 VENDORER_CONTRACT_BUTTON_TITLE_TEXT = "Collapse Frame";
 VENDORER_EXPAND_BUTTON_TITLE_TEXT = "Expand Frame";
 
@@ -135,10 +132,6 @@ local PATCHED_IGNORE_LIST_ITEMS = {
 	[129158]    = true, -- Starlight Rosedust
 };
 local PATCHED_IGNORE_LIST_REVISION = 1;
-
-local function ShouldSellArtifactPower()
-	return Addon.db.char.SellArtifactPower or false;
-end
 
 StaticPopupDialogs["VENDORER_CONFIRM_SELL_UNUSABLES"] = {
 	text = "Are you sure you want to sell unusable items? You can still buy them back after.%s",
@@ -281,9 +274,6 @@ function Addon:OnInitialize()
 			
 			UsingPersonalJunkList = false,
 			ItemJunkList = nil,
-			
-			-- Default is nil when default has not yet been set by user
-			SellArtifactPower = nil,
 		},
 		global = {
 			MerchantFrameExtension = VENDORER_EXTENSION_NARROW,
@@ -348,14 +338,6 @@ function Addon:OnEnable()
 	self:RegisterEvent("UPDATE_INVENTORY_DURABILITY");
 	self:RegisterEvent("TRANSMOG_COLLECTION_UPDATED");
 	
-	-- Artifact retirement quest http://www.wowhead.com/quest=50057/the-power-in-our-hands
-	if (Addon.db.char.SellArtifactPower == nil) then
-		Addon.db.char.SellArtifactPower = IsQuestFlaggedCompleted(50057)
-	end
-	if (not Addon.db.char.SellArtifactPower) then
-		self:RegisterEvent("QUEST_COMPLETE");
-	end
-	
 	Addon.PlayerMoney = GetMoney();
 	
 	Addon:RestoreSavedSettings();
@@ -381,15 +363,6 @@ function Addon:OnEnable()
 	Addon:RegisterTooltip(ItemRefTooltip);
 end
 
-function Addon:QUEST_COMPLETE()
-	if (IsQuestFlaggedCompleted(50057)) then
-		Addon.db.char.SellArtifactPower = true;
-		self:UnregisterEvent("QUEST_COMPLETE");
-		
-		VendorerSellArtifactPowerButton:SetChecked(self.db.char.SellArtifactPower);
-	end
-end
-	
 function Addon:RegisterTooltip(tooltip)
 	local modified = false;
 	
@@ -416,10 +389,7 @@ function Addon:AddTooltipInfo(tooltip, link)
 	local junkList, isJunkListPersonal = Addon:GetCurrentItemJunkList();
 	local ignoreList, isIgnoreListPersonal = Addon:GetCurrentItemIgnoreList();
 	
-	local isSellableArtifactPower = IsArtifactPowerItem(itemID) and ShouldSellArtifactPower();
-	if(isSellableArtifactPower and not ignoreList[itemID]) then
-		tooltip:AddDoubleLine("|cffe8608fVendorer|r", "|cffe8608fArtifact Power is now worthless|r");
-	elseif(junkList[itemID] and not ignoreList[itemID]) then
+	if(junkList[itemID] and not ignoreList[itemID]) then
 		tooltip:AddDoubleLine("|cffe8608fVendorer|r", string.format("|cffe8608fMarked as junk (%s list)|r", isJunkListPersonal and "personal" or "global"));
 	elseif(junkList[itemID] and ignoreList[itemID]) then
 		tooltip:AddDoubleLine("|cffe8608fVendorer|r", string.format("|cffe8608fMarked as junk but ignored (%s list)|r", isJunkListPersonal and "personal" or "global"));
@@ -466,8 +436,6 @@ function Addon:RestoreSavedSettings()
 	VendorerAutoSellJunkButton:SetChecked(self.db.global.AutoSellJunk);
 	VendorerAutoRepairButton:SetChecked(self.db.global.AutoRepair);
 	VendorerAutoSmartRepairButton:SetChecked(self.db.global.SmartAutoRepair);
-	
-	VendorerSellArtifactPowerButton:SetChecked(self.db.char.SellArtifactPower);
 	
 	if(not self.db.global.DestroyUnsellables) then
 		VendorerSellJunkButton:SetText(_G["VENDORER_SELL_JUNK_ITEMS_TEXT"]);
@@ -796,17 +764,13 @@ local function FilterJunkItems(bagIndex, slotIndex)
 		local itemID = Addon:GetItemID(itemLink);
 		local itemIsJunked = Addon:IsItemJunked(itemID);
 		
-		local isSellableArtifactPower = IsArtifactPowerItem(itemID) and ShouldSellArtifactPower();
-		
-		local shouldSell = itemSellPrice > 0 and (quality == 0 or itemIsJunked or isSellableArtifactPower);
-		local shouldDestroy = Addon.db.global.DestroyUnsellables and itemSellPrice == 0 and (quality == 0 or itemIsJunked or isSellableArtifactPower);
+		local shouldSell = itemSellPrice > 0 and (quality == 0 or itemIsJunked);
+		local shouldDestroy = Addon.db.global.DestroyUnsellables and itemSellPrice == 0 and (quality == 0 or itemIsJunked);
 		
 		local reasonText;
 		if(shouldDestroy) then
 			if(itemIsJunked) then
 				reasonText = "Marked as junk";
-			elseif(isSellableArtifactPower) then
-				reasonText = "Unsellable Artifact Power";
 			elseif(itemSellPrice == 0) then
 				reasonText = "No sell value";
 			end
@@ -1644,10 +1608,6 @@ end
 
 function VendorerAutoSmartRepairButton_OnClick(self)
 	Addon.db.global.SmartAutoRepair = self:GetChecked();
-end
-
-function VendorerSellArtifactPowerButton_OnClick(self)
-	Addon.db.char.SellArtifactPower = self:GetChecked();
 end
 
 function Addon:MERCHANT_SHOW()

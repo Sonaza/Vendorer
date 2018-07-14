@@ -688,7 +688,7 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 		local currencyCount = GetMerchantItemCostInfo(merchantItemIndex);
 		for index = 1, currencyCount do
 			local itemTexture, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
-			local currencyPerUnit = requiredCurrency / stackCount;
+			local currencyPerUnit = requiredCurrency and requiredCurrency / stackCount or 1;
 			
 			local currencyID, _, ownedCurrencyAmount = Addon:GetCurrencyInfo(currencyItemLink, currencyName);
 			if(currencyID and ownedCurrencyAmount) then
