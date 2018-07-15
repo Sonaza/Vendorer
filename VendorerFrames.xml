@@ -415,10 +415,6 @@
 						SearchBoxTemplate_OnLoad(self);
 						self.Instructions:SetText("Search")
 					</OnLoad>
-					<OnEditFocusGained function="Vendorer_ShowHint"/>
-					<OnEditFocusLost function="Vendorer_HideHint"/>
-					<OnEnter function="Vendorer_ShowHint"/>
-					<OnLeave function="Vendorer_HideHint"/>
 					<OnTextChanged function="Vendorer_OnSearchTextChanged"/>
 					<OnEscapePressed>
 						self:ClearFocus();
