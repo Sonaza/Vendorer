@@ -387,7 +387,6 @@
 				self.icon:SetPoint("CENTER", 1, -1);
 			</OnMouseDown>
 			<OnMouseUp>
-				PlaySound("igMainMenuOptionCheckBoxOn");
 				self.icon:SetPoint("CENTER", 0, 0);
 			</OnMouseUp>
 		</Scripts>
@@ -432,6 +431,7 @@
 				<Scripts>
 					<OnLoad>
 						self:SetScale(0.8);
+						self:SetFrameLevel(1000);
 					</OnLoad>
 					<OnEnter function="VendorerFilteringButton_OnEnter"/>
 					<OnLeave function="VendorerFilteringButton_OnLeave"/>

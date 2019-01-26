@@ -20,7 +20,7 @@ local function CacheCurrencies()
 	cachedCurrencies = {};
 	
 	-- Super dirty indexing for currencies
-	for currencyIndex = 1, 1600 do
+	for currencyIndex = 1, 20000 do
 		local name = GetCurrencyInfo(currencyIndex);
 		if(name and strlen(name) > 0) then
 			cachedCurrencies[name] = currencyIndex;

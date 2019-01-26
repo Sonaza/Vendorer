@@ -1,3 +1,7 @@
+## 3.0.1
+* Increased currency caching up to currency id 20000. Future proof?
+* Still fixing ancient PlaySound errors.
+
 ## 3.0.0
 * Updated for Battle for Azeroth.
 * Removed artifact power junk selling since all old artifact power items have been removed from the game.
