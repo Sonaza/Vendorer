@@ -43,3 +43,6 @@ Vendorer uses Ace3 which is included in the /libs directory.
 ### Note for Releases
 
 To guarantee addon loads first the addon folder should be **!Vendorer** (as in prefixed with exclamation mark) since the game loads addons with exclamation marks before ones without.
+
+## License
+Vendorer is licensed under MIT license. See license terms in file LICENSE.
