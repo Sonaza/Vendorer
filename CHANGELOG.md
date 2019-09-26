@@ -1,3 +1,7 @@
+## 3.0.3
+* Patch 8.2.5.
+* Fixed auto sell operations attempting to sell items to merchants that don't buy any. Now upon encountering any NPC that doesn't wish to buy your items via auto sell will add them to an ignore list in case of future encounters.
+
 ## 3.0.2
 * Patch 8.2.0.
 

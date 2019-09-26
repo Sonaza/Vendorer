@@ -308,6 +308,11 @@ function Addon:OnInitialize()
 			FilteringButtonAlertShown = false,
 			
 			VerboseChat = true,
+			
+			MerchantDoesntBuy = {
+				[100995] = true, -- Auto-Hammer
+				[153365] = true, -- Honeyback Hivemother
+			},
 		},
 	};
 	
@@ -1287,7 +1292,37 @@ end
 
 ----------------------------------------------------------------------
 
+function Addon:UI_ERROR_MESSAGE(event, messageType, message)
+	if (message == ERR_VENDOR_DOESNT_BUY or message == ERR_VENDOR_NOT_INTERESTED) then
+		Addon.MerchantSellError = true;
+		
+		if (Addon.MerchantNpcId ~= nil and Addon.db.global.MerchantDoesntBuy[Addon.MerchantNpcId] == nil) then
+			Addon:AddMessage("This merchant doesn't buy items. Added to auto sell ignore list.");
+			Addon.db.global.MerchantDoesntBuy[Addon.MerchantNpcId] = true;
+		end
+	end
+end
+
+function Addon:TryHookUIErrors()
+	if (not Addon.HookedUIErrors) then
+		Addon:RegisterEvent("UI_ERROR_MESSAGE");
+		Addon.HookedUIErrors = true;
+	end
+end
+
+function Addon:GetNpcIdFromGUID(guid)
+	if (guid == nil or type(guid) ~= "string") then
+		return nil;
+	end
+	
+	--Creature-0-3102-0-155-100995-00000D1C2E
+	local _, _, _, _, _, npcId = strsplit("-", guid);
+	return tonumber(npcId);
+end
+
 function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
+	Addon:TryHookUIErrors();
+	
 	local maxSell = 12;
 	local items = Addon:ScanContainers(FilterJunkItems);
 	if(#items == 0) then return end
@@ -1323,6 +1358,16 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 	
 	local skipped = false;
 	
+	Addon.MerchantNpcId = Addon:GetNpcIdFromGUID(UnitGUID("NPC"));
+	Addon.MerchantSellError = false;
+	
+	if (Addon.MerchantNpcId ~= nil) then
+		if (Addon.db.global.MerchantDoesntBuy[Addon.MerchantNpcId] ~= nil) then
+			Addon:AddMessage("This merchant doesn't buy items.");
+			return;
+		end
+	end
+	
 	local itemsSold = 0;
 	for index, slotInfo in ipairs(itemsToSell) do
 		local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
@@ -1336,6 +1381,12 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 		end
 		
 		UseContainerItem(slotInfo.bag, slotInfo.slot);
+		
+		if (Addon.MerchantSellError) then
+			Addon:AddMessage("This merchant doesn't buy items.");
+			break;
+		end
+		
 		itemsSold = itemsSold + 1;
 		
 		if(not skip_limit and index == maxSell and index ~= #items) then
@@ -1345,12 +1396,19 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 		end
 	end
 	
+	if (Addon.MerchantSellError) then
+		Addon:AddMessage("The sell operation was aborted.");
+		return;
+	end
+	
 	if((skip_limit or not skipped) and itemsSold > 0 and Addon.db.global.VerboseChat) then
 		Addon:AddMessage("All junk items sold!");
 	end
 end
 
 function Addon:ConfirmSellUnusables()
+	Addon:TryHookUIErrors();
+	
 	local maxSell = 12;
 	local items = Addon:ScanContainers(FilterUnusableItems);
 	if(#items == 0) then return end
@@ -1386,6 +1444,16 @@ function Addon:ConfirmSellUnusables()
 	
 	local skipped = false;
 	
+	Addon.MerchantNpcId = Addon:GetNpcIdFromGUID(UnitGUID("NPC"));
+	Addon.MerchantSellError = false;
+	
+	if (Addon.MerchantNpcId ~= nil) then
+		if (Addon.db.global.MerchantDoesntBuy[Addon.MerchantNpcId] ~= nil) then
+			Addon:AddMessage("This merchant doesn't buy items.");
+			return;
+		end
+	end
+	
 	local itemsSold = 0;
 	for index, slotInfo in ipairs(itemsToSell) do
 		local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
@@ -1399,6 +1467,12 @@ function Addon:ConfirmSellUnusables()
 		end
 		
 		UseContainerItem(slotInfo.bag, slotInfo.slot);
+		
+		if (Addon.MerchantSellError) then
+			Addon:AddMessage("This merchant doesn't buy items.");
+			break;
+		end
+		
 		itemsSold = itemsSold + 1;
 		
 		if(index == maxSell and index ~= #items) then
@@ -1406,6 +1480,11 @@ function Addon:ConfirmSellUnusables()
 			skipped = true;
 			break;
 		end
+	end
+	
+	if (Addon.MerchantSellError) then
+		Addon:AddMessage("The sell operation was aborted.");
+		return;
 	end
 	
 	if(not skipped and itemsSold > 0 and Addon.db.global.VerboseChat) then
@@ -1615,8 +1694,13 @@ function Addon:MERCHANT_SHOW()
 	Addon:ResetFilter();
 	Addon.PlayerMoney = GetMoney();
 	
-	if(self.db.global.AutoSellJunk) then
-		Addon:ConfirmSellJunk(true, true);
+	if (self.db.global.AutoSellJunk) then
+		local npcId = Addon:GetNpcIdFromGUID(UnitGUID("NPC"));
+		if (self.db.global.MerchantDoesntBuy[npcId] == nil) then
+			Addon:ConfirmSellJunk(true, true);
+		else
+			Addon:AddMessage("This merchant doesn't buy items, cannot perform auto sell.");
+		end
 	end
 	
 	if(self.db.global.AutoRepair) then
