@@ -309,7 +309,7 @@ function Addon:OnInitialize()
 			
 			VerboseChat = true,
 			
-			MerchantDoesntBuy = {
+			MerchantAutoSellIgnore = {
 				[100995] = true, -- Auto-Hammer
 				[153365] = true, -- Honeyback Hivemother
 			},
@@ -1292,13 +1292,24 @@ end
 
 ----------------------------------------------------------------------
 
+local MerchantErrorAccumulator = {};
+
 function Addon:UI_ERROR_MESSAGE(event, messageType, message)
-	if (message == ERR_VENDOR_DOESNT_BUY or message == ERR_VENDOR_NOT_INTERESTED) then
+	if (message == ERR_VENDOR_DOESNT_BUY) then
 		Addon.MerchantSellError = true;
 		
-		if (Addon.MerchantNpcId ~= nil and Addon.db.global.MerchantDoesntBuy[Addon.MerchantNpcId] == nil) then
-			Addon:AddMessage("This merchant doesn't buy items. Added to auto sell ignore list.");
-			Addon.db.global.MerchantDoesntBuy[Addon.MerchantNpcId] = true;
+		if (Addon.MerchantNpcId ~= nil) then
+			-- First check if merchant is already ignored
+			if (Addon.db.global.MerchantAutoSellIgnore[Addon.MerchantNpcId] == nil) then
+				--local numMerchantErrors = (MerchantErrorAccumulator[Addon.MerchantNpcId] or 0) + 1;
+				--MerchantErrorAccumulator[Addon.MerchantNpcId] = numMerchantErrors;
+				
+				--if (numMerchantErrors >= 2) then
+					Addon:AddMessage("This merchant doesn't seem to buy items. Added to auto sell ignore list.");
+					Addon:AddMessage("You can remove the ignore by holding CTRL and clicking the Sell Junk button if it wasn't intended.");
+					Addon.db.global.MerchantAutoSellIgnore[Addon.MerchantNpcId] = true;
+				--end
+			end
 		end
 	end
 end
@@ -1361,16 +1372,17 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 	Addon.MerchantNpcId = Addon:GetNpcIdFromGUID(UnitGUID("NPC"));
 	Addon.MerchantSellError = false;
 	
-	if (Addon.MerchantNpcId ~= nil) then
-		if (Addon.db.global.MerchantDoesntBuy[Addon.MerchantNpcId] ~= nil) then
-			Addon:AddMessage("This merchant doesn't buy items.");
-			return;
-		end
-	end
+	--if (Addon.MerchantNpcId ~= nil) then
+	--	if (Addon.db.global.MerchantAutoSellIgnore[Addon.MerchantNpcId] ~= nil) then
+	--		Addon:AddMessage("This merchant doesn't buy items.");
+	--		return;
+	--	end
+	--end
 	
 	local itemsSold = 0;
 	for index, slotInfo in ipairs(itemsToSell) do
 		local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
+	
 		local itemMessage = string.format("Selling %s", itemLink);
 		if(itemCount > 1) then
 			itemMessage = string.format("%s x%d", itemMessage, itemCount);
@@ -1404,6 +1416,11 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 	if((skip_limit or not skipped) and itemsSold > 0 and Addon.db.global.VerboseChat) then
 		Addon:AddMessage("All junk items sold!");
 	end
+	
+	C_Timer.After(4, function()
+		Addon.MerchantSellError = false;
+		Addon.MerchantNpcId = nil;
+	end);
 end
 
 function Addon:ConfirmSellUnusables()
@@ -1447,12 +1464,12 @@ function Addon:ConfirmSellUnusables()
 	Addon.MerchantNpcId = Addon:GetNpcIdFromGUID(UnitGUID("NPC"));
 	Addon.MerchantSellError = false;
 	
-	if (Addon.MerchantNpcId ~= nil) then
-		if (Addon.db.global.MerchantDoesntBuy[Addon.MerchantNpcId] ~= nil) then
-			Addon:AddMessage("This merchant doesn't buy items.");
-			return;
-		end
-	end
+	--if (Addon.MerchantNpcId ~= nil) then
+	--	if (Addon.db.global.MerchantAutoSellIgnore[Addon.MerchantNpcId] ~= nil) then
+	--		Addon:AddMessage("This merchant doesn't buy items.");
+	--		return;
+	--	end
+	--end
 	
 	local itemsSold = 0;
 	for index, slotInfo in ipairs(itemsToSell) do
@@ -1490,6 +1507,11 @@ function Addon:ConfirmSellUnusables()
 	if(not skipped and itemsSold > 0 and Addon.db.global.VerboseChat) then
 		Addon:AddMessage("All unusable items sold!");
 	end
+	
+	C_Timer.After(4, function()
+		Addon.MerchantSellError = false;
+		Addon.MerchantNpcId = nil;
+	end);
 end
 
 function Addon:BAG_UPDATE_DELAYED()
@@ -1557,6 +1579,12 @@ function VendorerSellJunkButton_OnEnter(self)
 		end
 	end
 	
+	local npcId = Addon:GetNpcIdFromGUID(UnitGUID("NPC"));
+	if (Addon.db.global.MerchantAutoSellIgnore[npcId] ~= nil) then
+		GameTooltip:AddLine(" ");
+		GameTooltip:AddLine("|cffff5656This merchant is currently being ignored for auto sell.|r You can remove the ignore by holding CTRL and clicking this button if it wasn't intended.", 1, 1, 1, true);
+	end
+	
 	GameTooltip:Show();
 	
 	Addon.UpdateTooltip = 1;
@@ -1564,6 +1592,17 @@ function VendorerSellJunkButton_OnEnter(self)
 end
 
 function VendorerSellJunkButton_OnClick(self, button)
+	if (IsControlKeyDown()) then
+		local npcId = Addon:GetNpcIdFromGUID(UnitGUID("NPC"));
+		if (Addon.db.global.MerchantAutoSellIgnore[npcId] ~= nil) then
+			Addon:AddMessage("This merchant has been removed from auto sell ignore list.");
+			Addon.db.global.MerchantAutoSellIgnore[npcId] = nil;
+			
+			VendorerSellButton_OnLeave(self);
+			VendorerSellJunkButton_OnEnter(self);
+		end
+	end
+	
 	if(not Addon.db.global.DestroyUnsellables) then
 		Addon:ConfirmSellJunk();
 		return;
@@ -1690,13 +1729,16 @@ function VendorerAutoSmartRepairButton_OnClick(self)
 end
 
 function Addon:MERCHANT_SHOW()
+	Addon.MerchantSellError = false;
+	Addon.MerchantNpcId = nil;
+	
 	Addon:ResetFilteredItems();
 	Addon:ResetFilter();
 	Addon.PlayerMoney = GetMoney();
 	
 	if (self.db.global.AutoSellJunk) then
 		local npcId = Addon:GetNpcIdFromGUID(UnitGUID("NPC"));
-		if (self.db.global.MerchantDoesntBuy[npcId] == nil) then
+		if (self.db.global.MerchantAutoSellIgnore[npcId] == nil) then
 			Addon:ConfirmSellJunk(true, true);
 		else
 			Addon:AddMessage("This merchant doesn't buy items, cannot perform auto sell.");
@@ -1719,6 +1761,9 @@ function VendorerFilteringButtonAlertCloseButton_OnClick()
 end
 
 function Addon:MERCHANT_CLOSED()
+	Addon.MerchantSellError = false;
+	Addon.MerchantNpcId = nil;
+	
 	Addon:ResetFilteredItems();
 	
 	if(StaticPopup_Visible("VENDORER_CONFIRM_SELL_UNUSABLES")) then

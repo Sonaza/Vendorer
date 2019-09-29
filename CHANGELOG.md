@@ -1,3 +1,8 @@
+## 3.0.4
+* Attempted fixes for the overzealous auto sell ignoring. Now merchant will only be ignored if the error given is absolute in regards to the merchant buying items.
+* A forced reset is performed on all merchant auto sell ignores in order to fix addon functionality if a previous version was installed.
+* Added a way to remove auto sell ignores by holding CTRL and clicking the Sell Junk button for cases where the ignore wasn't intended but the addon somehow did it anyway. Hope there aren't a lot of those cases.
+
 ## 3.0.3
 * Patch 8.2.5.
 * Fixed auto sell operations attempting to sell items to merchants that don't buy any. Now upon encountering any NPC that doesn't wish to buy your items via auto sell will add them to an ignore list in case of future encounters.
