@@ -189,7 +189,7 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 		},
 		{
-			text = NEW_FEATURE_ICON .. " Verbose chat output",
+			text = "Verbose chat output",
 			func = function()
 				self.db.global.VerboseChat = not self.db.global.VerboseChat;
 			end,

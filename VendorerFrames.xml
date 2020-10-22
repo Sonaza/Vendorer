@@ -266,15 +266,6 @@
 		</Frames>
 	</Frame>
 	
-	<Frame name="VendorerExtensionTutorialFrame" inherits="MicroButtonAlertTemplate" parent="VendorerToggleExtensionFrameButtons">
-		<KeyValues>
-			<KeyValue key="label" value="VENDORER_EXPANSION_TUTORIAL_TEXT" type="global"/>
-		</KeyValues>
-		<Anchors>
-			<Anchor point="BOTTOM" relativeKey="$parent" relativePoint="TOP" x="0" y="8"/>
-		</Anchors>
-	</Frame>
-	
 	<GameTooltip name="VendorerHintTooltip" parent="UIParent" inherits="GameTooltipTemplate" hidden="true">
 		<Anchor>
 			<Anchor point="CENTER"/>

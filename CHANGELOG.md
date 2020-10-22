@@ -1,3 +1,7 @@
+## 4.0.0
+* Patch 9.0.1 fixes by fubaWOW (https://github.com/fubaWoW)
+* Removed new feature icons because it's very not new.
+
 ## 3.0.4
 * Attempted fixes for the overzealous auto sell ignoring. Now merchant will only be ignored if the error given is absolute in regards to the merchant buying items.
 * A forced reset is performed on all merchant auto sell ignores in order to fix addon functionality if a previous version was installed.
