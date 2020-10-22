@@ -21,7 +21,10 @@ local function CacheCurrencies()
 	
 	-- Super dirty indexing for currencies
 	for currencyIndex = 1, 20000 do
-		local name = GetCurrencyInfo(currencyIndex);
+		--local name = GetCurrencyInfo(currencyIndex);
+		local info = C_CurrencyInfo.GetCurrencyInfo(currencyIndex)
+		if not info then return end
+		local name = info.name
 		if(name and strlen(name) > 0) then
 			cachedCurrencies[name] = currencyIndex;
 		end
@@ -651,7 +654,11 @@ function Addon:GetCurrencyInfo(currencyItemLink, currencyName)
 		currencyID = strmatch(currencyItemLink, "currency:(%d+)");
 	end
 	if(currencyID) then
-		return tonumber(currencyID), GetCurrencyInfo(currencyID);
+		local info = C_CurrencyInfo.GetCurrencyInfo(currencyID)
+		if not info then return end
+		--name, currentAmount, texture, earnedThisWeek, weeklyMax, totalMax, isDiscovered, rarity = GetCurrencyInfo(id or "currencyLink" or "currencyString")
+		--return tonumber(currencyID), GetCurrencyInfo(currencyID);
+		return tonumber(currencyID), info.name, info.quantity, info.iconFileID, info.quantityEarnedThisWeek, info.maxWeeklyQuantity, info.maxQuantity, info.discovered, info.quality;
 	end
 	return nil;
 end

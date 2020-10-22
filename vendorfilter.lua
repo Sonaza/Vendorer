@@ -116,6 +116,7 @@ _G.GetMerchantItemInfo = function(index)
 	
 	if(not FilteredMerchantItems[index]) then Addon:RefreshFilteredItems(); end
 	if(#FilteredMerchantItems == 0) then return end
+	if (not FilteredMerchantItems[index]) then return end
 	
 	return _GetMerchantItemInfo(FilteredMerchantItems[index]);
 end
