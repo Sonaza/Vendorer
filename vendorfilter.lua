@@ -116,6 +116,7 @@ _G.GetMerchantItemInfo = function(index)
 	
 	if(not FilteredMerchantItems[index]) then Addon:RefreshFilteredItems(); end
 	if(#FilteredMerchantItems == 0) then return end
+	if (not FilteredMerchantItems[index]) then return end
 	
 	return _GetMerchantItemInfo(FilteredMerchantItems[index]);
 end
@@ -658,19 +659,19 @@ function VendorerFilteringButton_OnEnter()
 	
 	VendorerHintTooltip:AddLine("|cffffffffVendorer Filtering Tips|r");
 	if(Addon.db.global.UseTooltipSearch) then
-		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot, required currency or " .. NEW_FEATURE_ICON .. "tooltip text.", nil, nil, nil, true);
+		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot, required currency or tooltip text.", nil, nil, nil, true);
 	else
-		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot or required currency. Searching by " .. NEW_FEATURE_ICON .. "tooltip text is currently disabled.", nil, nil, nil, true);
+		VendorerHintTooltip:AddLine("You can search by item name, rarity, type, slot or required currency. Searching by tooltip text is currently disabled.", nil, nil, nil, true);
 	end
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "You can also search for phrases by putting the words in quotes. The results will only include items with the words in the same order as the ones inside the quotes.", nil, nil, nil, true);
+	VendorerHintTooltip:AddLine("You can also search for phrases by putting the words in quotes. The results will only include items with the words in the same order as the ones inside the quotes.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "Any and all filters can also be negated by prefixing the query word or phrase with |cffffffff! (an exclamation mark)|r.", nil, nil, nil, true);
+	VendorerHintTooltip:AddLine("Any and all filters can also be negated by prefixing the query word or phrase with |cffffffff! (an exclamation mark)|r.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
-	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "By prefixing a word or a phrase with |cffffffff+ (a plus)|r you can search for exact matches.", nil, nil, nil, true);
+	VendorerHintTooltip:AddLine("By prefixing a word or a phrase with |cffffffff+ (a plus)|r you can search for exact matches.", nil, nil, nil, true);
 	VendorerHintTooltip:AddLine(" ");
 	
-	VendorerHintTooltip:AddLine(NEW_FEATURE_ICON .. "|cffffffffMagic words|r");
+	VendorerHintTooltip:AddLine("|cffffffffMagic words|r");
 	if(not CanIMogIt) then
 		VendorerHintTooltip:AddLine("Predefined filters: |cffffffffusable, equippable, purchasable, unknown, available, canafford|r. Additional transmog filters exist if the dependency |cffffffffCan I Mog It|r is installed.", nil, nil, nil, true);
 	else

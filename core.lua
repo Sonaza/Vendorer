@@ -44,8 +44,8 @@ VENDORER_USE_SMART_REPAIR_HINT_TEXT = "|cffffffffWhen doing automatic repair all
 VENDORER_CONTRACT_BUTTON_TITLE_TEXT = "Collapse Frame";
 VENDORER_EXPAND_BUTTON_TITLE_TEXT = "Expand Frame";
 
-VENDORER_EXPANSION_TUTORIAL_TEXT = "You can now switch between default, narrow and wide frame.";
-VENDORER_FILTERING_BUTTON_TUTORIAL_TEXT = "You can now click here to quickly filter items.|n|nHover to see filtering tips. New filters are marked with |TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:12:12:0:0:|t";
+-- New filters are marked with |TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:12:12:0:0:|t
+VENDORER_FILTERING_BUTTON_TUTORIAL_TEXT = "You can click here to quickly filter items.|n|nHover to see filtering tips."; 
 
 local CLASS_ARMOR_TYPES = {
 	WARRIOR     = LOCALIZED_PLATE,
@@ -353,14 +353,6 @@ function Addon:OnEnable()
 		Addon:ToggleCursorHighlights(true);
 		Addon:RegisterEvent("ITEM_UNLOCKED");
 	end);
-	
-	VendorerExtensionTutorialFrame:HookScript("OnHide", function()
-		Addon.db.global.ExpandTutorialShown = true;
-	end);
-	
-	if(not Addon.db.global.ExpandTutorialShown) then
-		VendorerExtensionTutorialFrame:Show();
-	end
 	
 	Addon:MakeFrameMovable();
 	

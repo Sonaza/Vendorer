@@ -1,8 +1,8 @@
-## Interface: 80205
+## Interface: 90001
 ## Title: Vendorer
 ## Notes: Improved merchant frames
 ## Author: Sonaza
-## Version: 3.0.4
+## Version: 4.0.0
 ## OptionalDeps: Ace3, CanIMogIt
 ## SavedVariables: VendorerDB
 

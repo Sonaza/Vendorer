@@ -21,9 +21,9 @@ local function CacheCurrencies()
 	
 	-- Super dirty indexing for currencies
 	for currencyIndex = 1, 20000 do
-		local name = GetCurrencyInfo(currencyIndex);
-		if(name and strlen(name) > 0) then
-			cachedCurrencies[name] = currencyIndex;
+		local info = C_CurrencyInfo.GetCurrencyInfo(currencyIndex);
+		if (info and strlen(info.name) > 0) then
+			cachedCurrencies[info.name] = currencyIndex;
 		end
 	end
 end
@@ -520,12 +520,12 @@ function VendorerStackSplitMixin:Open(merchantItemIndex, parent, anchor)
 	
 	local itemlink = GetMerchantItemLink(merchantItemIndex);
 	if(Addon:IsCurrencyItem(itemlink)) then
-		local _, name, currentAmount, _, earnedThisWeek, weeklyMax, totalMax, isDiscovered, rarity = Addon:GetCurrencyInfo(itemlink);
-		if(name and totalMax > 0) then
-			self.numCanBuyMore = totalMax - currentAmount;
+		local _, info = Addon:GetCurrencyInfo(itemlink);
+		if(info and info.maxQuantity > 0) then
+			self.numCanBuyMore = info.maxQuantity - info.quantity;
 		end
-		if(name and weeklyMax > 0) then
-			self.numCanBuyMore = math.min(self.numCanBuyMore, weeklyMax - earnedThisWeek);
+		if(info and info.maxWeeklyQuantity > 0) then
+			self.numCanBuyMore = math.min(self.numCanBuyMore, info.maxWeeklyQuantity - info.quantityEarnedThisWeek);
 		end
 	end
 
@@ -651,7 +651,10 @@ function Addon:GetCurrencyInfo(currencyItemLink, currencyName)
 		currencyID = strmatch(currencyItemLink, "currency:(%d+)");
 	end
 	if(currencyID) then
-		return tonumber(currencyID), GetCurrencyInfo(currencyID);
+		local info = C_CurrencyInfo.GetCurrencyInfo(currencyID);
+		if (info) then
+			return tonumber(currencyID), info;
+		end
 	end
 	return nil;
 end
@@ -690,10 +693,10 @@ function Addon:CanAffordMerchantItem(merchantItemIndex, unfiltered)
 			local itemTexture, requiredCurrency, currencyItemLink, currencyName = GetMerchantItemCostItem(merchantItemIndex, index);
 			local currencyPerUnit = requiredCurrency and requiredCurrency / stackCount or 1;
 			
-			local currencyID, _, ownedCurrencyAmount = Addon:GetCurrencyInfo(currencyItemLink, currencyName);
-			if(currencyID and ownedCurrencyAmount) then
+			local currencyID, info = Addon:GetCurrencyInfo(currencyItemLink, currencyName);
+			if(currencyID and info.quantity) then
 				costsUnsplittable = CURRENCY_CANT_SPLIT[currencyID] == true;
-				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyAmount / currencyPerUnit));
+				extendedCanAfford = min(extendedCanAfford, floor(info.quantity / currencyPerUnit));
 			else
 				local ownedCurrencyItems = Addon:GetProperItemCount(currencyItemLink);
 				extendedCanAfford = min(extendedCanAfford, floor(ownedCurrencyItems / currencyPerUnit));
