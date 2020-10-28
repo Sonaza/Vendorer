@@ -1,3 +1,6 @@
+## 4.0.1
+* Attempted blind fix at a nil error.
+
 ## 4.0.0
 * Patch 9.0.1 fixes by fubaWOW (https://github.com/fubaWoW)
 * Removed new feature icons because it's very not new.
