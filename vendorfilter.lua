@@ -140,7 +140,7 @@ _G.GetMerchantItemMaxStack = function(index)
 end
 
 _G.GetMerchantNumItems = function()
-	if(not FilteredMerchantItems) then Addon:RefreshFilteredItems(); end
+	if(not FilteredMerchantItems or #FilteredMerchantItems == 0) then Addon:RefreshFilteredItems(); end
 	return #FilteredMerchantItems;
 end
 
@@ -582,7 +582,7 @@ end
 
 function Addon:ResetAllFilters()
 	Addon.FilterText = "";
-	FilteredMerchantItems = nil;
+	FilteredMerchantItems = {};
 end
 
 function Vendorer_OnSearchTextChanged(self)
