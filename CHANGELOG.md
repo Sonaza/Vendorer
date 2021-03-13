@@ -1,3 +1,7 @@
+## 4.0.2
+* Patch 9.0.5
+* Remove gained/lost summary after closing the vendor UI.  Blizzard added their own message for this.
+
 ## 4.0.1
 * Attempted blind fix at a nil error.
 

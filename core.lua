@@ -1766,15 +1766,6 @@ function Addon:MERCHANT_CLOSED()
 		StaticPopup_Hide("VENDORER_CONFIRM_DESTROY_JUNK");
 	end
 	
-	local diff = tonumber(GetMoney() - Addon.PlayerMoney);
-	local moneystring = GetCoinTextureString(math.abs(diff));
-	
-	if(diff > 0) then
-		Addon:Announce("|cff73ce2fGained|r " .. moneystring);
-	elseif(diff < 0) then
-		Addon:Announce("|cfff0543eLost|r " .. moneystring);
-	end
-	
 	Addon.PlayerMoney = GetMoney();
 	
 	Addon:ResetAllFilters();
