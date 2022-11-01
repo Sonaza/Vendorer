@@ -653,6 +653,7 @@ function VendorerFilteringButton_OnEnter()
 	if(DropDownList1:IsVisible()) then return end
 	
 	VendorerHintTooltip:ClearLines();
+	VendorerHintTooltip:ClearAllPoints();
 	
 	VendorerHintTooltip:SetPoint("TOPLEFT", VendorerFilteringButton, "TOPRIGHT", -7, 70);
 	VendorerHintTooltip:SetOwner(VendorerFilteringButton, "ANCHOR_PRESERVE");

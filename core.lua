@@ -60,6 +60,7 @@ local CLASS_ARMOR_TYPES = {
 	MAGE        = LOCALIZED_CLOTH,
 	WARLOCK     = LOCALIZED_CLOTH,
 	PRIEST      = LOCALIZED_CLOTH,
+	EVOKER      = LOCALIZED_MAIL,
 };
 
 local ARMOR_TYPE_LEVEL = {
@@ -339,7 +340,7 @@ function Addon:OnEnable()
 	self:RegisterEvent("MERCHANT_SHOW");
 	self:RegisterEvent("MERCHANT_CLOSED");
 	self:RegisterEvent("MERCHANT_UPDATE");
-	self:RegisterEvent("CURSOR_UPDATE");
+	self:RegisterEvent("CURSOR_CHANGED");
 	self:RegisterEvent("UPDATE_INVENTORY_DURABILITY");
 	self:RegisterEvent("TRANSMOG_COLLECTION_UPDATED");
 	
@@ -461,7 +462,7 @@ function Addon:ITEM_UNLOCKED()
 	Addon:UnregisterEvent("ITEM_UNLOCKED");
 end
 
-function Addon:CURSOR_UPDATE()
+function Addon:CURSOR_CHANGED()
 	if(CursorHasItem()) then return end
 	Addon:ToggleCursorHighlights(false);
 end

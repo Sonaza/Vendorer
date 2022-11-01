@@ -57,7 +57,7 @@ function VendorerItemListsFrameItems_Update()
 end
 
 function VendorerItemListsFrame_OnLoad(self)
-	SetPortraitToTexture(self.portrait, "Interface\\Icons\\INV_Artifact_tome02");
+	SetPortraitToTexture(self.PortraitContainer.portrait, "Interface\\Icons\\INV_Artifact_tome02");
 	
 	VendorerItemListsFrame.itemList = {};
 	

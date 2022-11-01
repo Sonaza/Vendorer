@@ -208,7 +208,7 @@ function Addon:GetMenuData()
 				self.db.global.UseImprovedStackSplit = not self.db.global.UseImprovedStackSplit;
 				-- Close both split frames just in case
 				VendorerStackSplitFrame:Cancel();
-				StackSplitFrameCancel_Click();
+				StackSplitCancelButton_OnClick();
 			end,
 			checked = function() return self.db.global.UseImprovedStackSplit; end,
 			isNotRadio = true,
