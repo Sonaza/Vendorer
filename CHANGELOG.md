@@ -9,6 +9,7 @@
 * Fixed SetPoint errror with Hint Tooltip next to search field.
 * Fixed portrait icon error for ignore/junk list.
 * Fixed backdrop color error with the Blizzard changes.
+* Fixed rarity color error when purchasing currency items.
 
 ## 4.0.1
 * Attempted blind fix at a nil error.

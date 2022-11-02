@@ -1875,6 +1875,10 @@ function Addon:UpdateMerchantInfo()
 							rarityBorder:Show();
 						elseif(Addon:IsCurrencyItem(itemLink)) then
 							local rarity = select(9, Addon:GetCurrencyInfo(itemLink));
+							if not rarity then
+								local temp = select(2, Addon:GetCurrencyInfo(itemLink));
+								rarity = temp.quality;
+							end
 							local r, g, b = GetItemQualityColor(rarity);
 							local a = 0.9;
 							if(rarity == 1) then a = 0.75 end
