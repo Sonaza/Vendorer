@@ -630,7 +630,7 @@ function Addon:GetFreeBagSlotsForItem(item)
 	local freeSlots = GetContainerNumFreeSlots(0);
 	
 	for bagID = 1, NUM_BAG_SLOTS do
-		local bagItemLink = GetInventoryItemLink("player", 19 + bagID);
+		local bagItemLink = ContainerIDToInventoryID(bagID);
 		if(bagItemLink) then
 			local bagType = GetItemFamily(bagItemLink);
 			if(not bagType or bagType == 0 or bagType == itemType or bit.band(itemType, bagType) == bagSubType) then
