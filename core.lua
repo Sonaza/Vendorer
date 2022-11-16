@@ -372,9 +372,11 @@ function Addon:RegisterTooltip(tooltip)
 		if(modified) then return end
 		modified = true;
 		
-		local name, link = self:GetItem();
-		if(link and GetItemInfo(link)) then
-			Addon:AddTooltipInfo(self, link);
+		if(self and self.GetItem) then
+			local name, link = self:GetItem();
+			if(link and GetItemInfo(link)) then
+				Addon:AddTooltipInfo(self, link);
+			end
 		end
 	end);
 end
