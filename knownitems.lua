@@ -27,7 +27,7 @@ function Addon:IsItemKnown(itemLink)
 	local itemID = Addon:GetItemID(itemLink);
 	if (itemID) then
 		if (questItems[itemID]) then
-			if (IsQuestFlaggedCompleted(questItems[itemID])) then
+			if (C_QuestLog.IsQuestFlaggedCompleted(questItems[itemID])) then
 				cached[itemLink] = true;
 				return true;
 			end
