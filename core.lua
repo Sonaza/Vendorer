@@ -752,14 +752,14 @@ end
 local function FilterJunkItems(bagIndex, slotIndex)
 	if(not bagIndex or not slotIndex) then return false end
 	
-	local texture, itemCount, locked, quality, readable, lootable, itemLink, isFiltered = C_Container.GetContainerItemInfo(bagIndex, slotIndex);
-	if(itemLink) then
+	local bagInfo = C_Container.GetContainerItemInfo(bagIndex, slotIndex);
+	if(bagInfo.hyperlink) then
 		local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
-			itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(itemLink);
+			itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(bagInfo.hyperlink);
 			
 		if(not itemName) then return false end
 		
-		local itemID = Addon:GetItemID(itemLink);
+		local itemID = Addon:GetItemID(bagInfo.hyperlink);
 		local itemIsJunked = Addon:IsItemJunked(itemID);
 		
 		local shouldSell = itemSellPrice > 0 and (quality == 0 or itemIsJunked);
@@ -777,8 +777,8 @@ local function FilterJunkItems(bagIndex, slotIndex)
 		end
 		
 		return shouldSell or shouldDestroy, {
-			itemLink      = itemLink,
-			itemSellPrice = itemSellPrice * itemCount,
+			itemLink      = bagInfo.hyperlink,
+			itemSellPrice = itemSellPrice * bagInfo.stackCount,
 			reasonText    = reasonText,
 			shouldDestroy = shouldDestroy,
 		};
@@ -942,17 +942,17 @@ end
 local function FilterUnusableItems(bagIndex, slotIndex)
 	if(not bagIndex or not slotIndex) then return false end
 	
-	local texture, itemCount, locked, quality, readable, lootable, itemLink, isFiltered = C_Container.GetContainerItemInfo(bagIndex, slotIndex);
-	if(itemLink) then
+	local bagInfo = C_Container.GetContainerItemInfo(bagIndex, slotIndex);
+	if(bagInfo.hyperlink) then
 		local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
-			itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(itemLink);
-		local itemID = Addon:GetItemID(itemLink);
+			itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(bagInfo.hyperlink);
+		local itemID = Addon:GetItemID(bagInfo.hyperlink);
 		
 		if(not itemName) then return false end
 		if(itemType == LOCALIZED_RECIPE) then return false end
 		if(itemRarity > 4 or (itemSellPrice == 0 and not Addon.db.global.DestroyUnsellables)) then return false end
 		
-		local bindType, isUsable, isClassArmorType, notUsableReason, tooltipItemSlot, tooltipItemType, itemSubType = Addon:GetItemTooltipInfo(itemLink);
+		local bindType, isUsable, isClassArmorType, notUsableReason, tooltipItemSlot, tooltipItemType, itemSubType = Addon:GetItemTooltipInfo(bagInfo.hyperlink);
 		
 		local shouldDestroy = Addon.db.global.DestroyUnsellables and itemSellPrice == 0 and not isUsable;
 		
@@ -984,8 +984,8 @@ local function FilterUnusableItems(bagIndex, slotIndex)
 		if(isClassArmorType == nil) then isClassArmorType = true end
 		
 		return not isUsable or not isClassArmorType or shouldDestroy, {
-			itemLink      = itemLink,
-			itemSellPrice = itemSellPrice * itemCount,
+			itemLink      = bagInfo.hyperlink,
+			itemSellPrice = itemSellPrice * bagInfo.stackCount,
 			reasonText    = strtrim(reasonText),
 			shouldDestroy = shouldDestroy,
 		};
@@ -1336,10 +1336,10 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 	local itemsDestroyed = 0;
 	for index, slotInfo in ipairs(items) do
 		if(slotInfo.data.shouldDestroy and not dont_destroy) then
-			local texture, itemCount, locked, quality, readable, lootable, itemLink = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
-			local itemMessage = string.format("Destroying %s", itemLink);
+			local bagInfo = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
+			local itemMessage = string.format("Destroying %s", bagInfo.hyperlink);
 			if(itemCount > 1) then
-				itemMessage = string.format("%s x%d", itemMessage, itemCount);
+				itemMessage = string.format("%s x%d", itemMessage, bagInfo.stackCount);
 			end
 			
 			if(Addon.db.global.VerboseChat) then
@@ -1374,11 +1374,11 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 	
 	local itemsSold = 0;
 	for index, slotInfo in ipairs(itemsToSell) do
-		local texture, itemCount, locked, quality, readable, lootable, itemLink = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
+		local bagInfo = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
 	
-		local itemMessage = string.format("Selling %s", itemLink);
-		if(itemCount > 1) then
-			itemMessage = string.format("%s x%d", itemMessage, itemCount);
+		local itemMessage = string.format("Selling %s", bagInfo.hyperlink);
+		if(bagInfo.stackCount > 1) then
+			itemMessage = string.format("%s x%d", itemMessage, bagInfo.stackCount);
 		end
 		
 		if(Addon.db.global.VerboseChat) then
@@ -1428,10 +1428,10 @@ function Addon:ConfirmSellUnusables()
 	local itemsDestroyed = 0;
 	for index, slotInfo in ipairs(items) do
 		if(slotInfo.data.shouldDestroy) then
-			local texture, itemCount, locked, quality, readable, lootable, itemLink = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
-			local itemMessage = string.format("Destroying %s", itemLink);
-			if(itemCount > 1) then
-				itemMessage = string.format("%s x%d", itemMessage, itemCount);
+			local bagInfo = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
+			local itemMessage = string.format("Destroying %s", bagInfo.hyperlink);
+			if(bagInfo.stackCount > 1) then
+				itemMessage = string.format("%s x%d", itemMessage, bagInfo.stackCount);
 			end
 			
 			if(Addon.db.global.VerboseChat) then
@@ -1466,10 +1466,10 @@ function Addon:ConfirmSellUnusables()
 	
 	local itemsSold = 0;
 	for index, slotInfo in ipairs(itemsToSell) do
-		local texture, itemCount, locked, quality, readable, lootable, itemLink = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
-		local itemMessage = string.format("Selling %s", itemLink);
-		if(itemCount > 1) then
-			itemMessage = string.format("%s x%d", itemMessage, itemCount);
+		local bagInfo = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
+		local itemMessage = string.format("Selling %s", bagInfo.hyperlink);
+		if(bagInfo.stackCount > 1) then
+			itemMessage = string.format("%s x%d", itemMessage, bagInfo.stackCount);
 		end
 		
 		if(Addon.db.global.VerboseChat) then

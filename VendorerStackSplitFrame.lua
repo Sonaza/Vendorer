@@ -479,9 +479,9 @@ function Addon:GetProperItemCount(item)
 	
 	local numSlots = C_Container.GetContainerNumSlots(REAGENTBANK_CONTAINER);
 	for slotIndex = 1, numSlots do
-		local _, containerItemCount, _, _, _, _, containerItemLink = C_Container.GetContainerItemInfo(REAGENTBANK_CONTAINER, slotIndex);
-		if(itemLink and containerItemLink == itemLink) then
-			itemCount = itemCount + containerItemCount;
+		local containerInfo = C_Container.GetContainerItemInfo(REAGENTBANK_CONTAINER, slotIndex);
+		if(containerInfo.hyperlink and containerItemLink == containerInfo.hyperlink) then
+			itemCount = containerInfo.stackCount + containerItemCount;
 		end
 	end
 	
