@@ -14,11 +14,11 @@ SlashCmdList["VENDORER"] = function(params)
 end
 
 function Addon:HandleConsole(params, action, ...)
-	if(action == "ignore") then
+	if (action == "ignore") then
 		local _, item = strsplit(" ", strtrim(params), 2);
-		if(item) then
+		if (item) then
 			local _, itemLink = GetItemInfo(item);
-			if(itemLink) then
+			if (itemLink) then
 				Addon:AddItemToIgnoreList(itemLink);
 			else
 				Addon:AddMessage("Unable to find item \"%s\".", item);
@@ -26,11 +26,11 @@ function Addon:HandleConsole(params, action, ...)
 		else
 			Addon:OpenIgnoredItemsListsFrame();
 		end
-	elseif(action == "junk") then
+	elseif (action == "junk") then
 		local _, item = strsplit(" ", strtrim(params), 2);
-		if(item) then
+		if (item) then
 			local _, itemLink = GetItemInfo(item);
-			if(itemLink) then
+			if (itemLink) then
 				Addon:AddItemToJunkList(itemLink);
 			else
 				Addon:AddMessage("Unable to find item \"%s\".", item);
@@ -38,19 +38,19 @@ function Addon:HandleConsole(params, action, ...)
 		else
 			Addon:OpenJunkItemsListsFrame();
 		end
-	elseif(action == "autosell") then
+	elseif (action == "autosell") then
 		Addon.db.global.AutoSellJunk = not Addon.db.global.AutoSellJunk;
 		Addon:AddMessage("Auto sell is now %s.", Addon:GetToggleStatusText(Addon.db.global.AutoSellJunk));
-	elseif(action == "autorepair") then
+	elseif (action == "autorepair") then
 		Addon.db.global.AutoRepair = not Addon.db.global.AutoRepair;
 		Addon:AddMessage("Auto repair is now %s.", Addon:GetToggleStatusText(Addon.db.global.AutoRepair));
-	elseif(action == "smartrepair") then
+	elseif (action == "smartrepair") then
 		Addon.db.global.SmartAutoRepair = not Addon.db.global.SmartAutoRepair;
 		Addon:AddMessage("Smart auto repair is now %s.", Addon:GetToggleStatusText(Addon.db.global.SmartAutoRepair));
-		if(Addon.db.global.SmartAutoRepair and not Addon.db.global.AutoRepair) then
+		if (Addon.db.global.SmartAutoRepair and not Addon.db.global.AutoRepair) then
 			Addon:AddMessage("|cffffd200Note:|r While auto repair is not enabled, smart auto repair does nothing.");
 		end
-	else	
+	else
 		Addon:AddMessage("|cffffd200Usage|r");
 		Addon:AddShortMessage("You can access Vendorer slash commands by typing |cffffd200/vendorer|r or |cffffd200/vd|r.");
 		Addon:AddShortMessage("|cffffd200/vendorer|r ignore |cffaaaaaa[item]|r");
@@ -62,14 +62,15 @@ function Addon:HandleConsole(params, action, ...)
 		Addon:AddShortMessage("|cffffd200/vendorer|r autorepair|r");
 		Addon:AddShortMessage("  Toggles auto repair. Currently %s.", Addon:GetToggleStatusText(Addon.db.global.AutoRepair));
 		Addon:AddShortMessage("|cffffd200/vendorer|r smartrepair|r");
-		Addon:AddShortMessage("  Toggles smart auto repair. Currently %s. Only works when auto repair is enabled.", Addon:GetToggleStatusText(Addon.db.global.SmartAutoRepair));
+		Addon:AddShortMessage("  Toggles smart auto repair. Currently %s. Only works when auto repair is enabled.",
+			Addon:GetToggleStatusText(Addon.db.global.SmartAutoRepair));
 	end
-	
+
 	Addon:RestoreSavedSettings();
 end
 
 function Addon:GetToggleStatusText(status)
-	if(status) then
+	if (status) then
 		return "|cff43ef00enabled|r";
 	else
 		return "|cffef0000disabled|r";
@@ -78,13 +79,13 @@ end
 
 local DropDownMenuFrame;
 function Addon:OpenSettingsMenu(anchor)
-	if(not DropDownMenuFrame) then
+	if (not DropDownMenuFrame) then
 		DropDownMenuFrame = CreateFrame("Frame", "VendorerSettingsContextMenuFrame", anchor, "UIDropDownMenuTemplate");
 	end
-	
+
 	DropDownMenuFrame:SetPoint("BOTTOM", anchor, "CENTER", 0, 5);
 	EasyMenu(Addon:GetMenuData(), DropDownMenuFrame, "cursor", 0, 0, "MENU", 2.5);
-	
+
 	DropDownList1:ClearAllPoints();
 	DropDownList1:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", -1, -2);
 	DropDownList1:SetClampedToScreen(true);
@@ -93,12 +94,14 @@ end
 local NEW_FEATURE_ICON = "|TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:0:0:0:-1|t";
 function Addon:GetMenuData()
 	local transmogTooltipText = "Adds an asterisk to the item icon if you are missing the item skin.";
-	if(not CanIMogIt) then
-		transmogTooltipText = transmogTooltipText .. "|n|nTo enable this feature install the optional dependency |cffffffffCan I Mog It|r first.";
+	if (not CanIMogIt) then
+		transmogTooltipText = transmogTooltipText ..
+			"|n|nTo enable this feature install the optional dependency |cffffffffCan I Mog It|r first.";
 	else
-		transmogTooltipText = transmogTooltipText .. "|n|nNote: enabling this option will hide the default icons provided by |cffffffffCan I Mog It|r.";
+		transmogTooltipText = transmogTooltipText ..
+			"|n|nNote: enabling this option will hide the default icons provided by |cffffffffCan I Mog It|r.";
 	end
-	
+
 	local data = {
 		{
 			text = "Vendorer Options", isTitle = true, notCheckable = true,
@@ -130,7 +133,7 @@ function Addon:GetMenuData()
 			keepShownOnClick = 1,
 			swatchFunc = function()
 				self.db.global.PaintKnownItems = true;
-				
+
 				local r, g, b = ColorPickerFrame:GetColorRGB();
 				self.db.global.PaintColor.r = r;
 				self.db.global.PaintColor.g = g;
@@ -236,7 +239,7 @@ function Addon:GetMenuData()
 			text = "Also destroy unsellable items",
 			func = function()
 				self.db.global.DestroyUnsellables = not self.db.global.DestroyUnsellables;
-				if(not self.db.global.DestroyUnsellables) then
+				if (not self.db.global.DestroyUnsellables) then
 					VendorerSellJunkButton:SetText(_G["VENDORER_SELL_JUNK_ITEMS_TEXT"]);
 					VendorerSellUnusablesButton:SetText(_G["VENDORER_SELL_UNUSABLE_ITEMS_TEXT"]);
 				else
@@ -247,10 +250,12 @@ function Addon:GetMenuData()
 			checked = function() return self.db.global.DestroyUnsellables; end,
 			isNotRadio = true,
 			tooltipTitle = "Also destroy unsellable items",
-			tooltipText = "When enabled pressing the sell buttons will also destroy all unsellable valueless items related to button.|n|n" ..
-			              "Sell Junk Items button will destroy unsellable poor quality items or items marked as junk. Auto selling junk |cffff1111will not|r destroy anything.|n|n" ..
-			              "Sell Unusables will destroy unusable unsellable soulbound equipment or tokens.|n|n" ..
-			              "|cffff1111DANGER ALERT!|r Always double check what items will be destroyed and if you do not wish item to be destroyed add it to the ignore list instead.",
+			tooltipText = "When enabled pressing the sell buttons will also destroy all unsellable valueless items related to button.|n|n"
+				..
+				"Sell Junk Items button will destroy unsellable poor quality items or items marked as junk. Auto selling junk |cffff1111will not|r destroy anything.|n|n"
+				..
+				"Sell Unusables will destroy unusable unsellable soulbound equipment or tokens.|n|n" ..
+				"|cffff1111DANGER ALERT!|r Always double check what items will be destroyed and if you do not wish item to be destroyed add it to the ignore list instead.",
 			tooltipOnButton = 1,
 			keepShownOnClick = 1,
 		},
@@ -261,21 +266,21 @@ function Addon:GetMenuData()
 			text = "Use global ignore list on " .. UnitName("player"),
 			func = function()
 				self.db.char.UsingPersonalIgnoreList = not self.db.char.UsingPersonalIgnoreList or IsControlKeyDown();
-				
-				if(self.db.char.UsingPersonalIgnoreList and (self.db.char.ItemIgnoreList == nil or IsControlKeyDown())) then
-					if(not IsControlKeyDown() or self.db.char.ItemIgnoreList == nil) then
+
+				if (self.db.char.UsingPersonalIgnoreList and (self.db.char.ItemIgnoreList == nil or IsControlKeyDown())) then
+					if (not IsControlKeyDown() or self.db.char.ItemIgnoreList == nil) then
 						Addon:AddMessage("Missing ignore list for %s. Copying the global list.", UnitName("player"));
 					else
 						Addon:AddMessage("Re-copying the global ignore list for %s.", UnitName("player"));
 					end
-					
+
 					self.db.char.ItemIgnoreList = {};
 					for itemID, status in pairs(self.db.global.ItemIgnoreList) do
 						self.db.char.ItemIgnoreList[itemID] = status;
 					end
 				end
-				
-				if(VendorerItemListsFrame:IsVisible() and VendorerItemListsFrame.index == 1) then
+
+				if (VendorerItemListsFrame:IsVisible() and VendorerItemListsFrame.index == 1) then
 					Addon:OpenIgnoredItemsListsFrame();
 				end
 			end,
@@ -290,21 +295,21 @@ function Addon:GetMenuData()
 			text = "Use global junk list on " .. UnitName("player"),
 			func = function()
 				self.db.char.UsingPersonalJunkList = not self.db.char.UsingPersonalJunkList or IsControlKeyDown();
-				
-				if(self.db.char.UsingPersonalJunkList and (self.db.char.ItemJunkList == nil or IsControlKeyDown())) then
-					if(not IsControlKeyDown() or self.db.char.ItemJunkList == nil) then
+
+				if (self.db.char.UsingPersonalJunkList and (self.db.char.ItemJunkList == nil or IsControlKeyDown())) then
+					if (not IsControlKeyDown() or self.db.char.ItemJunkList == nil) then
 						Addon:AddMessage("Missing junk list for %s. Copying the global list.", UnitName("player"));
 					else
 						Addon:AddMessage("Re-copying the global junk list for %s.", UnitName("player"));
 					end
-					
+
 					self.db.char.ItemJunkList = {};
 					for item, _ in pairs(self.db.global.ItemJunkList) do
 						self.db.char.ItemJunkList[item] = true;
 					end
 				end
-				
-				if(VendorerItemListsFrame:IsVisible() and VendorerItemListsFrame.index == 2) then
+
+				if (VendorerItemListsFrame:IsVisible() and VendorerItemListsFrame.index == 2) then
 					Addon:OpenJunkItemsListsFrame();
 				end
 			end,
@@ -324,12 +329,12 @@ function Addon:GetMenuData()
 			notCheckable = true,
 		},
 	};
-	
+
 	return data;
 end
 
 function VendorerSettingsButton_OnClick(self)
-	if(DropDownList1:IsVisible() and select(2, DropDownList1:GetPoint()) == self) then
+	if (DropDownList1:IsVisible() and select(2, DropDownList1:GetPoint()) == self) then
 		CloseMenus();
 	else
 		Addon:OpenSettingsMenu(self);
