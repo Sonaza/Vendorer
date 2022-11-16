@@ -37,7 +37,7 @@ function Addon:GetItemRepairCost()
 	end
 	
 	for containerID = 0, 4 do
-		local containerSlots = GetContainerNumSlots(containerID);
+		local containerSlots = C_Container.GetContainerNumSlots(containerID);
 		if(containerSlots > 0) then
 			for containerSlotID = 1, containerSlots do
 				local hasCooldown, repairCost = VendorerTooltip:SetBagItem(containerID, containerSlotID);
@@ -82,7 +82,7 @@ function Addon:RepairSlot(slot)
 	
 	if(type(slot) == "string") then
 		local container, slot = strsplit(":", slot);
-		PickupContainerItem(container, slot)
+		C_Container.PickupContainerItem(container, slot)
 	else
 		PickupInventoryItem(slot);
 	end

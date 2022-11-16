@@ -477,9 +477,9 @@ function Addon:GetProperItemCount(item)
 	local _, itemLink = GetItemInfo(item);
 	local itemCount = GetItemCount(itemLink);
 	
-	local numSlots = GetContainerNumSlots(REAGENTBANK_CONTAINER);
+	local numSlots = C_Container.GetContainerNumSlots(REAGENTBANK_CONTAINER);
 	for slotIndex = 1, numSlots do
-		local _, containerItemCount, _, _, _, _, containerItemLink = GetContainerItemInfo(REAGENTBANK_CONTAINER, slotIndex);
+		local _, containerItemCount, _, _, _, _, containerItemLink = C_Container.GetContainerItemInfo(REAGENTBANK_CONTAINER, slotIndex);
 		if(itemLink and containerItemLink == itemLink) then
 			itemCount = itemCount + containerItemCount;
 		end
@@ -627,14 +627,14 @@ function Addon:GetFreeBagSlotsForItem(item)
 	local _, itemLink = GetItemInfo(item);
 	local itemType = GetItemFamily(itemLink);
 	
-	local freeSlots = GetContainerNumFreeSlots(0);
+	local freeSlots = C_Container.GetContainerNumFreeSlots(0);
 	
 	for bagID = 1, NUM_BAG_SLOTS do
-		local bagItemLink = ContainerIDToInventoryID(bagID);
+		local bagItemLink = C_Container.ContainerIDToInventoryID(bagID);
 		if(bagItemLink) then
 			local bagType = GetItemFamily(bagItemLink);
 			if(not bagType or bagType == 0 or bagType == itemType or bit.band(itemType, bagType) == bagSubType) then
-				freeSlots = freeSlots + GetContainerNumFreeSlots(bagID);
+				freeSlots = freeSlots + C_Container.GetContainerNumFreeSlots(bagID);
 			end
 		end
 	end

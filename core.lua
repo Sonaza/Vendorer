@@ -348,7 +348,7 @@ function Addon:OnEnable()
 	
 	Addon:RestoreSavedSettings();
 
-	hooksecurefunc("PickupContainerItem", function()
+	hooksecurefunc(C_Container, "PickupContainerItem", function()
 		if(not CursorHasItem()) then return end
 		
 		Addon:ToggleCursorHighlights(true);
@@ -368,7 +368,7 @@ function Addon:RegisterTooltip(tooltip)
 		modified = false;
 	end)
 
-	tooltip:HookScript('OnTooltipSetItem', function(self)
+	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(self)
 		if(modified) then return end
 		modified = true;
 		
@@ -726,11 +726,11 @@ function Addon:ScanContainers(filter)
 	
 	local foundItems = {};
 	
-	for bagIndex = 0, 4 do
-		local numSlots = GetContainerNumSlots(bagIndex);
+	for bagIndex = 0, NUM_BAG_SLOTS do
+		local numSlots = C_Container.GetContainerNumSlots(bagIndex);
 		if(numSlots > 0) then
 			for slotIndex = 1, numSlots do
-				local link = GetContainerItemLink(bagIndex, slotIndex);
+				local link = C_Container.GetContainerItemLink(bagIndex, slotIndex);
 				local itemID = link and Addon:GetItemID(link) or 0;
 				if(link and not Addon:IsItemIgnored(itemID)) then
 					local result, data = filter(bagIndex, slotIndex);
@@ -752,7 +752,7 @@ end
 local function FilterJunkItems(bagIndex, slotIndex)
 	if(not bagIndex or not slotIndex) then return false end
 	
-	local texture, itemCount, locked, quality, readable, lootable, itemLink, isFiltered = GetContainerItemInfo(bagIndex, slotIndex);
+	local texture, itemCount, locked, quality, readable, lootable, itemLink, isFiltered = C_Container.GetContainerItemInfo(bagIndex, slotIndex);
 	if(itemLink) then
 		local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
 			itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(itemLink);
@@ -942,7 +942,7 @@ end
 local function FilterUnusableItems(bagIndex, slotIndex)
 	if(not bagIndex or not slotIndex) then return false end
 	
-	local texture, itemCount, locked, quality, readable, lootable, itemLink, isFiltered = GetContainerItemInfo(bagIndex, slotIndex);
+	local texture, itemCount, locked, quality, readable, lootable, itemLink, isFiltered = C_Container.GetContainerItemInfo(bagIndex, slotIndex);
 	if(itemLink) then
 		local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
 			itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(itemLink);
@@ -1336,7 +1336,7 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 	local itemsDestroyed = 0;
 	for index, slotInfo in ipairs(items) do
 		if(slotInfo.data.shouldDestroy and not dont_destroy) then
-			local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
+			local texture, itemCount, locked, quality, readable, lootable, itemLink = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
 			local itemMessage = string.format("Destroying %s", itemLink);
 			if(itemCount > 1) then
 				itemMessage = string.format("%s x%d", itemMessage, itemCount);
@@ -1347,7 +1347,7 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 			end
 			
 			ClearCursor();
-			PickupContainerItem(slotInfo.bag, slotInfo.slot);
+			C_Container.PickupContainerItem(slotInfo.bag, slotInfo.slot);
 			DeleteCursorItem();
 			
 			itemsDestroyed = itemsDestroyed + 1;
@@ -1374,7 +1374,7 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 	
 	local itemsSold = 0;
 	for index, slotInfo in ipairs(itemsToSell) do
-		local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
+		local texture, itemCount, locked, quality, readable, lootable, itemLink = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
 	
 		local itemMessage = string.format("Selling %s", itemLink);
 		if(itemCount > 1) then
@@ -1385,7 +1385,7 @@ function Addon:ConfirmSellJunk(skip_limit, dont_destroy)
 			Addon:AddMessage(itemMessage);
 		end
 		
-		UseContainerItem(slotInfo.bag, slotInfo.slot);
+		C_Container.UseContainerItem(slotInfo.bag, slotInfo.slot);
 		
 		if (Addon.MerchantSellError) then
 			Addon:AddMessage("This merchant doesn't buy items.");
@@ -1428,7 +1428,7 @@ function Addon:ConfirmSellUnusables()
 	local itemsDestroyed = 0;
 	for index, slotInfo in ipairs(items) do
 		if(slotInfo.data.shouldDestroy) then
-			local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
+			local texture, itemCount, locked, quality, readable, lootable, itemLink = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
 			local itemMessage = string.format("Destroying %s", itemLink);
 			if(itemCount > 1) then
 				itemMessage = string.format("%s x%d", itemMessage, itemCount);
@@ -1439,7 +1439,7 @@ function Addon:ConfirmSellUnusables()
 			end
 			
 			ClearCursor();
-			PickupContainerItem(slotInfo.bag, slotInfo.slot);
+			C_Container.PickupContainerItem(slotInfo.bag, slotInfo.slot);
 			DeleteCursorItem();
 			
 			itemsDestroyed = itemsDestroyed + 1;
@@ -1466,7 +1466,7 @@ function Addon:ConfirmSellUnusables()
 	
 	local itemsSold = 0;
 	for index, slotInfo in ipairs(itemsToSell) do
-		local texture, itemCount, locked, quality, readable, lootable, itemLink = GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
+		local texture, itemCount, locked, quality, readable, lootable, itemLink = C_Container.GetContainerItemInfo(slotInfo.bag, slotInfo.slot);
 		local itemMessage = string.format("Selling %s", itemLink);
 		if(itemCount > 1) then
 			itemMessage = string.format("%s x%d", itemMessage, itemCount);
@@ -1476,7 +1476,7 @@ function Addon:ConfirmSellUnusables()
 			Addon:AddMessage(itemMessage);
 		end
 		
-		UseContainerItem(slotInfo.bag, slotInfo.slot);
+		C_Container.UseContainerItem(slotInfo.bag, slotInfo.slot);
 		
 		if (Addon.MerchantSellError) then
 			Addon:AddMessage("This merchant doesn't buy items.");

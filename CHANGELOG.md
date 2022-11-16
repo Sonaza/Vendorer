@@ -1,3 +1,8 @@
+## 4.0.3
+* TOC bump for phase 2 10.0.2
+* Fixed bag container API namespace C_Container change.
+* Fix Item tooltip hook callback.
+
 ## 4.0.2
 * Dragonflight pre-patch update
 * TOC bump for 10.0.0
