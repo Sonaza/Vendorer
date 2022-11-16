@@ -1,3 +1,22 @@
+## 4.0.3
+* TOC bump for phase 2 10.0.2
+* Fixed bag container API namespace C_Container change.
+* Fix Item tooltip hook callback.
+* Fix junk/ignore list selling.
+
+## 4.0.2
+* Dragonflight pre-patch update
+* TOC bump for 10.0.0
+* Updated Ace3 libs to r1284
+* Added Evoker class to Mail filter.
+* Renamed Blizzard function to close split stacks.
+* Renamed Blizzard event for cursor updates.
+* Wiggled Contract/Expand buttons, Filtering button so that they don't overflow edge.
+* Fixed SetPoint errror with Hint Tooltip next to search field.
+* Fixed portrait icon error for ignore/junk list.
+* Fixed backdrop color error with the Blizzard changes.
+* Fixed rarity color error when purchasing currency items.
+
 ## 4.0.1
 * Attempted blind fix at a nil error.
 

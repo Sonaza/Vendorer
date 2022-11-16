@@ -236,7 +236,7 @@
 	<Frame name="VendorerToggleExtensionFrameButtons" parent="MerchantFrame">
 		<Size x="60" y="32"/>
 		<Anchors>
-			<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="MerchantFrameLootFilterButton" x="2" y="-1"/>
+			<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="MerchantFrameLootFilterButton" x="0" y="-1"/>
 		</Anchors>
 		<Frames>
 			<Button name="VendorerToggleExtensionFrameButtonContract" id="1" inherits="VendorerToggleExtensionFrameButtonTemplate">
@@ -244,7 +244,7 @@
 					<KeyValue key="tooltipTitle" value="VENDORER_CONTRACT_BUTTON_TITLE_TEXT" type="string"/>
 				</KeyValues>
 				<Anchors>
-					<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parent" x="0" y="0"/>
+					<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$parent" x="-4" y="0"/>
 				</Anchors>
 				<NormalTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Up"/>
 				<PushedTexture file="Interface\Buttons\UI-SpellbookIcon-PrevPage-Down"/>
@@ -256,7 +256,7 @@
 					<KeyValue key="tooltipTitle" value="VENDORER_EXPAND_BUTTON_TITLE_TEXT" type="string"/>
 				</KeyValues>
 				<Anchors>
-					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="VendorerToggleExtensionFrameButtonContract" x="-6" y="0"/>
+					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="VendorerToggleExtensionFrameButtonContract" x="-8" y="0"/>
 				</Anchors>
 				<NormalTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Up"/>
 				<PushedTexture file="Interface\Buttons\UI-SpellbookIcon-NextPage-Down"/>
@@ -267,32 +267,36 @@
 	</Frame>
 	
 	<GameTooltip name="VendorerHintTooltip" parent="UIParent" inherits="GameTooltipTemplate" hidden="true">
-		<Anchor>
+		<Anchors>
 			<Anchor point="CENTER"/>
-		</Anchor>
+		</Anchors>
 		<Scripts>
+      <OnLoad>
+        Mixin(self.NineSlice, BackdropTemplateMixin);
+        self.NineSlice:SetScript("OnSizeChanged", self.NineSlice.OnBackdropSizeChanged);
+      </OnLoad>
 			<OnShow>
-				self:SetBackdrop{
+				self.NineSlice:SetBackdrop{
 					bgFile = [[Interface\Tooltips\UI-Tooltip-Background]],
 					edgeFile = [[Interface\AddOns\!Vendorer\media\TooltipBorder]],
 					edgeSize = 16,
 					tile = true, tileSize = 16,
 					insets = {left = 4, right = 4, top = 4, bottom = 4}
 				}
-				self:SetBackdropColor(0, 0, 0, 0.9);
-				self:SetBackdropBorderColor(0, 0, 0, 1);
+				self.NineSlice:SetCenterColor(0, 0, 0, 0.9);
+				self.NineSlice:SetBorderColor(0, 0, 0, 1);
 			</OnShow>
 		</Scripts>
 	</GameTooltip>
 	
 	<GameTooltip name="VendorerTooltip" inherits="GameTooltipTemplate" hidden="true">
-		<Anchor>
+		<Anchors>
 			<Anchor point="CENTER"/>
-		</Anchor>
+		</Anchors>
 		<Scripts>
 			<OnShow>
-				self:SetBackdropColor(0, 0, 0, 0.95);
-				self:SetBackdropBorderColor(0, 0, 0, 1);
+				self.NineSlice:SetCenterColor(0, 0, 0, 0.95);
+				self.NineSlice:SetBorderColor(0, 0, 0, 1);
 				self:SetScale(0.77);
 			</OnShow>
 		</Scripts>
@@ -417,7 +421,7 @@
 			
 			<Button name="VendorerFilteringButton" inherits="VendorerFilteringButtonTemplate">
 				<Anchors>
-					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="VendorerFilterEditBox" x="-20" y="-2"/>
+					<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="VendorerFilterEditBox" x="-20" y="0"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
